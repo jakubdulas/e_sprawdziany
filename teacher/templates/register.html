@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Register as a:</h1>
+<a href={% url 'register_as_a_student' %}>Student</a>
+<a href={% url 'register_as_a_teacher' %}>Teacher</a>
+{% endblock %}

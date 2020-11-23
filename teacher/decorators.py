@@ -1,0 +1,43 @@
+from django.shortcuts import redirect
+from .models import *
+
+
+def unauthenticated_user(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('home')
+        else:
+            return view_func(request, *args, **kwargs)
+    return wrapper_func
+
+def student_only(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        if Student.objects.filter(user=request.user):
+            return view_func(request, *args, **kwargs)
+        else:
+            return redirect('home')
+    return wrapper_func
+
+def teacher_only(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        if Teacher.objects.filter(user=request.user):
+            return view_func(request, *args, **kwargs)
+        else:
+            return redirect('home')
+    return wrapper_func
+
+def members_only(view_func):
+    def wrapper_func(request, id, *args, **kwargs):
+        classroom = Class.objects.get(id=id)
+        try:
+            if request.user.teacher.is_in_class(key=classroom.access_key):
+                return view_func(request, id, *args, **kwargs)
+        except:
+            pass
+        try:
+            if request.user.student.is_in_class(key=classroom.access_key):
+                return view_func(request, id, *args, **kwargs)
+        except:
+            pass
+        return redirect('home')
+    return wrapper_func

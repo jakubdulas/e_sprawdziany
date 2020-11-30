@@ -2,6 +2,14 @@
 {% block content %}
     <form method="POST">
     {% csrf_token %}
-    {{ form.as_p }}
+    <label>Nazwa testu:</label>
+    <input type="text" name="label"><br>
+    <label>Klasa:</label>
+    <select name="class">
+        {% for class in classes %}
+        <option value="{{ class.name }}">{{ class.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Create test</button>
     </form>
 {% endblock %}

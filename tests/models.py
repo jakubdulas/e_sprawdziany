@@ -1,12 +1,13 @@
 from django.db import models
 from teacher.models import Teacher, Class, Student
 
+
 # Create your models here.
 
 class Test(models.Model):
-    label = models.CharField(max_length=128)
+    label = models.CharField(max_length=128, blank=False, null=False)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Class, blank=True)
+    students = models.ForeignKey(Class, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return str(self.label)
@@ -18,11 +19,11 @@ class Test(models.Model):
 
 class Task(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, null=True)
-    question = models.TextField()
+    content = models.TextField()
     type = models.OneToOneField("TypeOfTask", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.question[:15]} | {str(self.test)}"
+        return f"{self.content[:15]} | {str(self.test)}"
 
     @property
     def answer_options(self):
@@ -46,4 +47,3 @@ class TypeOfTask(models.Model):
 
     def __str__(self):
         return self.label
-

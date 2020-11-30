@@ -44,10 +44,14 @@ class Class(models.Model):
     def students(self):
         return self.student_set.all()
 
+    @property
+    def members_quantity(self):
+        return self.student_set.count()
+
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    school_class = models.ManyToManyField('Class', blank=True, null=True)
+    school_class = models.ManyToManyField('Class', blank=True)
 
     def __str__(self):
         return f"{self.user} | student"
@@ -61,7 +65,3 @@ class Student(models.Model):
         except:
             pass
         return False
-
-
-
-

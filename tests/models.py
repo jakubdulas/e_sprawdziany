@@ -32,6 +32,18 @@ class Task(models.Model):
         except:
             pass
 
+    def students_answer(self, student):
+        try:
+            return self.answer_set.get(student=student)
+        except:
+            return ""
+
+class TypeOfTask(models.Model):
+    label = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.label
+
 
 class AnswerOption(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
@@ -42,8 +54,23 @@ class AnswerOption(models.Model):
         return f"{self.label} | {str(self.task)}"
 
 
-class TypeOfTask(models.Model):
-    label = models.CharField(max_length=50)
+class Answer(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    textarea = models.TextField(null=True, blank=True)
+    char_field = models.CharField(max_length=128, null=True, blank=True)
+    is_correct = models.BooleanField(default=False, null=True, blank=True)
 
     def __str__(self):
-        return self.label
+        if self.textarea:
+            return self.textarea[0:15]
+        elif self.char_field:
+            return self.char_field
+        else:
+            return f"{self.student} answer"
+
+    @property
+    def test(self):
+        return self.task.test
+
+

@@ -1,4 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
-
+<h1>{{ test.label }}</h1>
+<form method="POST">
+{% csrf_token %}
+    <ol>
+        {% for task in tasks %}
+            <li>{{ task.content }}</li>
+            {% if task.type.label == 'zamkniete' %}
+                <ul>
+                {% for option in task.answer_options %}
+                    <li>
+                        <input name="{{ task.id }}" value="{{ option.label }}" type="radio">
+                        <label>{{ option.label }}</label>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% if task.type.label == 'otwarte' %}
+                <textarea name="{{ task.id }}"></textarea>
+            {% endif %}
+        {% endfor %}
+    </ol>
+    <button type="submit">Submit</button>
+</form>
 {% endblock %}

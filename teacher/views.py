@@ -135,3 +135,10 @@ def leave_class(request, id):
     if request.POST:
         request.user.student.school_class.reverse(classlist)
     return render(request, 'classlist.html')
+
+def classes(request):
+    classes = Class.objects.filter(teacher=request.user.teacher).all()
+    context = {
+        'classes': classes
+    }
+    return render(request, 'classes.html', context=context)

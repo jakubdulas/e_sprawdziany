@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ test.label }}</h1>
+
+<ol>
+    {% for task in tasks %}
+        <li>{{ task.content }}</li>
+        {% if task.type.label == 'zamkniete' %}
+            <ul>
+            {% for option in task.answer_options %}
+                <li>
+                    {{ option.label }}
+                </li>
+            {% endfor %}
+            <li><a href="{% url 'add_answer_option' task.id %}">Dodaj opcje odpowiedzi</a></li>
+            </ul>
+        {% endif %}
+    {% endfor %}
+    <li>
+        <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>
+    </li>
+</ol>
+
+{% endblock %}

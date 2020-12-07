@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form method="post">
+    {% csrf_token %}
+    <h3>{{ task.content }}</h3>
+    <ul>
+    {% for option in task.answer_options %}
+        <li>{{ option }}</li>
+    {% endfor %}
+    <li><label>Text:</label>
+    <input name="label" type="text"></li>
+    <li>
+        <label>Czy to poprawna odpowiedz?</label>
+        <br>
+        <label>Tak</label>
+        <input type="radio" name="is_correct" value="tak">
+        <label>Nie</label>
+        <input type="radio" name="is_correct" value="nie">
+    </li>
+    </ul>
+    <button type="submit">Dodaj</button>
+    </form>
+    <a href="{% url 'task_list' task.test.id %}">Zobacz zadania</a>
+{% endblock %}

@@ -1,10 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib import messages
 from general.decorators import unauthenticated_user, members_only
 from general.forms import RegisterForm
 from django.contrib.auth import authenticate, login
-from teacher.models import Class
-from .models import *
 from django.contrib.auth.decorators import login_required
 from .decorators import *
 from tests.models import Test

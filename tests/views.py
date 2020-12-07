@@ -61,6 +61,7 @@ def create_test(request):
                 )
 
             messages.success(request, "test zostal stworzony")
+            return redirect('create_task', id=test.id)
         except:
             messages.error(request, "cos poszlo nie tak")
     context = {
@@ -70,8 +71,64 @@ def create_test(request):
 
 
 @teacher_only
-def add_task(request, id):
+def create_task(request, id):
     test = BlankTest.objects.get(id=id)
+    types_of_task = TypeOfTask.objects.all()
+
+    if request.method == "POST":
+        task = Task.objects.create(
+            test=test,
+            content=request.POST['content'],
+            type=TypeOfTask.objects.get(label=request.POST['type'])
+        )
+
+        tests = Test.objects.filter(blank_test=test).all()
+
+        for t in tests:
+            task.students_test.add(t)
+
+        task.save()
+
+        return redirect('task_list', test_id=test.id)
+
+    context = {
+        'test': test,
+        'types_of_task': types_of_task
+    }
+    return render(request, 'tests/add_task.html', context=context)
+
+
+@teacher_only
+def task_list(request, test_id):
+    test = BlankTest.objects.get(id=test_id)
+    context = {
+        'test': test,
+        'tasks': test.tasks
+    }
+    return render(request, 'tests/task_list.html', context=context)
+
+
+@teacher_only
+def add_answer_option(request, task_id):
+    task = Task.objects.get(id=task_id)
+    context = {
+        'task': task
+    }
+
+    if request.method == 'POST':
+        print(request.POST)
+        if request.POST['is_correct'] == 'tak':
+            is_correct = True
+        else:
+            is_correct = False
+        AnswerOption.objects.create(
+            task=task,
+            label=request.POST['label'],
+            is_correct=is_correct
+        )
+
+
+    return render(request, 'tests/add_answer_option.html', context=context)
 
 
 def show_students_answers(request, test_id):

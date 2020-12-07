@@ -6,4 +6,3 @@ from .models import *
 admin.site.register(School)
 admin.site.register(Teacher)
 admin.site.register(Class)
-admin.site.register(Student)

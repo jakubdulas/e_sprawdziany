@@ -9,6 +9,7 @@ import random
 
 def test(request, id):
     test = Test.objects.get(id=id)
+    student = Student.objects.get(user=request.user)
 
     context = {
         'test': test,
@@ -17,7 +18,7 @@ def test(request, id):
     if request.method == "POST":
         for task in test.tasks:
             answer = Answer.objects.create(
-                student=request.user.student,
+                student=student,
                 task=task,
             )
             if task.type.label == 'otwarte':
@@ -25,11 +26,12 @@ def test(request, id):
             elif task.type.label == 'zamkniete':
                 answer.char_field = request.POST[f"{task.id}"]
                 if task.answer_options.filter(is_correct=True):
-                    if answer.char_field == task.answer_options.filter(is_correct=True).first():
+                    if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
                         answer.is_correct = True
             answer.save()
 
-    return render(request, 'test.html', context=context)
+    return render(request, 'tests/test.html', context=context)
+
 
 @teacher_only
 def create_test(request):
@@ -49,7 +51,7 @@ def create_test(request):
     context = {
         'classes': classes
     }
-    return render(request, 'create_test.html', context=context)
+    return render(request, 'tests/create_test.html', context=context)
 
 
 @teacher_only
@@ -68,5 +70,10 @@ def show_students_answers(request, id):
         'test': test,
         'tasks_answers': tasks_answers,
     }
-    return render(request, 'show_students_answers.html', context=context)
+    return render(request, 'tests/show_students_answers.html', context=context)
 
+
+def tests(request):
+    tests = Test.objects.all()
+
+    return render(request, 'tests/tests.html', {'tests': tests})

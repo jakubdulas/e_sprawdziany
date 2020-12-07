@@ -7,7 +7,7 @@ def is_student_allowed(view_func):
     def wrapper_func(request, id, *args, **kwargs):
         try:
             test = Test.objects.get(id=id)
-            if request.user.student in test.students.students:
+            if request.user.student == test.student and test.is_active:
                 return view_func(request, id, *args, **kwargs)
             else:
                 return redirect('home')

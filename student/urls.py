@@ -7,4 +7,5 @@ urlpatterns = [
     path('class/<int:id>/', class_details, name='class_details'),
     path('class/all/', class_list, name='class_list'),
     path('class/<int:id>/leave/', leave_class, name='leave_class'),
+    path('active-tests/', active_tests, name='active_tests'),
 ]

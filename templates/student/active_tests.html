@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<ul>
+{% if tests %}
+    {% for test in tests %}
+    <li><a href="{% url 'test' test.id %}">{{ test.label }}</a></li>
+    {% endfor %}
+{% else %}
+    <h2>Nie masz aktywnych testow</h2>
+{% endif %}
+</ul>
+{% endblock %}

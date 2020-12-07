@@ -13,6 +13,9 @@ def test(request, id):
     test = Test.objects.get(id=id)
     student = Student.objects.get(user=request.user)
 
+    test.is_active = False
+    test.save()
+
     context = {
         'test': test,
         'tasks': test.tasks
@@ -31,7 +34,8 @@ def test(request, id):
                     if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
                         answer.is_correct = True
             answer.save()
-            return redirect('home')
+
+        return redirect('home')
 
     return render(request, 'tests/test.html', context=context)
 
@@ -46,8 +50,16 @@ def create_test(request):
                 label = '(bez nazwy)'
             class_room = request.POST['class']
             students = Class.objects.get(name=class_room)
-            test = Test(label=label, students=students, teacher=request.user.teacher)
+            test = BlankTest(label=label, students=students, teacher=request.user.teacher)
             test.save()
+
+            for student in students.students:
+                Test.objects.create(
+                    label=label,
+                    student=student,
+                    blank_test=test
+                )
+
             messages.success(request, "test zostal stworzony")
         except:
             messages.error(request, "cos poszlo nie tak")
@@ -59,31 +71,32 @@ def create_test(request):
 
 @teacher_only
 def add_task(request, id):
-    test = Test.objects.get(id=id)
+    test = BlankTest.objects.get(id=id)
 
 
-def show_students_answers(request, test_id, students_id):
-    student = Student.objects.get(id=students_id)
+def show_students_answers(request, test_id):
     test = Test.objects.get(id=test_id)
     tasks_answers = []
     for task in test.tasks:
-        tasks_answers.append(tuple((task, task.students_answer(student))))
-
+        tasks_answers.append(tuple((task, task.students_answer(test.student))))
+    print(tasks_answers)
     context = {
         'test': test,
         'tasks_answers': tasks_answers,
-        'student': student
+        'student': test.student
     }
     return render(request, 'tests/show_students_answers.html', context=context)
 
 
 @teacher_only
 def test_list(request):
-    tests = Test.objects.filter(teacher=request.user.teacher).all()
+    tests = BlankTest.objects.filter(teacher=request.user.teacher).all()
     return render(request, 'tests/tests.html', {'tests': tests})
 
 
 @teacher_only
 def test_students(request, id):
-    test = Test.objects.get(id=id)
-    return render(request, 'tests/students.html', {'test': test})
+    tests = BlankTest.objects.get(id=id).students_tests
+    return render(request, 'tests/students.html', {'tests': tests})
+
+

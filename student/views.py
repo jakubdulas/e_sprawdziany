@@ -7,6 +7,7 @@ from teacher.models import Class
 from .models import *
 from django.contrib.auth.decorators import login_required
 from .decorators import *
+from tests.models import Test
 
 
 @unauthenticated_user
@@ -69,3 +70,9 @@ def leave_class(request, id):
 def class_details(request, id):
     class_room = Class.objects.get(id=id)
     return render(request, "student/class_details.html", {"class": class_room})
+
+
+@student_only
+def active_tests(request):
+    tests = Test.objects.filter(student=request.user.student, is_active=True).all()
+    return render(request, 'student/active_tests.html', {'tests': tests})

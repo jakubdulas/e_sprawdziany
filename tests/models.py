@@ -5,7 +5,7 @@ from student.models import Student
 
 # Create your models here.
 
-class Test(models.Model):
+class BlankTest(models.Model):
     label = models.CharField(max_length=128, blank=False, null=False)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     students = models.ForeignKey(Class, on_delete=models.CASCADE, null=True)
@@ -17,9 +17,28 @@ class Test(models.Model):
     def tasks(self):
         return self.task_set.all()
 
+    @property
+    def students_tests(self):
+        return self.test_set.all()
+
+
+class Test(models.Model):
+    label = models.CharField(max_length=128, blank=False, null=False)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
+    blank_test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f"{self.label} | {self.student}"
+
+    @property
+    def tasks(self):
+        return self.task_set.all()
+
 
 class Task(models.Model):
-    test = models.ForeignKey(Test, on_delete=models.CASCADE, null=True)
+    test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
+    students_test = models.ManyToManyField(Test)
     content = models.TextField()
     type = models.ForeignKey("TypeOfTask", on_delete=models.CASCADE)
 

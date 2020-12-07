@@ -3,6 +3,7 @@ from .models import *
 
 # Register your models here.
 
+admin.site.register(BlankTest)
 admin.site.register(Test)
 admin.site.register(Task)
 admin.site.register(AnswerOption)

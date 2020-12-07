@@ -48,4 +48,8 @@ class Class(models.Model):
     def members_quantity(self):
         return self.student_set.count()
 
+    @property
+    def tests(self):
+        return self.test_set.all()
+
 

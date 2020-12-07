@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form method="post">
+    {% csrf_token %}
+    <h3>czy na pewno chcesz usunac te klase?</h3>
+    <button type="submit">Tak</button>
+    <a href="{% url 'teachers_class_details' class.id %}">Nie</a>
+    </form>
+{% endblock %}

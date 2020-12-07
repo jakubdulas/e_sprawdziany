@@ -5,4 +5,15 @@
 {% else %}
     <h1>Hi there!</h1>
 {% endif %}
+{% if teacher %}
+    <a href="{% url 'create_class' %}">Stworz klase</a>
+    <a href="{% url 'teachers_class_list' %}">Klasy</a>
+    <a href="{% url 'create_test' %}">Stwórz test</a>
+    <a href="{% url 'test_list' %}">Testy</a>
+{% elif student %}
+    <a href="{% url 'class_list' %}">Klasy</a>
+{% endif %}
+
+
+
 {% endblock %}

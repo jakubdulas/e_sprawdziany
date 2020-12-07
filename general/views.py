@@ -3,10 +3,19 @@ from django.contrib.auth import authenticate, login, logout
 from .decorators import *
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from teacher.models import Teacher
+from student.models import Student
 
 
 def home(request):
-    return render(request, 'general/index.html')
+    context = {}
+    if request.user.is_authenticated:
+        if Teacher.objects.filter(user=request.user):
+            context['teacher'] = request.user.teacher
+        elif Student.objects.filter(user=request.user):
+            context['student'] = request.user.student
+
+    return render(request, 'general/index.html', context=context)
 
 
 @unauthenticated_user

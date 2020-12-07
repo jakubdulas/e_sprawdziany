@@ -21,7 +21,7 @@ class Test(models.Model):
 class Task(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, null=True)
     content = models.TextField()
-    type = models.OneToOneField("TypeOfTask", on_delete=models.CASCADE)
+    type = models.ForeignKey("TypeOfTask", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.content[:15]} | {str(self.test)}"

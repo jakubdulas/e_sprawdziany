@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
+    <a href="{% url 'join_to_class' %}">Dolacz do klasy za pomoca kodu</a>
+    <hr>
 <ol>
-    {% for student in classlist %}
-    <li>{{ student }} </li>
+    {% for class in classlist %}
+    <li><a href="{% url "class_details" class.id %}">{{ class.name }} </a></li>
     {% endfor %}
 
 </ol>

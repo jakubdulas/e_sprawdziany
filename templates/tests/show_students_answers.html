@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>{{ test.label }}</h1>
+<h2>{{ student }}</h2>
 <hr>
     {% for task, answer in tasks_answers %}
-    <p>{{ task.content }}</p>
-    <p>{{ answer }}</p>
+    <h3>{{ task.content }}</h3>
+    <p>Odpowiedz:</p>
+    <p><b>{{ answer }}</b></p>
     {% endfor %}
 {% endblock %}

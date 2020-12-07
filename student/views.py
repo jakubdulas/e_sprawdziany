@@ -50,9 +50,10 @@ def join_to_class(request):
     return render(request, 'student/join_to_class.html')
 
 
-@members_only
-def class_list(request, id):
-    classlist = Class.objects.get(id=id).students
+@student_only
+def class_list(request):
+    student = Student.objects.get(user=request.user)
+    classlist = student.school_class.all()
     return render(request, 'student/classlist.html', {'classlist': classlist})
 
 
@@ -61,4 +62,10 @@ def leave_class(request, id):
     classlist = Class.objects.get(id=id)
     if request.POST:
         request.user.student.school_class.reverse(classlist)
-    return render(request, 'general/index.html')
+    return render(request, 'student/leave.html', {'class': classlist})
+
+
+@members_only
+def class_details(request, id):
+    class_room = Class.objects.get(id=id)
+    return render(request, "student/class_details.html", {"class": class_room})

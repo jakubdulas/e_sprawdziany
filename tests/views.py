@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from .models import *
 from teacher.decorators import teacher_only
 from django.contrib import messages
+from .decorators import *
 import random
 
 # Create your views here.
 
 
+@is_student_allowed
 def test(request, id):
     test = Test.objects.get(id=id)
     student = Student.objects.get(user=request.user)
@@ -29,6 +31,7 @@ def test(request, id):
                     if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
                         answer.is_correct = True
             answer.save()
+            return redirect('home')
 
     return render(request, 'tests/test.html', context=context)
 
@@ -59,9 +62,9 @@ def add_task(request, id):
     test = Test.objects.get(id=id)
 
 
-def show_students_answers(request, id):
-    student = request.user.student
-    test = Test.objects.get(id=id)
+def show_students_answers(request, test_id, students_id):
+    student = Student.objects.get(id=students_id)
+    test = Test.objects.get(id=test_id)
     tasks_answers = []
     for task in test.tasks:
         tasks_answers.append(tuple((task, task.students_answer(student))))
@@ -69,11 +72,18 @@ def show_students_answers(request, id):
     context = {
         'test': test,
         'tasks_answers': tasks_answers,
+        'student': student
     }
     return render(request, 'tests/show_students_answers.html', context=context)
 
 
-def tests(request):
-    tests = Test.objects.all()
-
+@teacher_only
+def test_list(request):
+    tests = Test.objects.filter(teacher=request.user.teacher).all()
     return render(request, 'tests/tests.html', {'tests': tests})
+
+
+@teacher_only
+def test_students(request, id):
+    test = Test.objects.get(id=id)
+    return render(request, 'tests/students.html', {'test': test})

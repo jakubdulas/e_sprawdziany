@@ -8,6 +8,7 @@ from .forms import *
 from general.decorators import *
 from general.forms import *
 import random
+from student.models import Student
 
 
 @unauthenticated_user
@@ -65,9 +66,26 @@ def create_class(request):
     return render(request, 'teacher/create_class.html', context=context)
 
 
-def classes(request):
+@teacher_only
+def teachers_class_list(request):
     classes = Class.objects.filter(teacher=request.user.teacher).all()
     context = {
         'classes': classes
     }
     return render(request, 'teacher/classes.html', context=context)
+
+
+@members_only
+def teachers_class_details(request, id):
+    class_room = Class.objects.get(id=id)
+    return render(request, "teacher/class_details.html", {"class": class_room})
+
+
+@teacher_only
+@members_only
+def delete_class(request, id):
+    class_room = Class.objects.get(id=id)
+    if request.method == "POST":
+        class_room.delete()
+        return redirect('home')
+    return render(request, 'teacher/delete_class.html', {"class": class_room})

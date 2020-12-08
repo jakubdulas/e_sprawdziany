@@ -3,9 +3,17 @@
 <h1>{{ test.label }}</h1>
 <h2>{{ student }}</h2>
 <hr>
+    <ol>
     {% for task, answer in tasks_answers %}
-    <h3>{{ task.content }}</h3>
-    <p>Odpowiedz:</p>
-    <p><b>{{ answer }}</b></p>
+    <li><h3>{{ task.content }}</h3></li>
+    <p><b>Odpowiedz:</b></p>
+    <p>
+    {% if answer.task.type.label == 'zamkniete' %}
+        {{ answer.char_field }}
+    {% elif answer.task.type.label == 'otwarte' %}
+        {{ answer.textarea }}
+    {% endif %}
+    </p>
     {% endfor %}
+    </ol>
 {% endblock %}

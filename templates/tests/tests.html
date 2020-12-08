@@ -2,7 +2,9 @@
 {% block content %}
     <ul>
     {% for test in tests %}
-        <li><a href="{% url 'test_students' test.id %}">{{ test.id }} | {{ test.label }}</a></li>
+        <li><a href="{% url 'test_students' test.id %}">{{ test.id }} | {{ test.label }}</a>
+         - (<a href="{% url 'task_list' test.id %}">zadania</a>)
+        </li>
     {% endfor %}
     </ul>
 {% endblock %}

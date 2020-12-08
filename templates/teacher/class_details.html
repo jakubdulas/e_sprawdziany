@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+    <p>kod do klasy: {{ class.access_key }}</p>
     <ol>
     {% for member in class.students %}
     <li>{{ member }}</li>

@@ -87,7 +87,7 @@ class Answer(models.Model):
         elif self.char_field:
             return self.char_field
         else:
-            return f"{self.student} answer"
+            return f"{self.student.user.first_name}'s answer"
 
     @property
     def test(self):

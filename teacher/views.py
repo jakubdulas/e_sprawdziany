@@ -75,6 +75,7 @@ def teachers_class_list(request):
     return render(request, 'teacher/classes.html', context=context)
 
 
+@teacher_only
 @members_only
 def teachers_class_details(request, id):
     class_room = Class.objects.get(id=id)
@@ -89,3 +90,13 @@ def delete_class(request, id):
         class_room.delete()
         return redirect('home')
     return render(request, 'teacher/delete_class.html', {"class": class_room})
+
+
+@members_only
+@teacher_only
+def remove_student_from_class(request, id, student_id):
+    class_room = get_object_or_404(Class, id=id)
+    student = get_object_or_404(Student, id=student_id)
+    student.school_class.remove(class_room)
+    student.save()
+    return redirect('teachers_class_details', id=id)

@@ -4,7 +4,7 @@
     <p>kod do klasy: {{ class.access_key }}</p>
     <ol>
     {% for member in class.students %}
-    <li>{{ member }}</li>
+    <li>{{ member }} - <a href="{% url 'remove_student_from_class' class.id member.id %}">(usuń ucznia)</a></li>
     {% endfor %}
     </ol>
         <a href="{% url 'delete_class' class.id %}">Usuń klase</a>

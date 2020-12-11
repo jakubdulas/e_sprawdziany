@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% block title %}Twoje testy{% endblock %}
 {% block content %}
     <ul>
     {% for test in tests %}
-        <li><a href="{% url 'test_students' test.id %}">{{ test.id }} | {{ test.label }}</a>
-         - (<a href="{% url 'task_list' test.id %}">zadania</a>)
+        <li><a href="{% url 'task_list' test.id %}">{{ test.label }}</a>
+         - (<a href="{% url 'test_students' test.id %}" >przypisane sprawdziany</a>)
         </li>
     {% endfor %}
     </ul>

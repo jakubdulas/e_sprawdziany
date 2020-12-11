@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% block title %}Test użytkownika {{ test.student.user.first_name }}{% endblock %}
 {% block content %}
 <h1>{{ test.label }}</h1>
 <h2>{{ student }}</h2>
@@ -8,7 +9,7 @@
     <li><h3>{{ task.content }}</h3></li>
     <p><b>Odpowiedz:</b></p>
     <p>
-    {% if answer.task.type.label == 'zamkniete' %}
+    {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka_odpowiedz' %}
         {{ answer.char_field }}
     {% elif answer.task.type.label == 'otwarte' %}
         {{ answer.textarea }}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Usuń test{% endblock %}
+{% block content %}
+    <form method="post">
+    {% csrf_token %}
+    <h1>Czy na pewno chcesz usunąc test: {{ test.label }}?</h1>
+    <button type="submit">Tak</button>
+    <a href="{% url 'test_list' %}">Zabierz mnie stąd</a>
+    </form>
+{% endblock %}

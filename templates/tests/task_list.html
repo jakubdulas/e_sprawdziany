@@ -1,7 +1,17 @@
 {% extends 'base.html' %}
+{% block title %}Lista zadań{% endblock %}
 {% block content %}
 <h1>{{ test.label }}</h1>
-
+<a href="{% url "activate_or_deactivate_test" test.id %}">
+    {% if test.is_active %}
+    Dezaktywuj
+    {% else %}
+    Aktywuj
+    {% endif %}
+</a>
+<a href="{% url 'edit_test' test.id %}">(edytuj)</a>
+<a href="{% url 'delete_test' test.id %}">(usuń)</a>
+<br>
 <ol>
     {% for task in tasks %}
         <li>{{ task.content }}</li>
@@ -11,14 +21,15 @@
                 <li>
                     {{ option.label }}
                 </li>
+                {% if option.is_correct %}
+                <p><b>Poprawna odpowiedz: {{ option.label }}</b></p>
+                {% endif %}
             {% endfor %}
-            <li><a href="{% url 'add_answer_option' task.id %}">Dodaj opcje odpowiedzi</a></li>
             </ul>
         {% endif %}
+        {% if task.correct_answer %}
+        <p><b>Poprawna odpowiedz: {{ task.correct_answer }}</b></p>
+        {% endif %}
     {% endfor %}
-    <li>
-        <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>
-    </li>
 </ol>
-
 {% endblock %}

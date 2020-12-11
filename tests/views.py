@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from general.decorators import members_only
 from .models import *
 from teacher.decorators import teacher_only
 from django.contrib import messages
@@ -7,16 +8,26 @@ import random
 
 # Create your views here.
 
+
 #rozwiązywanie testu
-@is_student_allowed
+@allowed_student
 def test(request, id):
-    test = Test.objects.get(id=id)
-    student = Student.objects.get(user=request.user)
+    # test = Test.objects.get(id=id)
+    test = get_object_or_404(Test, id=id)
+    test.is_active = False
+    test.save()
     context = {
         'test': test,
         'tasks': test.tasks
     }
+
+    return render(request, 'tests/test.html', context=context)
+
+
+def save_answers(request, id):
     if request.method == "POST":
+        test = get_object_or_404(Test, id=id)
+        student = request.user.student
         test.is_active = False
         test.save()
         for task in test.tasks:
@@ -32,24 +43,20 @@ def test(request, id):
                     if task.answer_options.filter(is_correct=True):
                         if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
                             answer.is_correct = True
-            else:
-                if task.type.label == 'otwarte':
-                    answer.textarea = ''
-                elif task.type.label == 'zamkniete':
-                    answer.char_field = ''
-                    if task.answer_options.filter(is_correct=True):
-                        if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
+                elif task.type.label == 'krotka_odpowiedz':
+                    answer.char_field = request.POST[f'{task.id}']
+                    if task.correct_answer != '':
+                        if answer.char_field == task.correct_answer:
                             answer.is_correct = True
             answer.save()
         return redirect('home')
-
-    return render(request, 'tests/test.html', context=context)
-
+    return redirect('home')
 
 #tworzenie testu przez nauczyciela
 @teacher_only
 def create_test(request):
-    classes = Teacher.objects.get(user=request.user).class_set.all()
+    classes = get_object_or_404(Teacher, user=request.user).class_set.all()
+    # classes = Teacher.objects.get(user=request.user).class_set.all()
     if request.method == "POST":
         try:
             label = request.POST['label']
@@ -76,11 +83,12 @@ def create_test(request):
     }
     return render(request, 'tests/create_test.html', context=context)
 
-#213768
+
 #stworzenie zadania do testu i dodanie go
-@teacher_only
+@allowed_teacher_to_blanktest
 def create_task(request, id):
-    test = BlankTest.objects.get(id=id)
+    test = get_object_or_404(BlankTest, id=id)
+    # test = BlankTest.objects.get(id=id)
     types_of_task = TypeOfTask.objects.all()
 
     if request.method == "POST":
@@ -97,7 +105,11 @@ def create_task(request, id):
 
         task.save()
 
-        return redirect('task_list', test_id=test.id)
+        if task.type.label == 'krotka_odpowiedz':
+            return redirect('add_correct_answer_for_short_answer', id=task.id)
+        elif task.type.label == 'zamkniete':
+            return redirect('add_answer_option', id=task.id)
+        return redirect('edit_test', id=id)
 
     context = {
         'test': test,
@@ -107,9 +119,10 @@ def create_task(request, id):
 
 
 #lista zadan do testu, widok nauczyciela
-@teacher_only
-def task_list(request, test_id):
-    test = BlankTest.objects.get(id=test_id)
+@allowed_teacher_to_blanktest
+def task_list(request, id):
+    test = get_object_or_404(BlankTest, id=id)
+    # test = BlankTest.objects.get(id=test_id)
     context = {
         'test': test,
         'tasks': test.tasks
@@ -117,14 +130,31 @@ def task_list(request, test_id):
     return render(request, 'tests/task_list.html', context=context)
 
 
-#dodanie do zadania opcji odpowiedzi, widok nauczyciela
-@teacher_only
-def add_answer_option(request, task_id):
-    task = Task.objects.get(id=task_id)
+# dodawanie poprwanej odpowiedzi do krótkiej odpwowiedzi
+@allowed_teacher_to_tests_task
+def add_correct_answer_for_short_answer(request, id):
+    task = get_object_or_404(Task, id=id)
     context = {
         'task': task
     }
 
+    if request.method == 'POST':
+        if f"{task.id}" in request.POST.keys():
+            task.correct_answer = request.POST[f"{task.id}"]
+            task.save()
+            return redirect('task_list', id=task.test.id)
+
+    return render(request, 'tests/answer_for_short_answer.html', context=context)
+
+
+#dodanie do zadania opcji odpowiedzi, widok nauczyciela
+@allowed_teacher_to_tests_task
+def add_answer_option(request, id):
+    task = get_object_or_404(Task, id=id)
+    # task = Task.objects.get(id=task_id)
+    context = {
+        'task': task
+    }
     if request.method == 'POST':
         try:
             if request.POST['is_correct'] == 'tak':
@@ -143,8 +173,10 @@ def add_answer_option(request, task_id):
 
 
 #rozwiązany sprawdzian ucznia
-def show_students_answers(request, test_id):
-    test = Test.objects.get(id=test_id)
+@allowed_teacher_to_test
+def show_students_answers(request, id):
+    test = get_object_or_404(Test, id=id)
+    # test = Test.objects.get(id=test_id)
     tasks_answers = []
     for task in test.tasks:
         tasks_answers.append(tuple((task, task.students_answer(test.student))))
@@ -165,9 +197,79 @@ def test_list(request):
 
 
 #po wybraniu testu wyswietla sie uczniow ktorzy rozwiazali ten test
-@teacher_only
+@allowed_teacher_to_blanktest
 def test_students(request, id):
-    tests = BlankTest.objects.get(id=id).students_tests
+    tests = get_object_or_404(BlankTest, id=id).students_tests
+    # tests = BlankTest.objects.get(id=id).students_tests
     return render(request, 'tests/students.html', {'tests': tests})
 
 
+#edytuj test
+@allowed_teacher_to_blanktest
+def edit_test(request, id):
+    test = get_object_or_404(BlankTest, id=id)
+    context = {
+        'test': test,
+        'tasks': test.tasks
+    }
+    if request.method == 'POST':
+        test.label = request.POST['nazwa']
+        for task in test.tasks:
+            task.content = request.POST[f'{task.id}_polecenie']
+            if task.type.label == 'zamkniete':
+                for option in task.answer_options:
+                    option.label = request.POST[f'{option.id}_label']
+                    if request.POST[f'{option.id}_is_correct'] == 'tak':
+                        option.is_correct = True
+                    else:
+                        option.is_correct = False
+
+                    option.save()
+
+            if task.correct_answer:
+                task.correct_answer = request.POST[f'{task.id}_poprawnaodpowiedz']
+
+            task.save()
+        test.save()
+        students_test = Test.objects.get(blank_test=test)
+        students_test.label = test.label
+        students_test.save()
+
+        return redirect('task_list', id=test.id)
+    return render(request, 'tests/edit_test.html', context=context)
+
+
+@allowed_teacher_to_blanktest
+def delete_test(request, id):
+    test = get_object_or_404(BlankTest, id=id)
+    if request.method == 'POST':
+        test.delete()
+        return redirect('test_list')
+    return render(request, 'tests/delete_test.html', {'test': test})
+
+
+@allowed_teacher_to_tests_task
+def delete_task(request, id):
+    task = get_object_or_404(Task, id=id)
+    if request.method == 'POST':
+        task.delete()
+        return redirect('edit_test', id=task.test.id)
+    return render(request, 'tests/delete_task.html', {'task': task})
+
+
+@allowed_teacher_to_blanktest
+def activate_or_deactivate_test(request, id):
+    blanktest = get_object_or_404(BlankTest, id=id)
+    if blanktest.is_active:
+        blanktest.is_active = False
+    else:
+        blanktest.is_active = True
+    blanktest.save()
+
+    for test in blanktest.tests:
+        if test.is_active:
+            test.is_active = False
+        else:
+            test.is_active = True
+        test.save()
+    return redirect('task_list', id=id)

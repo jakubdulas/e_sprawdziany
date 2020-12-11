@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Edytuj test{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+<input name="nazwa" type="text" value="{{ test.label }}">
+<ol>
+    {% for task in tasks %}
+        <li>
+        <input name="{{ task.id }}_polecenie" type="text" value="{{ task.content }}">
+        <a href="{% url 'delete_task' task.id %}">(usuń zadanie)</a>
+        </li>
+        {% if task.type.label == 'zamkniete' %}
+            <ul>
+            {% for option in task.answer_options %}
+                <li>
+                <input name="{{ option.id }}_label" type="text" value="{{ option.label }}">
+                <p>Czy poprawna:</p>
+                <label>Tak</label>
+                <input type="radio" name="{{ option.id }}_is_correct" value="tak" {% if option.is_correct %} checked {% endif %}><br>
+                <label>Nie</label>
+                <input type="radio" name="{{ option.id }}_is_correct" value="nie" {% if not option.is_correct %} checked {% endif %}>
+                </li>
+            {% endfor %}
+            <li><a href="{% url 'add_answer_option' task.id %}">Dodaj opcje odpowiedzi</a></li>
+            </ul>
+        {% endif %}
+        {% if task.correct_answer %}
+        <label>poprawna odpowiedz:</label><br>
+        <input name="{{ task.id }}_poprawnaodpowiedz" type="text" value="{{ task.correct_answer }}">
+        {% endif %}
+
+    {% endfor %}
+    <li>
+        <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>
+    </li>
+</ol>
+<button type="submit">Zapisz zmiany</button>
+</form>
+{% endblock %}

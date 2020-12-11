@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Usuń zadanie{% endblock %}
+{% block content %}
+    <form method="post">
+    {% csrf_token %}
+    <h1>Czy na pewno chcesz usunąc zadanie: "{{ task.content }}"?</h1>
+    <button type="submit">Tak</button>
+    <a href="{% url 'edit_test' task.test.id %}">Zabierz mnie stąd</a>
+    </form>
+{% endblock %}

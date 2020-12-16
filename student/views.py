@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 from general.decorators import unauthenticated_user, members_only
 from general.forms import RegisterForm
@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .decorators import *
 from tests.models import Test
-
+from tests.decorators import *
 
 @unauthenticated_user
 def registerStudentPage(request):
@@ -74,3 +74,25 @@ def class_details(request, id):
 def active_tests(request):
     tests = Test.objects.filter(student=request.user.student, is_active=True).all()
     return render(request, 'student/active_tests.html', {'tests': tests})
+
+
+@student_only
+def my_tests(request):
+    tests = Test.objects.filter(student=request.user.student, is_done=True).all()
+    return render(request, 'student/my_tests.html', {'tests': tests})
+
+
+#rozwiązany sprawdzian ucznia
+@student_only
+def my_test(request, id):
+    test = get_object_or_404(Test, id=id, student=request.user.student, is_done=True)
+    # test = Test.objects.get(id=test_id)
+    tasks_answers = []
+    for task in test.tasks:
+        tasks_answers.append(tuple((task, task.students_answer(test.student))))
+    context = {
+        'test': test,
+        'tasks_answers': tasks_answers,
+        'student': test.student
+    }
+    return render(request, 'student/my_test.html', context=context)

@@ -4,6 +4,7 @@ from .models import *
 from teacher.decorators import teacher_only
 from django.contrib import messages
 from .decorators import *
+from .forms import *
 import random
 
 # Create your views here.
@@ -14,7 +15,8 @@ import random
 def test(request, id):
     # test = Test.objects.get(id=id)
     test = get_object_or_404(Test, id=id)
-    test.is_active = False
+    #!!!!!!!!!! odkomentować gry doda sie frontend !!!!!!!!!!!
+    # test.is_active = False
     test.save()
     context = {
         'test': test,
@@ -29,6 +31,7 @@ def save_answers(request, id):
         test = get_object_or_404(Test, id=id)
         student = request.user.student
         test.is_active = False
+        test.is_done = True
         test.save()
         for task in test.tasks:
             answer = Answer.objects.create(
@@ -49,8 +52,29 @@ def save_answers(request, id):
                         if answer.char_field == task.correct_answer:
                             answer.is_correct = True
             answer.save()
+
+        # sprawdzanie testu
+        earned_total = 0
+        total = 0
+        for task in test.tasks:
+            answer = Answer.objects.get(task=task)
+            total += task.points
+            if answer.is_correct:
+                answer.earned_points = task.points
+                earned_total += answer.earned_points
+            answer.save()
+        percent = earned_total * 100 / total
+
+        for mark in test.blank_test.threshold:
+            if mark.to_percent >= percent >= mark.from_percent:
+                test.mark = mark.mark
+                test.save()
+
+        if test.blank_test.autocheck:
+            return render(request, 'tests/show_mark.html', {'mark': test.mark})
         return redirect('home')
     return redirect('home')
+
 
 #tworzenie testu przez nauczyciela
 @teacher_only
@@ -75,7 +99,8 @@ def create_test(request):
                 )
 
             messages.success(request, "test zostal stworzony")
-            return redirect('create_task', id=test.id)
+            return redirect('add_threshold', id=test.id)
+            # return redirect('create_task', id=test.id)
         except:
             messages.error(request, "cos poszlo nie tak")
     context = {
@@ -90,30 +115,34 @@ def create_task(request, id):
     test = get_object_or_404(BlankTest, id=id)
     # test = BlankTest.objects.get(id=id)
     types_of_task = TypeOfTask.objects.all()
-
     if request.method == "POST":
-        task = Task.objects.create(
-            test=test,
-            content=request.POST['content'],
-            type=TypeOfTask.objects.get(label=request.POST['type'])
-        )
 
-        tests = Test.objects.filter(blank_test=test).all()
+        try:
+            task = Task.objects.create(
+                test=test,
+                content=request.POST['content'],
+                type=TypeOfTask.objects.get(label=request.POST['type']),
+                points=request.POST['points']
+            )
 
-        for t in tests:
-            task.students_test.add(t)
+            tests = Test.objects.filter(blank_test=test).all()
 
-        task.save()
+            for t in tests:
+                task.students_test.add(t)
 
-        if task.type.label == 'krotka_odpowiedz':
-            return redirect('add_correct_answer_for_short_answer', id=task.id)
-        elif task.type.label == 'zamkniete':
-            return redirect('add_answer_option', id=task.id)
-        return redirect('edit_test', id=id)
+            task.save()
+
+            if task.type.label == 'krotka_odpowiedz':
+                return redirect('add_correct_answer_for_short_answer', id=task.id)
+            elif task.type.label == 'zamkniete':
+                return redirect('add_answer_option', id=task.id)
+            return redirect('task_list', id=id)
+        except:
+            messages.error(request, 'wystąpił błąd podczas tworzenia zadania')
 
     context = {
         'test': test,
-        'types_of_task': types_of_task
+        'types_of_task': types_of_task,
     }
     return render(request, 'tests/add_task.html', context=context)
 
@@ -180,7 +209,27 @@ def show_students_answers(request, id):
     tasks_answers = []
     for task in test.tasks:
         tasks_answers.append(tuple((task, task.students_answer(test.student))))
-    print(tasks_answers)
+
+    if request.method == 'POST':
+        total = test.blank_test.total_points
+        earned_total = 0
+
+        for task in test.tasks:
+            answer = task.students_answer(test.student)
+            if task.points >= int(request.POST[f'{task.id}']):
+                answer.earned_points = int(request.POST[f'{task.id}'])
+            answer.save()
+            earned_total += answer.earned_points
+
+        percent = earned_total * 100 / total
+
+        for mark in test.blank_test.threshold:
+            if mark.to_percent >= percent >= mark.from_percent:
+                test.mark = mark.mark
+                test.save()
+
+        return redirect('show_students_answers', id=test.id)
+
     context = {
         'test': test,
         'tasks_answers': tasks_answers,
@@ -228,7 +277,7 @@ def edit_test(request, id):
 
             if task.correct_answer:
                 task.correct_answer = request.POST[f'{task.id}_poprawnaodpowiedz']
-
+            task.points = request.POST[f'{task.id}_points']
             task.save()
         test.save()
         students_test = Test.objects.get(blank_test=test)
@@ -273,3 +322,61 @@ def activate_or_deactivate_test(request, id):
             test.is_active = True
         test.save()
     return redirect('task_list', id=id)
+
+
+@allowed_teacher_to_blanktest
+def add_threshold(request, id):
+    blank_test = get_object_or_404(BlankTest, id=id)
+    context = {
+        'blanktest': blank_test
+    }
+    if request.method == 'POST':
+        try:
+            Mark.objects.create(
+                mark=request.POST['mark'],
+                from_percent=request.POST['from_percent'],
+                to_percent=request.POST['to_percent'],
+                blank_test=blank_test
+            )
+        except:
+            messages.error(request, 'cos poszlo nie tak')
+        return redirect('add_threshold', blank_test.id)
+    return render(request, 'tests/threshold.html',context=context)
+
+
+@allowed_teacher_to_blanktest
+def edit_threshold(request, id):
+    blank_test = get_object_or_404(BlankTest, id=id)
+    context = {
+        'blanktest': blank_test
+    }
+    if request.method == 'POST':
+        for mark in blank_test.threshold:
+            mark.mark = request.POST[f'{mark.id}_mark']
+            mark.from_percent = request.POST[f'{mark.id}_from_percent']
+            mark.to_percent = request.POST[f'{mark.id}_to_percent']
+            mark.save()
+        return redirect('task_list', id=blank_test.id)
+    return render(request, 'tests/edit_threshold.html',context=context)
+
+
+@allowed_teacher_to_blanktest
+def delete_entire_threshold(request, id):
+    blank_test = get_object_or_404(BlankTest, id=id)
+    context = {
+        'blanktest': blank_test
+    }
+    if request.method == 'POST':
+        blank_test.threshold.delete()
+        return redirect('task_list', id=blank_test.id)
+    return render(request, 'tests/delete_all_thresholds.html', context=context)
+
+
+@allowed_teacher_to_blanktest
+def delete_threshold(request, id, mark_id):
+    if request.method == 'POST':
+        blank_test = get_object_or_404(BlankTest, id=id)
+        mark = get_object_or_404(Mark, id=mark_id)
+        mark.delete()
+        return redirect('edit_threshold', id=blank_test.id)
+    return render(request, 'tests/edit_threshold.html')

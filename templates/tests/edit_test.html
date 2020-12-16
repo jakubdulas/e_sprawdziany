@@ -29,7 +29,10 @@
         <label>poprawna odpowiedz:</label><br>
         <input name="{{ task.id }}_poprawnaodpowiedz" type="text" value="{{ task.correct_answer }}">
         {% endif %}
-
+        <br>
+        <label>Punkty do zdobycia:</label>
+        <input type="number" name="{{ task.id }}_points" value="{{ task.points }}">
+        <br><hr>
     {% endfor %}
     <li>
         <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>

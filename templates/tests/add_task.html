@@ -3,19 +3,23 @@
 {% block content %}
 <form method="post">
 {% csrf_token %}
-<ol>
-<li><label>Wybierz typ zadania:</label></li>
-    <ul>
-        {% for type in types_of_task %}
-            <li>
-            <label>{{ type.label }}</label>
-            <input type="radio" name="type" value="{{ type.label }}">
-            </li>
-        {% endfor %}
-    </ul>
-<li><label>Polecenie:</label></li>
-    <textarea name="content"></textarea>
-</ol>
-<button type="submit">Utworz zadanie</button>
+    <ol>
+    <li><label>Wybierz typ zadania:</label></li>
+        <ul>
+            {% for type in types_of_task %}
+                <li>
+                <label>{{ type.label }}</label>
+                <input type="radio" name="type" value="{{ type.label }}">
+                </li>
+            {% endfor %}
+        </ul>
+    <li><label>Polecenie:</label></li>
+        <textarea name="content"></textarea>
+    <li>
+        <label>Ilość punktów za zadanie:</label><br>
+        <input type="number" name="points" value="0">
+    </li>
+    </ol>
+    <button type="submit">Utworz zadanie</button>
 </form>
 {% endblock %}

@@ -11,6 +11,7 @@
 </a>
 <a href="{% url 'edit_test' test.id %}">(edytuj)</a>
 <a href="{% url 'delete_test' test.id %}">(usuń)</a>
+<a href="{% url 'edit_threshold' test.id %}">(edytuj progi puntowe)</a>
 <br>
 <ol>
     {% for task in tasks %}
@@ -21,15 +22,17 @@
                 <li>
                     {{ option.label }}
                 </li>
-                {% if option.is_correct %}
-                <p><b>Poprawna odpowiedz: {{ option.label }}</b></p>
-                {% endif %}
             {% endfor %}
+            <p><b>Poprawna odpowiedz: {{ task.correct_answer_option.label }}</b></p>
             </ul>
         {% endif %}
         {% if task.correct_answer %}
         <p><b>Poprawna odpowiedz: {{ task.correct_answer }}</b></p>
         {% endif %}
+        <p>Punktów do zdobycia: {{ task.points }}</p>
     {% endfor %}
+    <li>
+        <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>
+    </li>
 </ol>
 {% endblock %}

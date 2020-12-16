@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}
+Progi punktowe
+{% endblock %}
+{% block content %}
+{% if blanktest.threshold %}
+    <table>
+    <tr>
+        <th>
+            Ocena:
+        </th>
+        <th>
+            Od:
+        </th>
+        <th>
+            Do:
+        </th>
+    </tr>
+    {% for mark in blanktest.threshold %}
+        <tr>
+            <td>
+                {{ mark.mark }}
+            </td>
+            <td>
+                {{ mark.from_percent }}%
+            </td>
+            <td>
+                {{ mark.to_percent }}%
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
+<form method="post">
+{% csrf_token %}
+    <label>Ocena:</label>
+    <input type="text" name="mark">
+    <label>Od [%]</label>
+    <input type="number" name="from_percent">
+    <label>Do [%]</label>
+    <input type="number" name="to_percent">
+    <button type="submit">Dodaj próg punktowy</button>
+</form>
+<a href="{% url 'edit_test' blanktest.id %}">Przejdz do edytcji testu</a>
+<a href="{% url 'edit_test' blanktest.id %}">Nie dodawaj progów puntowych</a>
+{% endblock %}

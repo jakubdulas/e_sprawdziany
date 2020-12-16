@@ -6,7 +6,7 @@
     <h3>{{ task.content }}</h3>
     <ul>
     {% for option in task.answer_options %}
-        <li>{{ option }}</li>
+        <li>{{ option.label }}</li>
     {% endfor %}
     <li><label>Text:</label>
     <input name="label" type="text"></li>

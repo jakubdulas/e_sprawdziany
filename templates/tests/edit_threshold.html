@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}
+Progi punktowe
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+{% if blanktest.threshold %}
+    <table>
+    <tr>
+        <th>
+            Ocena:
+        </th>
+        <th>
+            Od: [%]
+        </th>
+        <th>
+            Do: [%]
+        </th>
+    </tr>
+    {% for mark in blanktest.threshold %}
+        <tr>
+            <td>
+                <input name="{{ mark.id }}_mark" value="{{ mark.mark }}">
+            </td>
+            <td>
+                <input name="{{ mark.id }}_from_percent" type="number" value="{{ mark.from_percent }}">
+            </td>
+            <td>
+                <input name="{{ mark.id }}_to_percent" type="number" value="{{ mark.to_percent }}">
+            </td>
+            <td>
+                <button formaction="{% url 'delete_threshold' blanktest.id mark.id %}">Usuń</button>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
+<button type="submit">Zapisz</button>
+</form>
+<a href="{% url 'add_threshold' blanktest.id %}">Dodaj próg punktowy</a>
+<a href="{% url 'delete_entire_threshold' blanktest.id %}">Usuń wszystkie progi punktowe</a>
+<a href="{% url 'edit_test' blanktest.id %}">Przejdz do edytcji testu</a>
+{% endblock %}

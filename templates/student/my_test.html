@@ -5,8 +5,6 @@
 <h2>{{ student.user.first_name }} {{ student.user.last_name }}</h2>
 <hr>
     <ol>
-    <form method="post">
-    {% csrf_token %}
     {% for task, answer in tasks_answers %}
     <li><h3>{{ task.content }}</h3></li>
     <p><b>Odpowiedz:</b></p>
@@ -24,16 +22,13 @@
         Punktacja:
         </p>
         <p>
-            <input name="{{ task.id }}" value="{{ answer.earned_points }}"> /
+            {{ answer.earned_points }} /
             <b>{{ task.points }}</b>
         </p>
     {% endfor %}
-    <button type="submit">Oceń</button>
-    </form>
     </ol>
-    {% if test.mark %}
+
     <p></p>
-    <h1>Ocena: {{ test.mark }}</h1>
+    <h1>Ocena: {% if test.blank_test.autocheck %}{{ test.mark }}{% endif %}</h1>
     <h3>{{ test.total_points }} / {{ test.blank_test.total_points }}</h3>
-    {% endif %}
 {% endblock %}

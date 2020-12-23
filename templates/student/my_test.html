@@ -7,6 +7,9 @@
     <ol>
     {% for task, answer in tasks_answers %}
     <li><h3>{{ task.content }}</h3></li>
+    {% if task.image %}
+        <img src="{{ task.image.url }}">
+    {% endif %}
     <p><b>Odpowiedz:</b></p>
     <p>
     {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka_odpowiedz' %}

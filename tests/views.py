@@ -63,12 +63,14 @@ def save_answers(request, id):
                 answer.earned_points = task.points
                 earned_total += answer.earned_points
             answer.save()
-        percent = earned_total * 100 / total
 
-        for mark in test.blank_test.threshold:
-            if mark.to_percent >= percent >= mark.from_percent:
-                test.mark = mark.mark
-                test.save()
+        if total != 0:
+            percent = earned_total * 100 / total
+
+            for mark in test.blank_test.threshold:
+                if mark.to_percent >= percent >= mark.from_percent:
+                    test.mark = mark.mark
+                    test.save()
 
         if test.blank_test.autocheck:
             return render(request, 'tests/show_mark.html', {'mark': test.mark})
@@ -308,19 +310,21 @@ def delete_task(request, id):
 
 @allowed_teacher_to_blanktest
 def activate_or_deactivate_test(request, id):
-    blanktest = get_object_or_404(BlankTest, id=id)
-    if blanktest.is_active:
-        blanktest.is_active = False
-    else:
-        blanktest.is_active = True
-    blanktest.save()
-
-    for test in blanktest.tests:
-        if test.is_active:
-            test.is_active = False
+    if request.method == 'POST':
+        blanktest = get_object_or_404(BlankTest, id=id)
+        if blanktest.is_active:
+            blanktest.is_active = False
         else:
-            test.is_active = True
-        test.save()
+            blanktest.is_active = True
+        blanktest.save()
+
+        for test in blanktest.tests:
+            if test.is_active:
+                test.is_active = False
+            else:
+                test.is_active = True
+            test.save()
+        return redirect('task_list', id=id)
     return redirect('task_list', id=id)
 
 

@@ -29,6 +29,6 @@
     </ol>
 
     <p></p>
-    <h1>Ocena: {% if test.blank_test.autocheck %}{{ test.mark }}{% endif %}</h1>
+    <h1>Ocena: {% if test.mark %}{{ test.mark }}{% endif %}</h1>
     <h3>{{ test.total_points }} / {{ test.blank_test.total_points }}</h3>
 {% endblock %}

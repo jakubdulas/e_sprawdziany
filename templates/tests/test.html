@@ -7,6 +7,9 @@
     <ol>
         {% for task in tasks %}
             <li>{{ task.content }}</li>
+            {% if task.image %}
+                <img src="{{ task.image.url }}">
+            {% endif %}
             {% if task.type.label == 'zamkniete' %}
                 <ul>
                 {% for option in task.answer_options %}

@@ -8,6 +8,9 @@
     {% for task in tasks %}
         <li>
         <input name="{{ task.id }}_polecenie" type="text" value="{{ task.content }}">
+        {% if task.image %}
+            <img src="{{ task.image.url }}">
+        {% endif %}
         <a href="{% url 'delete_task' task.id %}">(usuń zadanie)</a>
         </li>
         {% if task.type.label == 'zamkniete' %}

@@ -128,7 +128,8 @@ def create_task(request, id):
 
             tests = Test.objects.filter(blank_test=test).all()
 
-            task.image = request.FILES['image']
+            if request.FILES:
+                task.image = request.FILES['image']
 
             for t in tests:
                 task.students_test.add(t)

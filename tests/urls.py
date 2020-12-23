@@ -15,6 +15,7 @@ urlpatterns = [
     path('<int:id>/task/create/', create_task, name='create_task'),
     path('task/<int:id>/add-answer-option/', add_answer_option, name='add_answer_option'),
     path('task/<int:id>/delete/', delete_task, name='delete_task'),
+    path('task/<int:id>/image/delete/', delete_image, name='delete_image'),
     path('task/<int:id>/add-correct-answer/', add_correct_answer_for_short_answer, name='add_correct_answer_for_short_answer'),
     path('create/', create_test, name='create_test'),
     path('<int:id>/answers/', show_students_answers, name='show_students_answers'),

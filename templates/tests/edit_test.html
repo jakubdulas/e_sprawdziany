@@ -1,17 +1,22 @@
 {% extends 'base.html' %}
 {% block title %}Edytuj test{% endblock %}
 {% block content %}
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 {% csrf_token %}
 <input name="nazwa" type="text" value="{{ test.label }}">
 <ol>
     {% for task in tasks %}
         <li>
-        <input name="{{ task.id }}_polecenie" type="text" value="{{ task.content }}">
+        <a href="{% url 'delete_task' task.id %}">(usuń zadanie)</a><br>
+        <input name="{{ task.id }}_polecenie" type="text" value="{{ task.content }}"><br>
         {% if task.image %}
-            <img src="{{ task.image.url }}">
+            <img src="{{ task.image.url }}"><br>
         {% endif %}
-        <a href="{% url 'delete_task' task.id %}">(usuń zadanie)</a>
+        <label>Zmień/dodaj zdjęcie:</label>
+        <input type="file" name="image_{{ task.id }}" accept="image/*" id="id_image"><br>
+        {% if task.image %}
+        <button formaction="{% url 'delete_image' task.id %}">Usuń zdjęcie</button>
+        {% endif %}
         </li>
         {% if task.type.label == 'zamkniete' %}
             <ul>

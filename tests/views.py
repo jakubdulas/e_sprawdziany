@@ -269,6 +269,11 @@ def edit_test(request, id):
         test.label = request.POST['nazwa']
         for task in test.tasks:
             task.content = request.POST[f'{task.id}_polecenie']
+            if request.FILES:
+                if f"image_{task.id}" in request.FILES.keys():
+                    task.image = request.FILES[f'image_{task.id}']
+                    task.save()
+
             if task.type.label == 'zamkniete':
                 for option in task.answer_options:
                     option.label = request.POST[f'{option.id}_label']
@@ -386,3 +391,13 @@ def delete_threshold(request, id, mark_id):
         mark.delete()
         return redirect('edit_threshold', id=blank_test.id)
     return render(request, 'tests/edit_threshold.html')
+
+
+@allowed_teacher_to_tests_task
+def delete_image(request, id):
+    if request.method == "POST":
+        task = get_object_or_404(Task, id=id)
+        task.image = ''
+        task.save()
+        return redirect('edit_test', id=task.test.id)
+    return redirect('home')

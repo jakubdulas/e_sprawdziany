@@ -115,7 +115,6 @@ def create_test(request):
 @allowed_teacher_to_blanktest
 def create_task(request, id):
     test = get_object_or_404(BlankTest, id=id)
-    # test = BlankTest.objects.get(id=id)
     types_of_task = TypeOfTask.objects.all()
     if request.method == "POST":
 
@@ -128,6 +127,8 @@ def create_task(request, id):
             )
 
             tests = Test.objects.filter(blank_test=test).all()
+
+            task.image = request.FILES['image']
 
             for t in tests:
                 task.students_test.add(t)

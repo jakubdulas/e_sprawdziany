@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Dodaj zadanie{% endblock %}
 {% block content %}
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 {% csrf_token %}
     <ol>
     <li><label>Wybierz typ zadania:</label></li>
@@ -15,11 +15,12 @@
         </ul>
     <li><label>Polecenie:</label></li>
         <textarea name="content"></textarea>
+        <input type="file" name="image" accept="image/*" id="id_image">
     <li>
-        <label>Ilość punktów za zadanie:</label><br>
+        <label>Ilość punktów za zadanie:</label>
         <input type="number" name="points" value="0">
     </li>
     </ol>
-    <button type="submit">Utworz zadanie</button>
+    <button type="submit">Utwórz zadanie</button>
 </form>
 {% endblock %}

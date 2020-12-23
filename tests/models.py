@@ -75,7 +75,8 @@ class Test(models.Model):
 class Task(models.Model):
     test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
     students_test = models.ManyToManyField(Test)
-    content = models.TextField()
+    content = models.TextField(blank=True)
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
     type = models.ForeignKey("TypeOfTask", on_delete=models.CASCADE)
     correct_answer = models.CharField(max_length=100, null=True, blank=True)
     points = models.IntegerField(null=True, blank=True, default=0)

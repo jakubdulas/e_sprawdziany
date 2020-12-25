@@ -7,10 +7,21 @@
     <h1>Hi there!</h1>
 {% endif %}
 {% if teacher %}
-    <a href="{% url 'create_class' %}">Stworz klase</a>
-    <a href="{% url 'teachers_class_list' %}">Klasy</a>
-    <a href="{% url 'create_test' %}">Stwórz test</a>
-    <a href="{% url 'test_list' %}">Testy</a>
+    {% if teacher.school %}
+        <a href="{% url 'create_class' %}">Stworz klase</a>
+        <a href="{% url 'teachers_class_list' %}">Klasy</a>
+        <a href="{% url 'create_test' %}">Stwórz test</a>
+        <a href="{% url 'test_list' %}">Testy</a>
+        {% if teacher.is_headmaster %}
+            <a href="{% url 'headmaster_panel' %}">Panel dyrektora</a>
+        {% endif %}
+    {% elif not teacher.school %}
+        {% if not teacher.is_headmaster %}
+            <a href="{% url 'choose_school' %}">Dołącz do szkoły</a>
+        {% elif teacher.is_headmaster %}
+        <a href="{% url 'create_school' %}">Dodaj szkołę</a>
+        {% endif %}
+    {% endif %}
 {% elif student %}
     <a href="{% url 'class_list' %}">Klasy</a>
     <a href="{% url 'active_tests' %}">Aktywne testy</a>

@@ -14,6 +14,7 @@ class School(models.Model):
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE, blank=True)
+    is_headmaster = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user} | teacher"
@@ -53,3 +54,9 @@ class Class(models.Model):
         return self.test_set.all()
 
 
+class RequestForJoiningToSchool(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.teacher} | {self.school}"

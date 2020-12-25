@@ -33,9 +33,10 @@ def registerTeacherPage(request):
 def choose_school(request):
     teacher = Teacher.objects.get(user=request.user)
     if not teacher.school:
-        form = ChooseSchool(instance=teacher)
+        form = SendRequestForJoiningToSchool
         if request.POST:
-            form = ChooseSchool(request.POST, instance=teacher)
+            form = SendRequestForJoiningToSchool(request.POST)
+            form.instance.teacher = teacher
             if form.is_valid():
                 form.save()
                 return redirect('home')
@@ -100,3 +101,83 @@ def remove_student_from_class(request, id, student_id):
     student.school_class.remove(class_room)
     student.save()
     return redirect('teachers_class_details', id=id)
+
+
+@headmaster_only
+def create_school(request):
+    if not request.user.teacher.school:
+        form = CreateSchool
+        context = {
+            'form': form
+        }
+        if request.method == 'POST':
+            form = CreateSchool(request.POST)
+            if form.is_valid():
+                form.save()
+                request.user.teacher.school = form.instance
+                request.user.teacher.save()
+                messages.success(request, 'Udało ci się dodać szkołe')
+                return redirect('home')
+            else:
+                messages.error(request, 'Nie udało ci się dodać szkoły')
+            return redirect('create_school')
+        return render(request, 'teacher/create_school.html', context=context)
+    return render('home')
+
+
+@headmaster_only
+def edit_school_information(request):
+    if request.user.teacher.school:
+        school = request.user.teacher.school
+        form = CreateSchool(instance=school)
+        if request.method == 'POST':
+            form = CreateSchool(request.POST, instance=school)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Zapisano zmiany')
+                return redirect('home')
+            messages.error(request, 'cos poszlo nie tak')
+            return render('edit_school_information')
+        context = {
+            'form': form
+        }
+        return render(request, 'teacher/edit_school_information.html', context=context)
+    return redirect('home')
+
+
+@headmaster_only
+def accept_teacher(request, id):
+    request_for_joining = get_object_or_404(RequestForJoiningToSchool, id=id)
+    request_for_joining.teacher.school = request.user.teacher.school
+    request_for_joining.teacher.save()
+    request_for_joining.delete()
+    return redirect('headmaster_panel')
+
+
+@headmaster_only
+def reject_teacher(request, id):
+    request_for_joining = get_object_or_404(RequestForJoiningToSchool, id=id)
+    request_for_joining.delete()
+    return redirect('headmaster_panel')
+
+
+@headmaster_only
+def headmaster_panel(request):
+    requests_qs = RequestForJoiningToSchool.objects.filter(school=request.user.teacher.school).all()
+    teachers_qs = Teacher.objects.filter(school=request.user.teacher.school, is_headmaster=False).all()
+    context = {
+        'requests_qs': requests_qs,
+        'teachers_qs': teachers_qs,
+    }
+    return render(request, 'teacher/headmaster_panel.html', context=context)
+
+
+@headmaster_only
+def dismiss_teacher(request, id):
+    teacher = get_object_or_404(Teacher, id=id)
+    if request.user.teacher.school == teacher.school:
+        teacher.school = None
+        teacher.save()
+        return redirect('headmaster_panel')
+    return redirect('home')
+

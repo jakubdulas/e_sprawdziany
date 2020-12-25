@@ -1,5 +1,5 @@
 from django import forms
-from .models import School, Teacher, Class
+from .models import School, Teacher, Class, RequestForJoiningToSchool
 
 
 school_choices = School.objects.all().values_list('name', 'name')
@@ -8,9 +8,9 @@ for school in school_choices:
     school_list.append(school)
 
 
-class ChooseSchool(forms.ModelForm):
+class SendRequestForJoiningToSchool(forms.ModelForm):
     class Meta:
-        model = Teacher
+        model = RequestForJoiningToSchool
         fields = ['school']
 
         widgets = {
@@ -23,4 +23,7 @@ class CreateClass(forms.ModelForm):
         fields = ['name', 'max_members']
 
 
-
+class CreateSchool(forms.ModelForm):
+    class Meta:
+        model = School
+        fields = '__all__'

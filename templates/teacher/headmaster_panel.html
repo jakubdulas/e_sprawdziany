@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}
+    Panel dyrektora szkoły
+{% endblock %}
+{% block content %}
+    <a href="{% url 'edit_school_information' %}">Edytuj informacje o szkole</a>
+    <hr>
+    <h3>Prośby o dołączenie do szkoły</h3>
+    <ul>
+    {% for r in requests_qs %}
+    <li>
+    {{ r.teacher.user.first_name }} {{ r.teacher.user.last_name }}
+    <a href="{% url 'accept_teacher' r.id %}">(akceptuj)</a>
+    <a href="{% url 'reject_teacher' r.id %}">(usuń)</a>
+    </li>
+    {% endfor %}
+    </ul>
+    <h3>Nauczyciele</h3>
+    <ul>
+    {% for t in teachers_qs %}
+    <li>
+    {{ t.user.first_name }} {{ t.user.last_name }}
+    <a href="{% url 'dismiss_teacher' t.id %}">(Wyrzuć nauczyciela)</a>
+    </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

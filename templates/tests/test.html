@@ -1,32 +1,38 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Test{% endblock %}
 {% block content %}
 <h1>{{ test.label }}</h1>
-<form method="POST" action="{% url 'save_answers' test.id %}">
+<br>
+<div id="endTestBox">{{ end_test }}</div>
+<div id="timeLeft"></div>
+<form method="POST" action="{% url 'save_answers' test.id %}" autocomplete="off">
 {% csrf_token %}
-    <ol>
-        {% for task in tasks %}
-            <li>{{ task.content }}</li>
-            {% if task.image %}
-                <img src="{{ task.image.url }}">
-            {% endif %}
-            {% if task.type.label == 'zamkniete' %}
-                <ul>
-                {% for option in task.answer_options %}
-                    <li>
-                        <input name="{{ task.id }}" value="{{ option.label }}" type="radio">
-                        <label>{{ option.label }}</label>
-                    </li>
-                {% endfor %}
-                </ul>
-            {% elif task.type.label == 'otwarte' %}
-                <textarea name="{{ task.id }}"></textarea>
-            {% elif task.type.label == 'krotka_odpowiedz' %}
-                <label>Podaj odpowiedz</label>
-                <input name="{{ task.id }}" type="text">
-            {% endif %}
-        {% endfor %}
-    </ol>
-    <button type="submit">Submit</button>
+    {% for task in tasks %}
+        <h4>Zadanie {{ forloop.counter }}</h4>
+        <p>{{ task.content }}</p>
+        {% if task.image %}
+            <img src="{{ task.image.url }}">
+        {% endif %}
+        {% if task.type.label == 'zamkniete' %}
+            <ul>
+            {% for option in task.answer_options %}
+                <li>
+                    <input name="{{ task.id }}" value="{{ option.label }}" type="radio">
+                    <label>{{ option.label }}</label>
+                </li>
+            {% endfor %}
+            </ul>
+        {% elif task.type.label == 'otwarte' %}
+            <textarea name="{{ task.id }}"></textarea>
+        {% elif task.type.label == 'krotka_odpowiedz' %}
+            <label>Podaj odpowiedz</label>
+            <input name="{{ task.id }}" type="text">
+        {% endif %}
+    {% endfor %}
+    <button id="submit_form" type="submit">Submit</button>
 </form>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/test.js' %}" defer></script>
 {% endblock %}

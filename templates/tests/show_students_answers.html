@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ test.label }}</h1>
 <h2>{{ student.user.first_name }} {{ student.user.last_name }}</h2>
+<p>Wysłane: {% if test.is_done %}Tak{% else %}Nie{% endif %}</p>
 <hr>
     <ol>
     <form method="post">

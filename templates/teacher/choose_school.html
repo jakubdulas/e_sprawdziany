@@ -5,6 +5,7 @@
 {% csrf_token %}
 {{ form }}
 <button>Submit</button>
+<h2>Nie nalzysz do zadnej szkoly?</h2>
+<a href="{% url 'home' %}">Pomiń</a>
 </form>
-
 {% endblock %}

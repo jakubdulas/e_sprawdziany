@@ -10,6 +10,7 @@ class BlankTest(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     students = models.ForeignKey(Class, on_delete=models.CASCADE, null=True)
     is_active = models.BooleanField(default=False)
+    countdown = models.DurationField(null=True)
 
     def __str__(self):
         return str(self.label)

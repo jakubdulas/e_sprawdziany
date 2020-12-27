@@ -11,6 +11,9 @@
         <option value="{{ class.name }}">{{ class.name }}</option>
         {% endfor %}
     </select>
+    <br>
+    <label>Czas trwania testu:</label>
+    <input type="text" name="countdown" placeholder="hh:mm:ss">
     <button type="submit">Create test</button>
     </form>
 {% endblock %}

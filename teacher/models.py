@@ -11,10 +11,13 @@ class School(models.Model):
     def __str__(self):
         return str(self.name)
 
+
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE, blank=True)
     is_headmaster = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False)
+    free_trial = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.user} | teacher"
@@ -28,6 +31,7 @@ class Teacher(models.Model):
         except:
             pass
         return False
+
 
 class Class(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)

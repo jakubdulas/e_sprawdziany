@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from general.decorators import members_only
 from .models import *
-from teacher.decorators import teacher_only
+from teacher.decorators import teacher_only, paid_subscription
 from django.contrib import messages
 from .decorators import *
 from .forms import *
+from django.utils.dateparse import parse_duration
 import random
+import datetime
 
 # Create your views here.
 
@@ -16,11 +18,13 @@ def test(request, id):
     # test = Test.objects.get(id=id)
     test = get_object_or_404(Test, id=id)
     #!!!!!!!!!! odkomentować gry doda sie frontend !!!!!!!!!!!
+    end = datetime.datetime.now() + test.blank_test.countdown
     # test.is_active = False
     test.save()
     context = {
         'test': test,
-        'tasks': test.tasks
+        'tasks': test.tasks,
+        'end_test': end.strftime("%m %d, %Y %H:%M:%S")
     }
 
     return render(request, 'tests/test.html', context=context)
@@ -66,11 +70,11 @@ def save_answers(request, id):
 
         if total != 0:
             percent = earned_total * 100 / total
-
-            for mark in test.blank_test.threshold:
-                if mark.to_percent >= percent >= mark.from_percent:
-                    test.mark = mark.mark
-                    test.save()
+            if test.blank_test.autocheck:
+                for mark in test.blank_test.threshold:
+                    if mark.to_percent >= percent >= mark.from_percent:
+                        test.mark = mark.mark
+                        test.save()
 
         if test.blank_test.autocheck:
             return render(request, 'tests/show_mark.html', {'mark': test.mark})
@@ -79,6 +83,7 @@ def save_answers(request, id):
 
 
 #tworzenie testu przez nauczyciela
+@paid_subscription
 @teacher_only
 def create_test(request):
     classes = get_object_or_404(Teacher, user=request.user).class_set.all()
@@ -90,7 +95,8 @@ def create_test(request):
                 label = '(bez nazwy)'
             class_room = request.POST['class']
             students = Class.objects.get(name=class_room)
-            test = BlankTest(label=label, students=students, teacher=request.user.teacher)
+            countdown = parse_duration(request.POST['countdown'])
+            test = BlankTest(label=label, students=students, teacher=request.user.teacher, countdown=countdown)
             test.save()
 
             for student in students.students:
@@ -112,6 +118,7 @@ def create_test(request):
 
 
 #stworzenie zadania do testu i dodanie go
+@paid_subscription
 @allowed_teacher_to_blanktest
 def create_task(request, id):
     test = get_object_or_404(BlankTest, id=id)
@@ -152,6 +159,7 @@ def create_task(request, id):
 
 
 #lista zadan do testu, widok nauczyciela
+@paid_subscription
 @allowed_teacher_to_blanktest
 def task_list(request, id):
     test = get_object_or_404(BlankTest, id=id)
@@ -164,6 +172,7 @@ def task_list(request, id):
 
 
 # dodawanie poprwanej odpowiedzi do krótkiej odpwowiedzi
+@paid_subscription
 @allowed_teacher_to_tests_task
 def add_correct_answer_for_short_answer(request, id):
     task = get_object_or_404(Task, id=id)
@@ -181,6 +190,7 @@ def add_correct_answer_for_short_answer(request, id):
 
 
 #dodanie do zadania opcji odpowiedzi, widok nauczyciela
+@paid_subscription
 @allowed_teacher_to_tests_task
 def add_answer_option(request, id):
     task = get_object_or_404(Task, id=id)
@@ -206,6 +216,7 @@ def add_answer_option(request, id):
 
 
 #rozwiązany sprawdzian ucznia
+@paid_subscription
 @allowed_teacher_to_test
 def show_students_answers(request, id):
     test = get_object_or_404(Test, id=id)
@@ -243,6 +254,7 @@ def show_students_answers(request, id):
 
 
 #lista testow stworzonych przez nauczyciea, widok nauczyciela
+@paid_subscription
 @teacher_only
 def test_list(request):
     tests = BlankTest.objects.filter(teacher=request.user.teacher).all()
@@ -250,6 +262,7 @@ def test_list(request):
 
 
 #po wybraniu testu wyswietla sie uczniow ktorzy rozwiazali ten test
+@paid_subscription
 @allowed_teacher_to_blanktest
 def test_students(request, id):
     tests = get_object_or_404(BlankTest, id=id).students_tests
@@ -258,6 +271,7 @@ def test_students(request, id):
 
 
 #edytuj test
+@paid_subscription
 @allowed_teacher_to_blanktest
 def edit_test(request, id):
     test = get_object_or_404(BlankTest, id=id)
@@ -297,6 +311,7 @@ def edit_test(request, id):
     return render(request, 'tests/edit_test.html', context=context)
 
 
+@paid_subscription
 @allowed_teacher_to_blanktest
 def delete_test(request, id):
     test = get_object_or_404(BlankTest, id=id)
@@ -306,6 +321,7 @@ def delete_test(request, id):
     return render(request, 'tests/delete_test.html', {'test': test})
 
 
+@paid_subscription
 @allowed_teacher_to_tests_task
 def delete_task(request, id):
     task = get_object_or_404(Task, id=id)
@@ -315,6 +331,7 @@ def delete_task(request, id):
     return render(request, 'tests/delete_task.html', {'task': task})
 
 
+@paid_subscription
 @allowed_teacher_to_blanktest
 def activate_or_deactivate_test(request, id):
     if request.method == 'POST':
@@ -335,6 +352,7 @@ def activate_or_deactivate_test(request, id):
     return redirect('task_list', id=id)
 
 
+@paid_subscription
 @allowed_teacher_to_blanktest
 def add_threshold(request, id):
     blank_test = get_object_or_404(BlankTest, id=id)
@@ -355,6 +373,7 @@ def add_threshold(request, id):
     return render(request, 'tests/threshold.html',context=context)
 
 
+@paid_subscription
 @allowed_teacher_to_blanktest
 def edit_threshold(request, id):
     blank_test = get_object_or_404(BlankTest, id=id)
@@ -371,6 +390,7 @@ def edit_threshold(request, id):
     return render(request, 'tests/edit_threshold.html',context=context)
 
 
+@paid_subscription
 @allowed_teacher_to_blanktest
 def delete_entire_threshold(request, id):
     blank_test = get_object_or_404(BlankTest, id=id)
@@ -383,6 +403,7 @@ def delete_entire_threshold(request, id):
     return render(request, 'tests/delete_all_thresholds.html', context=context)
 
 
+@paid_subscription
 @allowed_teacher_to_blanktest
 def delete_threshold(request, id, mark_id):
     if request.method == 'POST':
@@ -393,6 +414,7 @@ def delete_threshold(request, id, mark_id):
     return render(request, 'tests/edit_threshold.html')
 
 
+@paid_subscription
 @allowed_teacher_to_tests_task
 def delete_image(request, id):
     if request.method == "POST":

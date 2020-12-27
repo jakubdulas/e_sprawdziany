@@ -45,6 +45,7 @@ def choose_school(request):
     return redirect('home')
 
 
+@paid_subscription
 @teacher_only
 def create_class(request):
     teacher = Teacher.objects.get(user=request.user)
@@ -67,6 +68,7 @@ def create_class(request):
     return render(request, 'teacher/create_class.html', context=context)
 
 
+@paid_subscription
 @teacher_only
 def teachers_class_list(request):
     classes = Class.objects.filter(teacher=request.user.teacher).all()
@@ -76,6 +78,7 @@ def teachers_class_list(request):
     return render(request, 'teacher/classes.html', context=context)
 
 
+@paid_subscription
 @teacher_only
 @members_only
 def teachers_class_details(request, id):
@@ -83,6 +86,7 @@ def teachers_class_details(request, id):
     return render(request, "teacher/class_details.html", {"class": class_room})
 
 
+@paid_subscription
 @teacher_only
 @members_only
 def delete_class(request, id):
@@ -93,6 +97,7 @@ def delete_class(request, id):
     return render(request, 'teacher/delete_class.html', {"class": class_room})
 
 
+@paid_subscription
 @members_only
 @teacher_only
 def remove_student_from_class(request, id, student_id):

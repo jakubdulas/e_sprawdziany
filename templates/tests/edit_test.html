@@ -33,6 +33,7 @@
                 <label>Nie</label>
                 <input type="radio" name="{{ option.id }}_is_correct" value="nie" {% if not option.is_correct %} checked {% endif %}>
                 </li>
+                <a href="{% url "delete_answer_option" test.id option.id %}">Usuń</a>
             {% endfor %}
             <li><a href="{% url 'add_answer_option' task.id %}">Dodaj opcje odpowiedzi</a></li>
             </ul>
@@ -47,9 +48,7 @@
         <br><hr>
     {% endfor %}
     <br>
-    <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>
-
-
+    <a href="{% url 'create_task' test.id %}">Utworz zadanie</a><br>
 <button type="submit">Zapisz zmiany</button>
 </form>
 {% endblock %}

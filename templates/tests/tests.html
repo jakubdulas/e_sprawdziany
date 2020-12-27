@@ -1,11 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}Twoje testy{% endblock %}
 {% block content %}
-    <ul>
+    <table style="border-top: 1px solid black">
+    <tr>
+        <td>nazwa</td>
+        <td>klasy</td>
+        <td></td>
+        <td></td>
+    </tr>
     {% for test in tests %}
-        <li><a href="{% url 'task_list' test.id %}">{{ test.label }}</a>
-         - (<a href="{% url 'test_students' test.id %}" >przypisane sprawdziany</a>)
+        <tr>
+            <td><a href="{% url 'task_list' test.id %}">{{ test.label }}</a></td>
+            <td>
+                {% for class in test.students.all %}
+                    <a href="{% url 'class_tests' test.id class.id %}">{{ class.name }}</a>
+                {% endfor %}
+            </td>
+            <td><a href="{% url 'edit_test' test.id %}">Edytuj</a></td>
+            <td><a href="{% url 'delete_test' test.id %}">Usuń</a></td>
         </li>
+        </tr>
     {% endfor %}
-    </ul>
+    </table>
 {% endblock %}

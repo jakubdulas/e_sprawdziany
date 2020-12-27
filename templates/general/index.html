@@ -27,7 +27,7 @@
     <a href="{% url 'active_tests' %}">Aktywne testy</a>
     <a href="{% url 'my_tests' %}">Moje sprawdziny</a>
 {% endif %}
-
-
-
+{% if request.user.is_superuser %}
+<a href="{% url 'administration-home' %}">Administracja</a>
+{% endif %}
 {% endblock %}

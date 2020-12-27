@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}
+Spawdziany
+{% endblock %}
+{% block content %}
+<ul>
+{% for test in tests %}
+    <li><a href="{% url 'show_students_answers' test.id %}">{{ test.student.user.first_name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

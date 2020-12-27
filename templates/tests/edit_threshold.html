@@ -36,9 +36,8 @@ Progi punktowe
     {% endfor %}
     </table>
 {% endif %}
-<button type="submit">Zapisz</button>
+<button type="submit">Zatwierdz</button>
 </form>
-<a href="{% url 'add_threshold' blanktest.id %}">Dodaj próg punktowy</a>
-<a href="{% url 'delete_entire_threshold' blanktest.id %}">Usuń wszystkie progi punktowe</a>
-<a href="{% url 'edit_test' blanktest.id %}">Przejdz do edytcji testu</a>
+<a href="{% url 'add_threshold' blanktest.id %}">Dodaj</a>
+<a href="{% url 'delete_entire_threshold' blanktest.id %}">Usuń wszystko</a>
 {% endblock %}

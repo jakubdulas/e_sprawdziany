@@ -6,6 +6,7 @@ from django.contrib import messages
 from .decorators import *
 from .forms import *
 from django.utils.dateparse import parse_duration
+from django.http import JsonResponse
 import random
 import datetime
 
@@ -61,7 +62,7 @@ def save_answers(request, id):
         earned_total = 0
         total = 0
         for task in test.tasks:
-            answer = Answer.objects.get(task=task)
+            answer = Answer.objects.get(task=task, student=student)
             total += task.points
             if answer.is_correct:
                 answer.earned_points = task.points
@@ -69,14 +70,14 @@ def save_answers(request, id):
             answer.save()
 
         if total != 0:
-            percent = earned_total * 100 / total
+            percent = round(earned_total * 100 / total)
             if test.blank_test.autocheck:
                 for mark in test.blank_test.threshold:
                     if mark.to_percent >= percent >= mark.from_percent:
                         test.mark = mark.mark
                         test.save()
 
-        if test.blank_test.autocheck:
+        if test.blank_test.autocheck and test.mark:
             return render(request, 'tests/show_mark.html', {'mark': test.mark})
         return redirect('home')
     return redirect('home')
@@ -88,29 +89,31 @@ def save_answers(request, id):
 def create_test(request):
     classes = get_object_or_404(Teacher, user=request.user).class_set.all()
     # classes = Teacher.objects.get(user=request.user).class_set.all()
-    if request.method == "POST":
-        try:
-            label = request.POST['label']
-            if label == '':
-                label = '(bez nazwy)'
-            class_room = request.POST['class']
-            students = Class.objects.get(name=class_room)
-            countdown = parse_duration(request.POST['countdown'])
-            test = BlankTest(label=label, students=students, teacher=request.user.teacher, countdown=countdown)
-            test.save()
 
+    if request.method == "POST":
+        # try:
+
+        label = request.POST['label']
+        if label == '':
+            label = '(bez nazwy)'
+        countdown = parse_duration(request.POST['countdown'])
+        test = BlankTest.objects.create(label=label, teacher=request.user.teacher, countdown=countdown)
+        for classroom in request.POST.getlist('classes'):
+            students = Class.objects.get(id=int(classroom))
+            test.students.add(students)
             for student in students.students:
                 Test.objects.create(
                     label=label,
                     student=student,
                     blank_test=test
                 )
+        test.save()
 
-            messages.success(request, "test zostal stworzony")
-            return redirect('add_threshold', id=test.id)
+        messages.success(request, "test zostal stworzony")
+        return redirect('add_threshold', id=test.id)
             # return redirect('create_task', id=test.id)
-        except:
-            messages.error(request, "cos poszlo nie tak")
+        # except:
+        #     messages.error(request, "cos poszlo nie tak")
     context = {
         'classes': classes
     }
@@ -124,12 +127,11 @@ def create_task(request, id):
     test = get_object_or_404(BlankTest, id=id)
     types_of_task = TypeOfTask.objects.all()
     if request.method == "POST":
-
         try:
             task = Task.objects.create(
                 test=test,
                 content=request.POST['content'],
-                type=TypeOfTask.objects.get(label=request.POST['type']),
+                type=TypeOfTask.objects.get(id=int(request.POST['type'])),
                 points=request.POST['points']
             )
 
@@ -143,7 +145,7 @@ def create_task(request, id):
 
             task.save()
 
-            if task.type.label == 'krotka_odpowiedz':
+            if task.type.label == 'krotka odpowiedz':
                 return redirect('add_correct_answer_for_short_answer', id=task.id)
             elif task.type.label == 'zamkniete':
                 return redirect('add_answer_option', id=task.id)
@@ -158,12 +160,21 @@ def create_task(request, id):
     return render(request, 'tests/add_task.html', context=context)
 
 
+@paid_subscription
+@allowed_teacher_to_blanktest
+def delete_answer_option(request, id, ans_opt_id):
+    answer_option = get_object_or_404(AnswerOption, id=ans_opt_id)
+    answer_option.delete()
+    return redirect('edit_test', id=id)
+
+
 #lista zadan do testu, widok nauczyciela
 @paid_subscription
 @allowed_teacher_to_blanktest
 def task_list(request, id):
     test = get_object_or_404(BlankTest, id=id)
     # test = BlankTest.objects.get(id=test_id)
+
     context = {
         'test': test,
         'tasks': test.tasks
@@ -189,7 +200,7 @@ def add_correct_answer_for_short_answer(request, id):
     return render(request, 'tests/answer_for_short_answer.html', context=context)
 
 
-#dodanie do zadania opcji odpowiedzi, widok nauczyciela
+# dodanie do zadania opcji odpowiedzi, widok nauczyciela
 @paid_subscription
 @allowed_teacher_to_tests_task
 def add_answer_option(request, id):
@@ -259,15 +270,6 @@ def show_students_answers(request, id):
 def test_list(request):
     tests = BlankTest.objects.filter(teacher=request.user.teacher).all()
     return render(request, 'tests/tests.html', {'tests': tests})
-
-
-#po wybraniu testu wyswietla sie uczniow ktorzy rozwiazali ten test
-@paid_subscription
-@allowed_teacher_to_blanktest
-def test_students(request, id):
-    tests = get_object_or_404(BlankTest, id=id).students_tests
-    # tests = BlankTest.objects.get(id=id).students_tests
-    return render(request, 'tests/students.html', {'tests': tests})
 
 
 #edytuj test
@@ -410,7 +412,7 @@ def delete_threshold(request, id, mark_id):
         blank_test = get_object_or_404(BlankTest, id=id)
         mark = get_object_or_404(Mark, id=mark_id)
         mark.delete()
-        return redirect('edit_threshold', id=blank_test.id)
+        return redirect('add_threshold', id=blank_test.id)
     return render(request, 'tests/edit_threshold.html')
 
 
@@ -423,3 +425,13 @@ def delete_image(request, id):
         task.save()
         return redirect('edit_test', id=task.test.id)
     return redirect('home')
+
+
+@paid_subscription
+def class_tests(request, id, class_id):
+    tests = []
+    classroom = get_object_or_404(Class, id=class_id)
+    blank_test = get_object_or_404(BlankTest, id=id)
+    for student in classroom.students:
+        tests.append(student.test_set.filter(blank_test=blank_test).first())
+    return render(request, 'tests/class_tests.html', {'tests': tests})

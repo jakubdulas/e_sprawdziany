@@ -11,6 +11,8 @@ class School(models.Model):
     def __str__(self):
         return str(self.name)
 
+    def get_teachers(self):
+        return self.teacher_set.all()
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -55,7 +57,7 @@ class Class(models.Model):
 
     @property
     def tests(self):
-        return self.test_set.all()
+        return self.blanktest_set.all()
 
 
 class RequestForJoiningToSchool(models.Model):

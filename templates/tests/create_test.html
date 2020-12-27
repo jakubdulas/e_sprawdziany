@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% block title %}Stwórz test{% endblock %}
 {% block content %}
-    <form method="POST">
+    <form method="POST" autocomplete="off">
     {% csrf_token %}
     <label>Nazwa testu:</label>
     <input type="text" name="label"><br>
-    <label>Klasa:</label>
-    <select name="class">
+    <label>Czas trwania testu:</label>
+    <input type="text" name="countdown" placeholder="hh:mm:ss" required><br>
+    <label>Klasy:</label>
+    <select name="classes" multiple="" required>
         {% for class in classes %}
-        <option value="{{ class.name }}">{{ class.name }}</option>
+        <option value="{{ class.id }}">{{ class.name }}</option>
         {% endfor %}
     </select>
     <br>
-    <label>Czas trwania testu:</label>
-    <input type="text" name="countdown" placeholder="hh:mm:ss">
-    <button type="submit">Create test</button>
+    <button type="submit">Dalej</button>
     </form>
 {% endblock %}

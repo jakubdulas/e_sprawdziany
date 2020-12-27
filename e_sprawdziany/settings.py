@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'student.apps.StudentConfig',
     'general.apps.GeneralConfig',
     'administration.apps.AdministrationConfig',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

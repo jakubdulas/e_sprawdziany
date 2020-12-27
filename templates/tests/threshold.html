@@ -27,6 +27,9 @@ Progi punktowe
             <td>
                 {{ mark.to_percent }}%
             </td>
+            <td>
+                <form method="post" action="{% url 'delete_threshold' blanktest.id mark.id %}">{% csrf_token %} <button type="submit">X</button></form>
+            </td>
         </tr>
     {% endfor %}
     </table>
@@ -41,6 +44,8 @@ Progi punktowe
     <input type="number" name="to_percent">
     <button type="submit">Dodaj próg punktowy</button>
 </form>
-<a href="{% url 'edit_test' blanktest.id %}">Przejdz do edytcji testu</a>
-<a href="{% url 'edit_test' blanktest.id %}">Nie dodawaj progów puntowych</a>
+{% if blanktest.threshold %}
+<a href="{% url 'edit_threshold' blanktest.id %}">Edytuj progi puntowe</a>
+{% endif %}
+<a href="{% url 'create_task' blanktest.id %}">Dalej</a>
 {% endblock %}

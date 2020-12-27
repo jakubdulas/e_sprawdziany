@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}
+Szkoły
+{% endblock %}
+{% block content %}
+<form method="get">
+{{ filter.form }}
+<button type="submit">Szukaj</button>
+</form>
+<ul>
+    {% for school in schools_qs %}
+    <li>{{ school.name }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

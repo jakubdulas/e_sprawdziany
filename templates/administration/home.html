@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}
+Administracja
+{% endblock %}
+{% block content %}
+<a href="{% url 'administration-teachers' %}">Nauczyciele</a>
+<a href="{% url 'administration-schools' %}">Szkoły</a>
+{% endblock %}

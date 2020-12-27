@@ -4,7 +4,7 @@
 {% block content %}
 <h1>{{ test.label }}</h1>
 <br>
-<div id="endTestBox">{{ end_test }}</div>
+<div id="endTestBox" hidden>{{ end_test }}</div>
 <div id="timeLeft"></div>
 <form method="POST" action="{% url 'save_answers' test.id %}" autocomplete="off">
 {% csrf_token %}

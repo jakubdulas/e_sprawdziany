@@ -9,7 +9,7 @@
             {% for type in types_of_task %}
                 <li>
                 <label>{{ type.label }}</label>
-                <input type="radio" name="type" value="{{ type.label }}">
+                <input type="radio" name="type" value="{{ type.id }}">
                 </li>
             {% endfor %}
         </ul>

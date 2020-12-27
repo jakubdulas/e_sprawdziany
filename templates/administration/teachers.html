@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}
+Nauczyciele
+{% endblock %}
+{% block content %}
+<form method="get">
+{{ filter.form }}
+<button type="submit">Szukaj</button>
+</form>
+<ul>
+    {% for teacher in teacher_qs %}
+    <li> {{ teacher.id }} {{ teacher }} - <a href="{% url 'administration-change_teacher_role' teacher.id %}">
+        {% if teacher.is_headmaster %}
+        Usuń funkcję dyrektora
+        {% else %}
+        Dodaj funkcję dyrektora
+        {% endif %}
+    </a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -19,7 +19,8 @@
 <br>
 <ol>
     {% for task in tasks %}
-        <li>{{ task.content }}</li>
+        <h4>Zadanie {{ forloop.counter }}</h4>
+        <p>{{ task.content }}</p>
         {% if task.image %}
         <img src="{{ task.image.url }}">
         {% endif %}
@@ -38,8 +39,8 @@
         {% endif %}
         <p>Punktów do zdobycia: {{ task.points }}</p>
     {% endfor %}
-    <li>
-        <a href="{% url 'create_task' test.id %}">Utworz zadanie</a>
-    </li>
+
+    <a href="{% url 'create_task' test.id %}">Dodaj zadanie</a>
+
 </ol>
 {% endblock %}

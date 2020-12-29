@@ -51,7 +51,7 @@ def save_answers(request, id):
                     if task.answer_options.filter(is_correct=True):
                         if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
                             answer.is_correct = True
-                elif task.type.label == 'krotka_odpowiedz':
+                elif task.type.label == 'krotka odpowiedz':
                     answer.char_field = request.POST[f'{task.id}']
                     if task.correct_answer != '':
                         if answer.char_field == task.correct_answer:
@@ -126,38 +126,42 @@ def create_test(request):
 def create_task(request, id):
     test = get_object_or_404(BlankTest, id=id)
     types_of_task = TypeOfTask.objects.all()
-    if request.method == "POST":
-        try:
-            task = Task.objects.create(
-                test=test,
-                content=request.POST['content'],
-                type=TypeOfTask.objects.get(id=int(request.POST['type'])),
-                points=request.POST['points']
-            )
 
-            tests = Test.objects.filter(blank_test=test).all()
+    data = {}
+    if request.is_ajax():
+        print(request.POST)
+        task = Task.objects.create(
+            test=test,
+            content=request.POST['content'],
+            type=TypeOfTask.objects.get(id=int(request.POST['type'])),
+            points=request.POST['points']
+        )
 
-            if request.FILES:
-                task.image = request.FILES['image']
+        tests = Test.objects.filter(blank_test=test).all()
 
-            for t in tests:
-                task.students_test.add(t)
+        if request.FILES:
+            task.image = request.FILES['image']
 
-            task.save()
+        for t in tests:
+            task.students_test.add(t)
 
-            if task.type.label == 'krotka odpowiedz':
-                return redirect('add_correct_answer_for_short_answer', id=task.id)
-            elif task.type.label == 'zamkniete':
-                return redirect('add_answer_option', id=task.id)
-            return redirect('task_list', id=id)
-        except:
-            messages.error(request, 'wystąpił błąd podczas tworzenia zadania')
+        task.save()
+
+        data['task_id'] = task.id
+        return JsonResponse({'data': data})
 
     context = {
         'test': test,
         'types_of_task': types_of_task,
     }
     return render(request, 'tests/add_task.html', context=context)
+
+
+@paid_subscription
+@allowed_teacher_to_blanktest
+def get_json_type_of_task_data(request, id):
+    qs = list(TypeOfTask.objects.values())
+    return JsonResponse({'data': qs})
 
 
 @paid_subscription
@@ -226,6 +230,34 @@ def add_answer_option(request, id):
     return render(request, 'tests/add_answer_option.html', context=context)
 
 
+@paid_subscription
+@allowed_teacher_to_blanktest
+def add_answer_option_ajax(request, id):
+    if request.is_ajax():
+        if request.POST['is_correct'] == '1':
+            is_correct = True
+        else:
+            is_correct = False
+        obj = AnswerOption.objects.create(
+            task=Task.objects.get(id=request.POST['task_id']),
+            label=request.POST['text'],
+            is_correct=is_correct
+        )
+
+        return JsonResponse({'ansOptionLabel': obj.label})
+
+
+@paid_subscription
+@allowed_teacher_to_blanktest
+def add_correct_answer_to_short_answer_ajax(request, id):
+    if request.is_ajax():
+        task = Task.objects.get(id=request.POST['task_id'])
+        task.correct_answer = request.POST["correct_answer"]
+        task.save()
+
+        return JsonResponse({'correct_answer': task.correct_answer})
+
+
 #rozwiązany sprawdzian ucznia
 @paid_subscription
 @allowed_teacher_to_test
@@ -282,6 +314,7 @@ def edit_test(request, id):
         'tasks': test.tasks
     }
     if request.method == 'POST':
+        print(request.POST)
         test.label = request.POST['nazwa']
         for task in test.tasks:
             task.content = request.POST[f'{task.id}_polecenie']
@@ -293,8 +326,9 @@ def edit_test(request, id):
             if task.type.label == 'zamkniete':
                 for option in task.answer_options:
                     option.label = request.POST[f'{option.id}_label']
-                    if request.POST[f'{option.id}_is_correct'] == 'tak':
-                        option.is_correct = True
+                    if f'{option.id}_is_correct' in request.POST.keys():
+                        if request.POST[f'{option.id}_is_correct'] == 'tak':
+                            option.is_correct = True
                     else:
                         option.is_correct = False
 

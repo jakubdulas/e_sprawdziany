@@ -1,26 +1,51 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Dodaj zadanie{% endblock %}
 {% block content %}
-<form method="post" enctype="multipart/form-data" autocomplete="off">
+<div id="task_id" hidden></div>
+<form id="add_task_form" method="post" enctype="multipart/form-data" autocomplete="off">
 {% csrf_token %}
     <ol>
     <li><label>Wybierz typ zadania:</label></li>
-        <ul>
-            {% for type in types_of_task %}
-                <li>
-                <label>{{ type.label }}</label>
-                <input type="radio" name="type" value="{{ type.id }}">
-                </li>
-            {% endfor %}
-        </ul>
+            <select id="type_od_task_dropdown" name="type">
+                <option disabled selected value> wybierz opcję </option>
+            </select>
     <li><label>Polecenie:</label></li>
-        <textarea name="content"></textarea>
-        <input type="file" name="image" accept="image/*" id="id_image">
+        <textarea id="content" name="content"></textarea>
+        <input type="file" name="image" accept="image/*" id="image">
     <li>
         <label>Ilość punktów za zadanie:</label>
-        <input type="number" name="points" value="0">
+        <input id="points" type="number" name="points" value="0">
     </li>
     </ol>
-    <button type="submit">Utwórz zadanie</button>
+    <button id="add_task_btn" type="submit">Zapisz</button>
+</form><br><br>
+
+<ul id="answer_options" hidden>
+</ul>
+
+<form hidden id="addAnswerOptionForm" method="post">
+    {% csrf_token %}
+    <p id="info">Zapisz by dodać opcję odpowiedzi</p>
+    <label>Tekst: </label>
+    <input disabled id="ans_option_text" name="label" type="text"><br>
+    <label>Poprawna odpowiedz:</label>
+    <input disabled id="ans_option_is_correct" type="checkbox">
+    <button disabled id="ans_option_button" type="submit">Dodaj</button>
 </form>
+
+<p hidden id="correct_answer"></p>
+<form hidden id="addCorrectAnswer" method="post">
+{% csrf_token %}
+    <p id="info-2">Zapisz by dodać poprawną odpowiedz</p>
+    <label>Poprawna odpowiedz</label>
+    <input disabled type="text" id="correct_answer_text">
+    <button disabled type="submit" id="add_correct_answer_btn">Dodaj</button>
+</form>
+<br>
+<a href="{% url 'create_task' test.id %}">Dodaj kolejne zadanie</a>
+<a href="{% url 'task_list' test.id %}">Zobacz sprawdzian</a>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/add_task.js'%}"></script>
 {% endblock %}

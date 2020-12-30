@@ -15,9 +15,9 @@ import datetime
 
 #rozwiązywanie testu
 @allowed_student
-def test(request, id):
+def test(request, test_id):
     # test = Test.objects.get(id=id)
-    test = get_object_or_404(Test, id=id)
+    test = get_object_or_404(Test, id=test_id)
     #!!!!!!!!!! odkomentować gry doda sie frontend !!!!!!!!!!!
     end = datetime.datetime.now() + test.blank_test.countdown
     # test.is_active = False
@@ -31,9 +31,9 @@ def test(request, id):
     return render(request, 'tests/test.html', context=context)
 
 
-def save_answers(request, id):
+def save_answers(request, test_id):
     if request.method == "POST":
-        test = get_object_or_404(Test, id=id)
+        test = get_object_or_404(Test, id=test_id)
         student = request.user.student
         test.is_active = False
         test.is_done = True
@@ -110,7 +110,7 @@ def create_test(request):
         test.save()
 
         messages.success(request, "test zostal stworzony")
-        return redirect('add_threshold', id=test.id)
+        return redirect('add_threshold', blank_test_id=test.id)
             # return redirect('create_task', id=test.id)
         # except:
         #     messages.error(request, "cos poszlo nie tak")
@@ -121,10 +121,11 @@ def create_test(request):
 
 
 #stworzenie zadania do testu i dodanie go
-@paid_subscription
-@allowed_teacher_to_blanktest
-def create_task(request, id):
-    test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def create_task(request, blank_test_id):
+    test = get_object_or_404(BlankTest, id=blank_test_id)
     types_of_task = TypeOfTask.objects.all()
 
     data = {}
@@ -157,26 +158,29 @@ def create_task(request, id):
     return render(request, 'tests/add_task.html', context=context)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def get_json_type_of_task_data(request, id):
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def get_json_type_of_task_data(request, blank_test_id):
     qs = list(TypeOfTask.objects.values())
     return JsonResponse({'data': qs})
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def delete_answer_option(request, id, ans_opt_id):
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def delete_answer_option(request, blank_test_id, ans_opt_id):
     answer_option = get_object_or_404(AnswerOption, id=ans_opt_id)
     answer_option.delete()
-    return redirect('edit_test', id=id)
+    return redirect('edit_test', blank_test_id=blank_test_id)
 
 
 #lista zadan do testu, widok nauczyciela
-@paid_subscription
-@allowed_teacher_to_blanktest
-def task_list(request, id):
-    test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def task_list(request, blank_test_id):
+    test = get_object_or_404(BlankTest, id=blank_test_id)
     # test = BlankTest.objects.get(id=test_id)
 
     context = {
@@ -187,10 +191,11 @@ def task_list(request, id):
 
 
 # dodawanie poprwanej odpowiedzi do krótkiej odpwowiedzi
-@paid_subscription
-@allowed_teacher_to_tests_task
-def add_correct_answer_for_short_answer(request, id):
-    task = get_object_or_404(Task, id=id)
+# @paid_subscription
+# @allowed_teacher_to_tests_task
+@allowed_teacher('task')
+def add_correct_answer_for_short_answer(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
     context = {
         'task': task
     }
@@ -199,16 +204,17 @@ def add_correct_answer_for_short_answer(request, id):
         if f"{task.id}" in request.POST.keys():
             task.correct_answer = request.POST[f"{task.id}"]
             task.save()
-            return redirect('task_list', id=task.test.id)
+            return redirect('task_list', blank_test_id=task.test.id)
 
     return render(request, 'tests/answer_for_short_answer.html', context=context)
 
 
 # dodanie do zadania opcji odpowiedzi, widok nauczyciela
-@paid_subscription
-@allowed_teacher_to_tests_task
-def add_answer_option(request, id):
-    task = get_object_or_404(Task, id=id)
+# @paid_subscription
+# @allowed_teacher_to_tests_task
+@allowed_teacher('task')
+def add_answer_option(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
     # task = Task.objects.get(id=task_id)
     context = {
         'task': task
@@ -230,9 +236,10 @@ def add_answer_option(request, id):
     return render(request, 'tests/add_answer_option.html', context=context)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def add_answer_option_ajax(request, id):
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def add_answer_option_ajax(request, blank_test_id):
     if request.is_ajax():
         if request.POST['is_correct'] == '1':
             is_correct = True
@@ -247,9 +254,10 @@ def add_answer_option_ajax(request, id):
         return JsonResponse({'ansOptionLabel': obj.label})
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def add_correct_answer_to_short_answer_ajax(request, id):
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def add_correct_answer_to_short_answer_ajax(request, blank_test_id):
     if request.is_ajax():
         task = Task.objects.get(id=request.POST['task_id'])
         task.correct_answer = request.POST["correct_answer"]
@@ -259,10 +267,11 @@ def add_correct_answer_to_short_answer_ajax(request, id):
 
 
 #rozwiązany sprawdzian ucznia
-@paid_subscription
-@allowed_teacher_to_test
-def show_students_answers(request, id):
-    test = get_object_or_404(Test, id=id)
+# @paid_subscription
+# @allowed_teacher_to_test
+@allowed_teacher('test')
+def show_students_answers(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
     # test = Test.objects.get(id=test_id)
     tasks_answers = []
     for task in test.tasks:
@@ -286,7 +295,7 @@ def show_students_answers(request, id):
                 test.mark = mark.mark
                 test.save()
 
-        return redirect('show_students_answers', id=test.id)
+        return redirect('show_students_answers', test_id=test.id)
 
     context = {
         'test': test,
@@ -305,16 +314,16 @@ def test_list(request):
 
 
 #edytuj test
-@paid_subscription
-@allowed_teacher_to_blanktest
-def edit_test(request, id):
-    test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def edit_test(request, blank_test_id):
+    test = get_object_or_404(BlankTest, id=blank_test_id)
     context = {
         'test': test,
         'tasks': test.tasks
     }
     if request.method == 'POST':
-        print(request.POST)
         test.label = request.POST['nazwa']
         for task in test.tasks:
             task.content = request.POST[f'{task.id}_polecenie']
@@ -343,35 +352,38 @@ def edit_test(request, id):
         students_test.label = test.label
         students_test.save()
 
-        return redirect('task_list', id=test.id)
+        return redirect('task_list', blank_test_id=test.id)
     return render(request, 'tests/edit_test.html', context=context)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def delete_test(request, id):
-    test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def delete_test(request, blank_test_id):
+    test = get_object_or_404(BlankTest, id=blank_test_id)
     if request.method == 'POST':
         test.delete()
         return redirect('test_list')
     return render(request, 'tests/delete_test.html', {'test': test})
 
 
-@paid_subscription
-@allowed_teacher_to_tests_task
-def delete_task(request, id):
-    task = get_object_or_404(Task, id=id)
+# @paid_subscription
+# @allowed_teacher_to_tests_task
+@allowed_teacher('task')
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
     if request.method == 'POST':
         task.delete()
-        return redirect('edit_test', id=task.test.id)
+        return redirect('edit_test', blank_test_id=task.test.id)
     return render(request, 'tests/delete_task.html', {'task': task})
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def activate_or_deactivate_test(request, id):
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def activate_or_deactivate_test(request, blank_test_id):
     if request.method == 'POST':
-        blanktest = get_object_or_404(BlankTest, id=id)
+        blanktest = get_object_or_404(BlankTest, id=blank_test_id)
         if blanktest.is_active:
             blanktest.is_active = False
         else:
@@ -384,14 +396,15 @@ def activate_or_deactivate_test(request, id):
             else:
                 test.is_active = True
             test.save()
-        return redirect('task_list', id=id)
-    return redirect('task_list', id=id)
+        return redirect('task_list', blank_test_id=blank_test_id)
+    return redirect('task_list', blank_test_id=blank_test_id)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def add_threshold(request, id):
-    blank_test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def add_threshold(request, blank_test_id):
+    blank_test = get_object_or_404(BlankTest, id=blank_test_id)
     context = {
         'blanktest': blank_test
     }
@@ -409,10 +422,11 @@ def add_threshold(request, id):
     return render(request, 'tests/threshold.html',context=context)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def edit_threshold(request, id):
-    blank_test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def edit_threshold(request, blank_test_id):
+    blank_test = get_object_or_404(BlankTest, id=blank_test_id)
     context = {
         'blanktest': blank_test
     }
@@ -422,50 +436,54 @@ def edit_threshold(request, id):
             mark.from_percent = request.POST[f'{mark.id}_from_percent']
             mark.to_percent = request.POST[f'{mark.id}_to_percent']
             mark.save()
-        return redirect('task_list', id=blank_test.id)
+        return redirect('task_list', blank_test_id=blank_test.id)
     return render(request, 'tests/edit_threshold.html',context=context)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def delete_entire_threshold(request, id):
-    blank_test = get_object_or_404(BlankTest, id=id)
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def delete_entire_threshold(request, blank_test_id):
+    blank_test = get_object_or_404(BlankTest, id=blank_test_id)
     context = {
         'blanktest': blank_test
     }
     if request.method == 'POST':
         blank_test.threshold.delete()
-        return redirect('task_list', id=blank_test.id)
+        return redirect('task_list', blank_test_id=blank_test.id)
     return render(request, 'tests/delete_all_thresholds.html', context=context)
 
 
-@paid_subscription
-@allowed_teacher_to_blanktest
-def delete_threshold(request, id, mark_id):
+# @paid_subscription
+# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def delete_threshold(request, blank_test_id, mark_id):
     if request.method == 'POST':
-        blank_test = get_object_or_404(BlankTest, id=id)
+        blank_test = get_object_or_404(BlankTest, id=blank_test_id)
         mark = get_object_or_404(Mark, id=mark_id)
         mark.delete()
-        return redirect('add_threshold', id=blank_test.id)
+        return redirect('add_threshold', blank_test_id=blank_test.id)
     return render(request, 'tests/edit_threshold.html')
 
 
-@paid_subscription
-@allowed_teacher_to_tests_task
-def delete_image(request, id):
+# @paid_subscription
+# @allowed_teacher_to_tests_task
+@allowed_teacher('task')
+def delete_image(request, task_id):
     if request.method == "POST":
-        task = get_object_or_404(Task, id=id)
+        task = get_object_or_404(Task, id=task_id)
         task.image = ''
         task.save()
-        return redirect('edit_test', id=task.test.id)
+        return redirect('edit_test', blank_test_id=task.test.id)
     return redirect('home')
 
 
-@paid_subscription
-def class_tests(request, id, class_id):
+# @paid_subscription
+@allowed_teacher('blank_test')
+def class_tests(request, blank_test_id, class_id):
     tests = []
     classroom = get_object_or_404(Class, id=class_id)
-    blank_test = get_object_or_404(BlankTest, id=id)
+    blank_test = get_object_or_404(BlankTest, id=blank_test_id)
     for student in classroom.students:
         tests.append(student.test_set.filter(blank_test=blank_test).first())
     return render(request, 'tests/class_tests.html', {'tests': tests})

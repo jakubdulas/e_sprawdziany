@@ -28,3 +28,8 @@ def paid_subscription(view_func):
         messages.info(request, 'nie masz dostępu do tej funkcji')
         return render(request, 'teacher/access_denied.html')
     return wrapper_func
+
+
+
+
+

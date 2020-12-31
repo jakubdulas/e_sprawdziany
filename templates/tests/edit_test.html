@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Edytuj test{% endblock %}
 {% block content %}
 <form method="post" enctype="multipart/form-data">
@@ -6,7 +7,13 @@
     <label>Nazwa:</label>
     <input name="nazwa" type="text" value="{{ test.label }}"><br>
     <label>Czas trwania testu (godziny:minuty:sekundy):</label>
-    <input name="countdown" type="text" value="{{ test.countdown }}">
+    <input name="countdown" type="text" value="{{ test.countdown }}"><br>
+    <label>Ogranicz wyjścia z testu: </label>
+    <input id="are_exits_allowed" type="checkbox" name="are_exits_allowed" {% if not test.are_exists_allowed %} checked {% endif %}><br>
+    <div id="allowed_exits_box" {% if test.are_exists_allowed %} hidden {% endif %}>
+        <label>Liczba dopuszczonych wyjść</label>
+        <input id="allowed_exits" name="allowed_exits" type="number" value="{{ test.allowed_exits }}">
+    </div>
     {% for task in tasks %}
         <h3>Zadanie {{ forloop.counter }}</h3>
         <a href="{% url 'delete_task' task.id %}">(usuń zadanie)</a><br><br>
@@ -54,18 +61,5 @@
 </form>
 {% endblock %}
 {% block scripts %}
-<script>
-const items = document.getElementsByClassName('is_correct')
-Array.from(items).forEach((item)=>{
-    item.addEventListener('change', (e)=>{
-        const element = e.target
-        if (element.checked){
-            element.setAttribute('value', 'tak')
-        }else{
-            element.setAttribute('value', 'nie')
-        }
-
-    })
-})
-</script>
+<script src="{% static 'js/edit_test.js' %}"></script>
 {% endblock %}

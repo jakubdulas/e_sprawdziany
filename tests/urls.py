@@ -34,5 +34,7 @@ urlpatterns = [
     path('<int:blank_test_id>/task/add/get-types-of-tasks/', get_json_type_of_task_data, name='get_json_type_of_task_data'),
     path('<int:blank_test_id>/task/add/answer-option/', add_answer_option_ajax, name='add_answer_option_ajax'),
     path('<int:blank_test_id>/task/add/correct-answer/', add_correct_answer_to_short_answer_ajax, name='add_correct_answer_to_short_answer_ajax'),
+    path('<int:blank_test_id>/task/add/<int:task_id>/get-answer-options/', get_answer_options_ajax, name='get_answer_options_ajax'),
+    path('<int:test_id>/student_left_test/', student_left_test, name='student_left_test'),
 ]
 

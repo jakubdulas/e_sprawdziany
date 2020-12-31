@@ -11,6 +11,8 @@ class BlankTest(models.Model):
     students = models.ManyToManyField(Class)
     is_active = models.BooleanField(default=False)
     countdown = models.DurationField(null=True)
+    are_exists_allowed = models.BooleanField(default=True)
+    allowed_exits = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.label)
@@ -57,6 +59,7 @@ class Test(models.Model):
     blank_test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
     mark = models.CharField(max_length=1, null=True, blank=True)
     is_done = models.BooleanField(default=False)
+    exits = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.label} | {self.student}"

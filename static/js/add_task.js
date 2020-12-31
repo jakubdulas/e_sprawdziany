@@ -3,6 +3,7 @@ const add_task_form = document.getElementById('add_task_form')
 const content = document.getElementById('content')
 const points = document.getElementById('points')
 const image = document.getElementById('image')
+const imgBox = document.getElementById('imageBox')
 const btn = document.getElementById('add_task_btn')
 const csrf = document.getElementsByName('csrfmiddlewaretoken')
 const form = document.getElementById('form')
@@ -61,6 +62,15 @@ add_task_form.addEventListener('submit', (e)=>{
         processData: false,
     })
 })
+
+
+image.addEventListener('change', ()=>{
+    const imgData = image.files[0]
+    const url = URL.createObjectURL(imgData)
+    imgBox.setAttribute('src', url)
+
+})
+
 
 $.ajax({
     type: 'GET',
@@ -125,7 +135,6 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
             const option = document.createElement('li')
             option.textContent = response.ansOptionLabel
             answerOptions.appendChild(option)
-
             addAnswerOptionForm.reset()
         },
         error: function (response){

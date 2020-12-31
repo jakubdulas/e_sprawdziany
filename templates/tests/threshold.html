@@ -47,5 +47,6 @@ Progi punktowe
 {% if blanktest.threshold %}
 <a href="{% url 'edit_threshold' blanktest.id %}">Edytuj progi puntowe</a>
 {% endif %}
+<p>(mozesz pominac ten krok klikająć dalej)</p>
 <a href="{% url 'create_task' blanktest.id %}">Dalej</a>
 {% endblock %}

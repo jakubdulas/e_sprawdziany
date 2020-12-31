@@ -18,6 +18,13 @@
 <a href="{% url 'delete_test' test.id %}">(usuń)</a>
 <a href="{% url 'edit_threshold' test.id %}">(edytuj progi puntowe)</a>
 <br>
+<p>Wyjścia z testu:
+    {% if test.are_exists_allowed %}
+    Dopuszczone
+    {% else %}
+    {{ test.allowed_exits }}
+    {% endif %}
+</p>
 <ol>
     {% for task in tasks %}
         <h4>Zadanie {{ forloop.counter }}</h4>

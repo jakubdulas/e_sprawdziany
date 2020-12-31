@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from general.decorators import members_only
 from .models import *
 from teacher.decorators import teacher_only, paid_subscription
@@ -91,29 +92,37 @@ def create_test(request):
     # classes = Teacher.objects.get(user=request.user).class_set.all()
 
     if request.method == "POST":
-        # try:
+        try:
+            label = request.POST['label']
 
-        label = request.POST['label']
-        if label == '':
-            label = '(bez nazwy)'
-        countdown = parse_duration(request.POST['countdown'])
-        test = BlankTest.objects.create(label=label, teacher=request.user.teacher, countdown=countdown)
-        for classroom in request.POST.getlist('classes'):
-            students = Class.objects.get(id=int(classroom))
-            test.students.add(students)
-            for student in students.students:
-                Test.objects.create(
-                    label=label,
-                    student=student,
-                    blank_test=test
-                )
-        test.save()
+            if label == '':
+                label = '(bez nazwy)'
+            countdown = parse_duration(request.POST['countdown'])
+            test = BlankTest.objects.create(label=label, teacher=request.user.teacher, countdown=countdown)
+            for classroom in request.POST.getlist('classes'):
+                students = Class.objects.get(id=int(classroom))
+                test.students.add(students)
+                for student in students.students:
+                    Test.objects.create(
+                        label=label,
+                        student=student,
+                        blank_test=test
+                    )
 
-        messages.success(request, "test zostal stworzony")
-        return redirect('add_threshold', blank_test_id=test.id)
+            if 'are_exits_allowed' in request.POST.keys():
+                if request.POST['are_exits_allowed'] == 'on':
+                    test.are_exists_allowed = False
+                    test.allowed_exits = request.POST['allowed_exits']
+            else:
+                test.are_exists_allowed = True
+
+            test.save()
+
+            messages.success(request, "test zostal stworzony")
+            return redirect('add_threshold', blank_test_id=test.id)
             # return redirect('create_task', id=test.id)
-        # except:
-        #     messages.error(request, "cos poszlo nie tak")
+        except:
+            messages.error(request, "cos poszlo nie tak")
     context = {
         'classes': classes
     }
@@ -325,6 +334,14 @@ def edit_test(request, blank_test_id):
     }
     if request.method == 'POST':
         test.label = request.POST['nazwa']
+
+        if 'are_exits_allowed' in request.POST.keys():
+            if request.POST['are_exits_allowed'] == 'on':
+                test.are_exists_allowed = False
+                test.allowed_exits = request.POST['allowed_exits']
+        else:
+            test.are_exists_allowed = True
+
         for task in test.tasks:
             task.content = request.POST[f'{task.id}_polecenie']
             if request.FILES:
@@ -487,3 +504,26 @@ def class_tests(request, blank_test_id, class_id):
     for student in classroom.students:
         tests.append(student.test_set.filter(blank_test=blank_test).first())
     return render(request, 'tests/class_tests.html', {'tests': tests})
+
+
+@allowed_teacher('blank_test')
+def get_answer_options_ajax(request, blank_test_id, task_id):
+    if request.is_ajax():
+        qs = list(Task.objects.filter(id=task_id).first().answer_options.values())
+        JsonResponse({'data': qs})
+
+
+@allowed_student
+def student_left_test(request, test_id):
+    test = Test.objects.get(id=test_id)
+    data = {}
+    if not test.blank_test.are_exists_allowed:
+        test.exits += 1
+        test.save()
+        if test.exits > test.blank_test.allowed_exits:
+            data['msg'] = 'end'
+            return JsonResponse({'data': data})
+        data['msg'] = 'Nie wychodź z testu!'
+        return JsonResponse({'data': data})
+    data['msg'] = ''
+    return JsonResponse({'data': data})

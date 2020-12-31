@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Stwórz test{% endblock %}
 {% block content %}
     <form method="POST" autocomplete="off">
@@ -7,6 +8,12 @@
     <input type="text" name="label"><br>
     <label>Czas trwania testu:</label>
     <input type="text" name="countdown" placeholder="hh:mm:ss" required><br>
+    <label>Ogranicz wyjścia z testu: </label>
+    <input id="are_exits_allowed" type="checkbox" name="are_exits_allowed"><br>
+    <div id="allowed_exits_box" hidden>
+        <label>Liczba dopuszczonych wyjść</label>
+        <input id="allowed_exits" name="allowed_exits" type="number" value="{{ test.allowed_exits }}">
+    </div>
     <label>Klasy:</label>
     <select name="classes" multiple="" required>
         {% for class in classes %}
@@ -16,4 +23,7 @@
     <br>
     <button type="submit">Dalej</button>
     </form>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/create_test.js' %}"></script>
 {% endblock %}

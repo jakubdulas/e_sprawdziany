@@ -5,6 +5,13 @@
 <h1>{{ test.label }}</h1>
 <h2>{{ student.user.first_name }} {{ student.user.last_name }}</h2>
 <p>Wysłane: {% if test.is_done %}Tak{% else %}Nie{% endif %}</p>
+<p>Wyjścia ze sprawdzianu:
+{% if not test.blank_test.are_exists_allowed %}
+    {{ test.exits }}
+{% else %}
+    dopuszczone
+{% endif %}
+</p>
 <hr>
     <ol>
     <form method="post">
@@ -16,7 +23,7 @@
     {% endif %}
     <p><b>Odpowiedz:</b></p>
     <p>
-    {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka_odpowiedz' %}
+    {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka odpowiedz' %}
         {{ answer.char_field }}
         {% if not answer.is_correct %}
             <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer_option.label }}</p>
@@ -29,11 +36,17 @@
         Punktacja:
         </p>
         <p>
+        {% if test.is_done %}
             <input name="{{ task.id }}" value="{{ answer.earned_points }}"> /
             <b>{{ task.points }}</b>
+        {% else %}
+            Uczeń jeszcze nie wysłał odpowiedzi
+        {% endif %}
         </p>
     {% endfor %}
-    <button type="submit">Oceń</button>
+    {% if test.is_done %}
+    <button type="submit">Zatwierdz</button>
+    {% endif %}
     </form>
     </ol>
     {% if test.mark %}

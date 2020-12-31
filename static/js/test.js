@@ -19,3 +19,23 @@ const countdown = setInterval(()=>{
         submitForm.click()
     }
 }, 1000)
+
+
+window.addEventListener('blur', ()=>{
+    $.ajax({
+        type: 'GET',
+        url: 'student_left_test/',
+        success: function (response){
+            if (response.data.msg != '') {
+                if (response.data.msg == 'end') {
+                    submitForm.click()
+                } else {
+                    alert(response.data.msg);
+                }
+            }
+        },
+        error: function (response){
+
+        },
+    })
+})

@@ -72,7 +72,7 @@ def class_details(request, id):
 
 @student_only
 def active_tests(request):
-    tests = Test.objects.filter(student=request.user.student, is_active=True).all()
+    tests = Test.objects.filter(student=request.user.student, is_active=True, is_done=False).all()
     return render(request, 'student/active_tests.html', {'tests': tests})
 
 

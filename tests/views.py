@@ -10,6 +10,8 @@ from django.utils.dateparse import parse_duration
 from django.http import JsonResponse
 import random
 import datetime
+import base64
+from django.core.files.base import ContentFile
 
 # Create your views here.
 
@@ -57,6 +59,15 @@ def save_answers(request, test_id):
                     if task.correct_answer != '':
                         if answer.char_field == task.correct_answer:
                             answer.is_correct = True
+                elif task.type.label == 'tablica':
+                    try:
+                        data = request.POST[f'{task.id}']
+                        format, imgstr = data.split(';base64,')
+                        ext = format.split('/')[-1]
+                        img = ContentFile(base64.b64decode(imgstr), name=f'board{task.id}.' + ext)
+                        answer.board = img
+                    except:
+                        pass
             answer.save()
 
         # sprawdzanie testu
@@ -297,12 +308,13 @@ def show_students_answers(request, test_id):
             answer.save()
             earned_total += answer.earned_points
 
-        percent = earned_total * 100 / total
+        if total != 0:
+            percent = earned_total * 100 / total
 
-        for mark in test.blank_test.threshold:
-            if mark.to_percent >= percent >= mark.from_percent:
-                test.mark = mark.mark
-                test.save()
+            for mark in test.blank_test.threshold:
+                if mark.to_percent >= percent >= mark.from_percent:
+                    test.mark = mark.mark
+                    test.save()
 
         return redirect('show_students_answers', test_id=test.id)
 

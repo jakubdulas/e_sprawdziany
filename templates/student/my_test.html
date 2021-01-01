@@ -12,13 +12,19 @@
     {% endif %}
     <p><b>Odpowiedz:</b></p>
     <p>
-    {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka_odpowiedz' %}
+    {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka odpowiedz' %}
         {{ answer.char_field }}
         {% if not answer.is_correct %}
             <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer_option.label }}</p>
         {% endif %}
     {% elif answer.task.type.label == 'otwarte' %}
         {{ answer.textarea }}
+    {% elif answer.task.type.label == 'tablica' %}
+        {% if answer.board %}
+            <img src="{{ answer.board.url }}">
+        {% else %}
+            <p>Nie udzieliłes odpowiedzi na to pytanie</p>
+        {% endif %}
     {% endif %}
     </p>
         <p>

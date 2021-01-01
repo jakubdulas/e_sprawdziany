@@ -127,6 +127,7 @@ class Answer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     textarea = models.TextField(null=True, blank=True)
     char_field = models.CharField(max_length=128, null=True, blank=True)
+    board = models.ImageField(upload_to='boards/', null=True, blank=True)
     is_correct = models.BooleanField(default=False, null=True, blank=True)
     earned_points = models.IntegerField(null=True, blank=True, default=0)
 

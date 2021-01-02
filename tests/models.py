@@ -75,6 +75,9 @@ class Test(models.Model):
             total += task.answer_set.first().earned_points
         return total
 
+    def get_logs(self):
+        return self.testlog_set.all()
+
 
 class Task(models.Model):
     test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
@@ -152,3 +155,11 @@ class Mark(models.Model):
 
     def __str__(self):
         return f"{self.mark}"
+
+
+class TestLog(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    context = models.TextField()
+
+    def __str__(self):
+        return f"{self.context}"

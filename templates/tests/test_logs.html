@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}
+Logi
+{% endblock %}
+{% block content %}
+<a href="{% url 'show_students_answers' test.id %}"><-- Powrót do odpowiedzi</a>
+<ul>
+    {% for log in logs %}
+    <li>{{ log.context }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

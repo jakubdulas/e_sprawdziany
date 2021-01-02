@@ -2,8 +2,10 @@
 {% block title %}Test użytkownika {{ test.student.user.first_name }}{% endblock %}
 {% block content %}
 <a href="{% url 'test_list' %}"><-- powrot do testów</a>
+
 <h1>{{ test.label }}</h1>
 <h2>{{ student.user.first_name }} {{ student.user.last_name }}</h2>
+<a href="{% url 'test_logs' test.id %}">Logi</a>
 <p>Wysłane: {% if test.is_done %}Tak{% else %}Nie{% endif %}</p>
 <p>Wyjścia ze sprawdzianu:
 {% if not test.blank_test.are_exists_allowed %}

@@ -4,6 +4,34 @@ const timeLeft = document.getElementById('timeLeft')
 
 const submitForm = document.getElementById('submit_form')
 
+let leaveTime, joinTime
+
+const student = document.getElementById('student').textContent
+
+const startTestTime = new Date().getTime()
+
+function sendLog(text){
+    const fd = new FormData()
+
+    fd.append('csrfmiddlewaretoken', document.getElementsByName('csrfmiddlewaretoken')[0].value)
+    fd.append('text', text)
+
+    data = fd
+    $.ajax({
+        type: 'POST',
+        url: 'send_test_log/',
+        data: data,
+        success: function (response){},
+        error: function (response){},
+        cache: false,
+        contentType: false,
+        processData: false,
+    })
+}
+
+
+sendLog(`${new Date()} | ${student} rozpoczął/ęła sprawdzian`)
+
 const countdown = setInterval(()=>{
     const now = new Date().getTime()
     const left = endTestDate - now
@@ -22,6 +50,23 @@ const countdown = setInterval(()=>{
 
 
 window.addEventListener('blur', ()=>{
+
+    let date = new Date()
+    leaveTime = date.getTime()
+
+    let h = Math.floor((leaveTime / (1000*60*60) - (startTestTime / (1000*60*60)))%24)
+    let m = Math.floor((leaveTime / (1000*60) - (startTestTime / (1000*60)))%60)
+    let s = Math.floor((leaveTime / (1000) - (startTestTime / (1000)))%60)
+
+    if (s<10){
+        s = `0${s}`
+    }
+    if (m<10){
+        m = `0${m}`
+    }
+
+    sendLog(`Czas pisania sprawdzianu: ${h}:${m}:${s} | ${student} wyszedł ze sprawdzianu`)
+
     $.ajax({
         type: 'GET',
         url: 'student_left_test/',
@@ -39,6 +84,23 @@ window.addEventListener('blur', ()=>{
         },
     })
 })
+
+
+const stop = () =>{
+    let date = new Date()
+    joinTime = date.getTime()
+    let dif = joinTime-leaveTime
+
+    let m = Math.floor((dif / (1000*60))%60)
+    let s = Math.floor((dif / (1000))%60)
+    let ms = Math.floor(dif%1000)
+
+    sendLog(`${student} powrócił do sprawdzianu po ${m} min, ${s} sek, ${ms} ms`)
+}
+
+
+window.addEventListener('focus', stop)
+
 
 const colorInputs = document.getElementsByClassName('color')
 const clearBtns = document.getElementsByClassName('clearBtn')
@@ -107,5 +169,16 @@ Array.from(canvases).forEach((canvas)=>{
     canvas.addEventListener("mouseup", finishedPosition)
     canvas.addEventListener("mousemove", draw)
     canvas.addEventListener("mouseout", finishedPosition)
+})
 
+
+document.addEventListener('contextmenu', (e)=>{
+    e.preventDefault()
+})
+
+
+const testForm = document.getElementById('testForm')
+
+testForm.addEventListener('submit', ()=>{
+    sendLog(`${new Date()} | ${student} zakończył/a sprawdzian`)
 })

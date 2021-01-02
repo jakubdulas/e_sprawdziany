@@ -3,10 +3,11 @@
 {% block title %}Test{% endblock %}
 {% block content %}
 <h1>{{ test.label }}</h1>
+<h3 id="student">{{ request.user.first_name }} {{ request.user.last_name }}</h3>
 <br>
 <div id="endTestBox" hidden>{{ end_test }}</div>
 <div id="timeLeft"></div>
-<form method="POST" action="{% url 'save_answers' test.id %}" autocomplete="off">
+<form id="testForm" method="POST" action="{% url 'save_answers' test.id %}" autocomplete="off">
 {% csrf_token %}
     {% for task in tasks %}
         <h4>Zadanie {{ forloop.counter }}</h4>

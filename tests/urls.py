@@ -27,6 +27,7 @@ urlpatterns = [
 
 
     path('<int:test_id>/answers/', show_students_answers, name='show_students_answers'),
+    path('<int:test_id>/logs/', test_logs, name='test_logs'),
     path('list/', test_list, name='test_list'),
     path('<int:blank_test_id>/class/<int:class_id>/', class_tests, name='class_tests'),
 
@@ -36,5 +37,6 @@ urlpatterns = [
     path('<int:blank_test_id>/task/add/correct-answer/', add_correct_answer_to_short_answer_ajax, name='add_correct_answer_to_short_answer_ajax'),
     path('<int:blank_test_id>/task/add/<int:task_id>/get-answer-options/', get_answer_options_ajax, name='get_answer_options_ajax'),
     path('<int:test_id>/student_left_test/', student_left_test, name='student_left_test'),
+    path('<int:test_id>/send_test_log/', send_test_log, name='send_test_log'),
 ]
 

@@ -28,7 +28,7 @@ def test(request, test_id):
     context = {
         'test': test,
         'tasks': test.tasks,
-        'end_test': end.strftime("%m %d, %Y %H:%M:%S")
+        'end_test': end.strftime("%m %d, %Y %H:%M:%S"),
     }
 
     return render(request, 'tests/test.html', context=context)
@@ -539,3 +539,20 @@ def student_left_test(request, test_id):
         return JsonResponse({'data': data})
     data['msg'] = ''
     return JsonResponse({'data': data})
+
+
+@allowed_student
+def send_test_log(request, test_id):
+    if request.is_ajax():
+        TestLog.objects.create(
+            test=Test.objects.get(id=test_id),
+            context=request.POST['text']
+        )
+        return JsonResponse({'data': 'wyslano'})
+
+
+@allowed_teacher('test')
+def test_logs(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    qs = test.get_logs()
+    return render(request, 'tests/test_logs.html', {'test': test, 'logs': qs})

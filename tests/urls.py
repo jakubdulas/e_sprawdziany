@@ -10,6 +10,7 @@ urlpatterns = [
     path('<int:blank_test_id>/tasks/', task_list, name='task_list'),
     path('<int:blank_test_id>/activate/', activate_or_deactivate_test, name='activate_or_deactivate_test'),
     path('<int:blank_test_id>/edit/', edit_test, name='edit_test'),
+    path('<int:blank_test_id>/edit/ans-opt/<int:ans_opt_id>/delete-img/', delete_img_from_answer_option, name='delete_img_from_answer_option'),
     path('<int:blank_test_id>/delete/', delete_test, name='delete_test'),
     path('<int:blank_test_id>/task/add/', create_task, name='create_task'),
     path('task/<int:task_id>/add-answer-option/', add_answer_option, name='add_answer_option'),

@@ -1,15 +1,20 @@
 {% extends 'base.html' %}
 {% block title %}Dodaj opcję odpowiedzi{% endblock %}
 {% block content %}
-    <form method="post" autocomplete="off">
+    <form method="post" autocomplete="off" enctype="multipart/form-data">
     {% csrf_token %}
     <h3>{{ task.content }}</h3>
     <ul>
     {% for option in task.answer_options %}
         <li>{{ option.label }}</li>
+        {% if option.img %}
+        <img src="{{ option.img.url }}">
+        {% endif %}
     {% endfor %}
     <li><label>Text:</label>
     <input name="label" type="text"></li>
+    <li><input name="img" type="file" accept="image/*"></li>
+    <img id="showImage">
     <li>
         <label>Czy to poprawna odpowiedz?</label>
         <br>
@@ -22,4 +27,16 @@
     <button type="submit">Dodaj</button>
     </form>
     <a href="{% url 'task_list' task.test.id %}">Zobacz zadania</a>
+{% endblock %}
+{% block scripts %}
+<script>
+const img = document.getElementById('showImage')
+const imgInput = document.getElementsByName('img')[0]
+
+imgInput.addEventListener('change', ()=>{
+    const imgData = imgInput.files[0]
+    const url = URL.createObjectURL(imgData)
+    img.setAttribute('src', url)
+})
+</script>
 {% endblock %}

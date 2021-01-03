@@ -19,16 +19,28 @@
     <form method="post">
     {% csrf_token %}
     {% for task, answer in tasks_answers %}
-    <li><h3>{{ task.content }}</h3></li>
+    <h4>Zadanie {{ forloop.counter }}</h4>
+    <li><p>{{ task.content|linebreaks }}</p></li>
     {% if task.image %}
         <img src="{{ task.image.url }}">
     {% endif %}
     <p><b>Odpowiedz:</b></p>
     <p>
-    {% if answer.task.type.label == 'zamkniete' or answer.task.type.label == 'krotka odpowiedz' %}
+    {% if answer.task.type.label == 'zamkniete' %}
         {{ answer.char_field }}
+        {% if answer.answer_option.img %}
+            <img src="{{ answer.answer_option.img.url }}">
+        {% endif %}
         {% if not answer.is_correct %}
             <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer_option.label }}</p>
+            {% if task.correct_answer_option.img %}
+                <img src="{{ task.correct_answer_option.img.url }}">
+            {% endif %}
+        {% endif %}
+    {% elif answer.task.type.label == 'krotka odpowiedz' %}
+        {{ answer.char_field }}
+        {% if not answer.is_correct %}
+            <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer }}</p>
         {% endif %}
     {% elif answer.task.type.label == 'otwarte' %}
         {{ answer.textarea }}

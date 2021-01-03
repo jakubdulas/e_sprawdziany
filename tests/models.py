@@ -120,6 +120,7 @@ class AnswerOption(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     label = models.CharField(max_length=100)
     is_correct = models.BooleanField(default=False)
+    img = models.ImageField(upload_to='answer_options_imgs/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.label} | {str(self.task)}"
@@ -131,6 +132,7 @@ class Answer(models.Model):
     textarea = models.TextField(null=True, blank=True)
     char_field = models.CharField(max_length=128, null=True, blank=True)
     board = models.ImageField(upload_to='boards/', null=True, blank=True)
+    answer_option = models.OneToOneField(AnswerOption, on_delete=models.CASCADE, null=True, blank=True)
     is_correct = models.BooleanField(default=False, null=True, blank=True)
     earned_points = models.IntegerField(null=True, blank=True, default=0)
 

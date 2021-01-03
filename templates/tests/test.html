@@ -11,7 +11,7 @@
 {% csrf_token %}
     {% for task in tasks %}
         <h4>Zadanie {{ forloop.counter }}</h4>
-        <p>{{ task.content }}</p>
+        <p>{{ task.content|linebreaks }}</p>
         {% if task.image %}
             <img src="{{ task.image.url }}">
         {% endif %}
@@ -19,8 +19,11 @@
             <ul>
             {% for option in task.answer_options %}
                 <li>
-                    <input name="{{ task.id }}" value="{{ option.label }}" type="radio">
+                    <input name="{{ task.id }}" value="{{ option.id }}" type="radio">
                     <label>{{ option.label }}</label>
+                    {% if option.img %}
+                    <img src="{{ option.img.url }}">
+                    {% endif %}
                 </li>
             {% endfor %}
             </ul>

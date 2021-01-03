@@ -50,10 +50,11 @@ def save_answers(request, test_id):
                 if task.type.label == 'otwarte':
                     answer.textarea = request.POST[f"{task.id}"]
                 elif task.type.label == 'zamkniete':
-                    answer.char_field = request.POST[f"{task.id}"]
-                    if task.answer_options.filter(is_correct=True):
-                        if answer.char_field == task.answer_options.filter(is_correct=True).first().label:
-                            answer.is_correct = True
+                    answer_option = AnswerOption.objects.get(id=int(request.POST[f"{task.id}"]))
+                    answer.char_field = answer_option.label
+                    answer.answer_option = answer_option
+                    if answer_option.is_correct:
+                        answer.is_correct = True
                 elif task.type.label == 'krotka odpowiedz':
                     answer.char_field = request.POST[f'{task.id}']
                     if task.correct_answer != '':
@@ -150,7 +151,6 @@ def create_task(request, blank_test_id):
 
     data = {}
     if request.is_ajax():
-        print(request.POST)
         task = Task.objects.create(
             test=test,
             content=request.POST['content'],
@@ -245,11 +245,14 @@ def add_answer_option(request, task_id):
                 is_correct = True
             else:
                 is_correct = False
-            AnswerOption.objects.create(
+            answer = AnswerOption.objects.create(
                 task=task,
                 label=request.POST['label'],
                 is_correct=is_correct
             )
+            if request.FILES:
+                answer.img = request.FILES['img']
+            answer.save()
         except:
             messages.error(request, 'nie udalo sie dodac odpowiedzi')
 
@@ -261,6 +264,8 @@ def add_answer_option(request, task_id):
 @allowed_teacher('blank_test')
 def add_answer_option_ajax(request, blank_test_id):
     if request.is_ajax():
+        data = {}
+
         if request.POST['is_correct'] == '1':
             is_correct = True
         else:
@@ -271,7 +276,15 @@ def add_answer_option_ajax(request, blank_test_id):
             is_correct=is_correct
         )
 
-        return JsonResponse({'ansOptionLabel': obj.label})
+        if request.FILES:
+            obj.img = request.FILES['img']
+            obj.save()
+            data['imgUrl'] = obj.img.url
+
+
+        data['ansOptionLabel'] = obj.label
+
+        return JsonResponse(data)
 
 
 # @paid_subscription
@@ -369,7 +382,9 @@ def edit_test(request, blank_test_id):
                             option.is_correct = True
                     else:
                         option.is_correct = False
-
+                    if request.FILES:
+                        if f"{option.id}_image" in request.FILES.keys():
+                            option.img = request.FILES[f'{option.id}_image']
                     option.save()
 
             if task.correct_answer:
@@ -385,8 +400,14 @@ def edit_test(request, blank_test_id):
     return render(request, 'tests/edit_test.html', context=context)
 
 
-# @paid_subscription
-# @allowed_teacher_to_blanktest
+@allowed_teacher('blank_test')
+def delete_img_from_answer_option(request, blank_test_id, ans_opt_id):
+    ans_opt = get_object_or_404(AnswerOption, id=ans_opt_id)
+    ans_opt.img = ''
+    ans_opt.save()
+    return redirect('edit_test', blank_test_id)
+
+
 @allowed_teacher('blank_test')
 def delete_test(request, blank_test_id):
     test = get_object_or_404(BlankTest, id=blank_test_id)

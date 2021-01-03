@@ -34,11 +34,16 @@
             {% for option in task.answer_options %}
                 <li>
                 <input name="{{ option.id }}_label" type="text" value="{{ option.label }}">
+                {% if option.img %}
+                <img src="{{ option.img.url }}">
+                <label>Zmień zdjęcie</label>
+                <input type="file" name="{{ option.id }}_image" accept="image/*">
+                <a href="{% url 'delete_img_from_answer_option' test.id option.id %}">Usuń zdjęcie</a>
+                {% else %}
+                <label>Wybierz zdjęcie</label>
+                <input type="file" name="{{ option.id }}_image" accept="image/*">
+                {% endif %}
                 <p>Czy poprawna:</p>
-{#                <label>Tak</label>#}
-{#                <input type="radio" name="{{ option.id }}_is_correct" value="tak" {% if option.is_correct %} checked {% endif %}><br>#}
-{#                <label>Nie</label>#}
-{#                <input type="radio" name="{{ option.id }}_is_correct" value="nie" {% if not option.is_correct %} checked {% endif %}>#}
                 <input name="{{ option.id }}_is_correct"  type="checkbox" class="is_correct" {% if option.is_correct %} checked {% endif %}>
                 </li>
                 <a href="{% url "delete_answer_option" test.id option.id %}">Usuń</a>

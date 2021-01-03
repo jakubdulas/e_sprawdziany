@@ -15,6 +15,7 @@ const addAnswerOptionText = document.getElementById('ans_option_text')
 const addAnswerOptionBtn = document.getElementById('ans_option_button')
 const addAnswerOptionIsCorrect = document.getElementById('ans_option_is_correct')
 const answerOptions = document.getElementById('answer_options')
+const addAnswerOptionImage = document.getElementById('ans_option_image')
 
 const addCorrectAnswerForm = document.getElementById('addCorrectAnswer')
 const info2 = document.getElementById('info-2')
@@ -47,6 +48,7 @@ add_task_form.addEventListener('submit', (e)=>{
             addAnswerOptionBtn.disabled = false
             addAnswerOptionIsCorrect.disabled = false
             addAnswerOptionText.disabled = false
+            addAnswerOptionImage.disabled = false
 
             addCorrectAnswerBtn.disabled = false
             addCorrectAnswerText.disabled = false
@@ -118,6 +120,8 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
     fd.append('csrfmiddlewaretoken', csrf[0].value)
     fd.append('task_id', task_id.innerText)
     fd.append('text', addAnswerOptionText.value)
+    fd.append('img', addAnswerOptionImage.files[0])
+
 
     if (addAnswerOptionIsCorrect.checked){
         fd.append('is_correct', '1')
@@ -128,6 +132,7 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
     $.ajax({
         type: 'POST',
         url: window.location.href + 'answer-option/',
+        enctype: 'multipart/form-data',
         data: fd,
         success: function (response){
             answerOptions.hidden = false
@@ -135,6 +140,14 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
             const option = document.createElement('li')
             option.textContent = response.ansOptionLabel
             answerOptions.appendChild(option)
+
+            if (response.imgUrl){
+                const img = document.createElement('img')
+                img.src = response.imgUrl
+                answerOptions.appendChild(img)
+            }
+
+
             addAnswerOptionForm.reset()
         },
         error: function (response){
@@ -145,6 +158,7 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
         processData: false,
     })
 })
+
 
 addCorrectAnswerForm.addEventListener('submit', (e)=>{
     e.preventDefault()

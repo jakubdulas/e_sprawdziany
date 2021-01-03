@@ -28,7 +28,7 @@
 <ol>
     {% for task in tasks %}
         <h4>Zadanie {{ forloop.counter }}</h4>
-        <p>{{ task.content }}</p>
+        <p>{{ task.content|linebreaks }}</p>
         {% if task.image %}
         <img src="{{ task.image.url }}">
         {% endif %}
@@ -37,9 +37,16 @@
             {% for option in task.answer_options %}
                 <li>
                     {{ option.label }}
+                    {% if option.img %}
+                    <img src="{{ option.img.url }}">
+                    {% endif %}
                 </li>
             {% endfor %}
-            <p><b>Poprawna odpowiedz: {{ task.correct_answer_option.label }}</b></p>
+            <p><b>Poprawna odpowiedz: {{ task.correct_answer_option.label }}</b>
+            {% if task.correct_answer_option.img %}
+                    <img src="{{ task.correct_answer_option.img.url }}">
+            {% endif %}
+            </p>
             </ul>
         {% endif %}
         {% if task.correct_answer %}

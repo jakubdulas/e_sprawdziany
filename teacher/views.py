@@ -186,3 +186,7 @@ def dismiss_teacher(request, id):
         return redirect('headmaster_panel')
     return redirect('home')
 
+
+def view_profile(request, username):
+    user = get_object_or_404(User, username=username)
+

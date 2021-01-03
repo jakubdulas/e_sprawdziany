@@ -25,11 +25,12 @@
 <ul id="answer_options" hidden>
 </ul>
 
-<form hidden id="addAnswerOptionForm" method="post">
+<form hidden id="addAnswerOptionForm" enctype="multipart/form-data" method="post">
     {% csrf_token %}
     <p id="info">Zapisz by dodać opcję odpowiedzi</p>
     <label>Tekst: </label>
     <input disabled id="ans_option_text" name="label" type="text"><br>
+    <input disabled id="ans_option_image" name="ans_opt_image" type="file" accept="image/*">
     <label>Poprawna odpowiedz:</label>
     <input disabled id="ans_option_is_correct" type="checkbox">
     <button disabled id="ans_option_button" type="submit">Dodaj</button>

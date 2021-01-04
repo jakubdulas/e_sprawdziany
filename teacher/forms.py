@@ -17,6 +17,7 @@ class SendRequestForJoiningToSchool(forms.ModelForm):
             'school': forms.Select(choices=school_list)
         }
 
+
 class CreateClass(forms.ModelForm):
     class Meta:
         model = Class
@@ -27,3 +28,4 @@ class CreateSchool(forms.ModelForm):
     class Meta:
         model = School
         fields = '__all__'
+        exclude = ['is_paid', 'free_trial_up', 'key']

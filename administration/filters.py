@@ -5,7 +5,7 @@ from teacher.models import Teacher, School
 class TeacherFilter(django_filters.FilterSet):
      class Meta:
         model = Teacher
-        fields = ['id', 'is_headmaster', 'is_paid']
+        fields = ['id', 'is_paid']
 
 
 class SchoolFilter(django_filters.FilterSet):

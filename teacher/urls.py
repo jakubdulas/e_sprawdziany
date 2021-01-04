@@ -11,6 +11,7 @@ urlpatterns = [
     path('register/', registerTeacherPage, name='register_as_a_teacher'),
     path('create-school/', create_school, name='create_school'),
     path('headmaster-panel/', headmaster_panel, name='headmaster_panel'),
+    path('headmaster-panel/students/', students_view, name='students_view'),
     path('edit-school-information/', edit_school_information, name='edit_school_information'),
     path('school/accept/<int:id>/', accept_teacher, name='accept_teacher'),
     path('school/reject/<int:id>/', reject_teacher, name='reject_teacher'),

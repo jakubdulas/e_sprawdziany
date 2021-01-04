@@ -32,17 +32,16 @@ def registerTeacherPage(request):
 @teacher_only
 def choose_school(request):
     teacher = Teacher.objects.get(user=request.user)
-    if not teacher.school:
-        form = SendRequestForJoiningToSchool
-        if request.POST:
-            form = SendRequestForJoiningToSchool(request.POST)
+    form = SendRequestForJoiningToSchool
+    if request.POST:
+        form = SendRequestForJoiningToSchool(request.POST)
+        if School.objects.filter(id=form.data.get('school')).first() not in request.user.teacher.school.all():
             form.instance.teacher = teacher
             if form.is_valid():
                 form.save()
-                return redirect('home')
-        context = {'teacher': teacher, 'form': form}
-        return render(request, 'teacher/choose_school.html', context=context)
-    return redirect('home')
+        return redirect('home')
+    context = {'teacher': teacher, 'form': form}
+    return render(request, 'teacher/choose_school.html', context=context)
 
 
 @paid_subscription
@@ -52,13 +51,14 @@ def create_class(request):
     form = CreateClass()
     if request.POST:
         form = CreateClass(request.POST)
+        keys = 'abcdefghijklmnoprstuwyzABCDEFGHIJKLMNOPRSTUWYZ123456789'
         key = ''
         for i in range(6):
-            key += str(random.randint(0, 9))
+            key += str(keys[random.randint(0, len(keys))])
         while Class.objects.filter(access_key=key):
             key = ''
             for i in range(6):
-                key += str(random.randint(0, 9))
+                key += str(keys[random.randint(0, len(keys))])
         form.instance.access_key = key
         form.instance.teacher = teacher
         if form.is_valid():
@@ -110,7 +110,8 @@ def remove_student_from_class(request, id, student_id):
 
 @headmaster_only
 def create_school(request):
-    if not request.user.teacher.school:
+    headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
+    if not headmaster.school:
         form = CreateSchool
         context = {
             'form': form
@@ -118,11 +119,26 @@ def create_school(request):
         if request.method == 'POST':
             form = CreateSchool(request.POST)
             if form.is_valid():
+                keys = 'abcdefghijklmnoprstuwyzABCDEFGHIJKLMNOPRSTUWYZ123456789'
+                key = ''
+                for i in range(8):
+                    key += str(keys[random.randint(0, len(keys)-1)])
+                    if i == 7:
+                        key += 'szk'
+                while Class.objects.filter(access_key=key):
+                    key = ''
+                    for i in range(8):
+                        key += str(keys[random.randint(0, len(keys)-1)])
+                        if i == 7:
+                            key += 'szk'
+                form.instance.key = key
                 form.save()
-                request.user.teacher.school = form.instance
+                headmaster.school = form.instance
+                headmaster.save()
+                request.user.teacher.school.add(form.instance)
                 request.user.teacher.save()
                 messages.success(request, 'Udało ci się dodać szkołe')
-                return redirect('home')
+                return render(request, 'teacher/school_code.html', {'code': key})
             else:
                 messages.error(request, 'Nie udało ci się dodać szkoły')
             return redirect('create_school')
@@ -132,8 +148,9 @@ def create_school(request):
 
 @headmaster_only
 def edit_school_information(request):
-    if request.user.teacher.school:
-        school = request.user.teacher.school
+    headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
+    if headmaster.school:
+        school = headmaster.school
         form = CreateSchool(instance=school)
         if request.method == 'POST':
             form = CreateSchool(request.POST, instance=school)
@@ -152,9 +169,12 @@ def edit_school_information(request):
 
 @headmaster_only
 def accept_teacher(request, id):
+    headmaster = Headmaster.objects.get(teacher=request.user.teacher)
     request_for_joining = get_object_or_404(RequestForJoiningToSchool, id=id)
-    request_for_joining.teacher.school = request.user.teacher.school
+    request_for_joining.teacher.school.add(headmaster.school)
+    request_for_joining.teacher.is_paid = headmaster.school.is_paid
     request_for_joining.teacher.save()
+
     request_for_joining.delete()
     return redirect('headmaster_panel')
 
@@ -168,23 +188,33 @@ def reject_teacher(request, id):
 
 @headmaster_only
 def headmaster_panel(request):
-    requests_qs = RequestForJoiningToSchool.objects.filter(school=request.user.teacher.school).all()
-    teachers_qs = Teacher.objects.filter(school=request.user.teacher.school, is_headmaster=False).all()
+    headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
+    requests_qs = RequestForJoiningToSchool.objects.filter(school=headmaster.school).all()
+    teachers_qs = Teacher.objects.filter(school=headmaster.school).all()
     context = {
         'requests_qs': requests_qs,
         'teachers_qs': teachers_qs,
+        'school': headmaster.school
     }
     return render(request, 'teacher/headmaster_panel.html', context=context)
 
 
 @headmaster_only
 def dismiss_teacher(request, id):
+    headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
     teacher = get_object_or_404(Teacher, id=id)
-    if request.user.teacher.school == teacher.school:
-        teacher.school = None
+    if headmaster.school in teacher.school.all():
+        teacher.school.remove(headmaster.school)
+        teacher.is_paid = False
         teacher.save()
         return redirect('headmaster_panel')
     return redirect('home')
+
+
+@headmaster_only
+def students_view(request):
+    students_qs = Student.objects.filter(school=request.user.teacher.headmaster.school).all()
+    return render(request, 'teacher/headmaster_panel-students.html', {'students': students_qs})
 
 
 def view_profile(request, username):

@@ -8,6 +8,7 @@ from .decorators import *
 from tests.models import Test
 from tests.decorators import *
 
+
 @unauthenticated_user
 def registerStudentPage(request):
     form = RegisterForm()
@@ -96,3 +97,13 @@ def my_test(request, id):
         'student': test.student
     }
     return render(request, 'student/my_test.html', context=context)
+
+
+@login_required(login_url='login')
+@student_only
+def join_to_school(request, school_key):
+    student = request.user.student
+    if School.objects.filter(key=school_key):
+        student.school.add(School.objects.filter(key=school_key).first())
+        student.save()
+    return redirect('home')

@@ -1,7 +1,7 @@
 from django.shortcuts import render ,get_object_or_404
 from django.http import HttpResponse
 from .decorators import *
-from teacher.models import Teacher, School
+from teacher.models import Teacher, School, Headmaster
 from .filters import TeacherFilter, SchoolFilter
 
 
@@ -45,10 +45,11 @@ def teacher_details(request, id):
 @superuser_only
 def change_teacher_role(request, id):
     teacher = get_object_or_404(Teacher, id=id)
-    if teacher.is_headmaster:
-        teacher.is_headmaster = False
-        teacher.save()
-        return redirect('administration-teachers')
-    teacher.is_headmaster = True
-    teacher.save()
+    if Headmaster.objects.filter(teacher=teacher):
+        hm = Headmaster.objects.get(teacher=teacher)
+        hm.delete()
+    else:
+        Headmaster.objects.create(
+            teacher=teacher,
+        )
     return redirect('administration-teachers')

@@ -5,6 +5,7 @@
 {% block content %}
     <a href="{% url 'edit_school_information' %}">Edytuj informacje o szkole</a>
     <hr>
+    <h3>Kod: {{ school.key }}</h3>
     <h3>Prośby o dołączenie do szkoły</h3>
     <ul>
     {% for r in requests_qs %}
@@ -15,12 +16,15 @@
     </li>
     {% endfor %}
     </ul>
+    <h3><a href="{% url 'students_view' %}">Uczniowie</a></h3>
     <h3>Nauczyciele</h3>
     <ul>
     {% for t in teachers_qs %}
     <li>
     {{ t.user.first_name }} {{ t.user.last_name }}
+    {% if t.headmaster.school != school  %}
     <a href="{% url 'dismiss_teacher' t.id %}">(Wyrzuć nauczyciela)</a>
+    {% endif %}
     </li>
     {% endfor %}
     </ul>

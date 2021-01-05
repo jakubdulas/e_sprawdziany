@@ -31,23 +31,49 @@ def registerStudentPage(request):
 @student_only
 def join_to_class(request):
     if request.POST:
-        try:
-            key = request.POST.get('access_key')
-            if Class.objects.filter(access_key=key).exists() and not request.user.student.is_in_class(key) and (Class.objects.get(access_key=key).members_quantity+1) <= Class.objects.get(access_key=key).max_members:
+        key = request.POST.get('access_key')
+        if Class.objects.filter(access_key=key).exists():
+            if not request.user.student.is_in_class(key) and (
+                    Class.objects.filter(access_key=key).first().members_quantity + 1) <= Class.objects.filter(
+                    access_key=key).first().max_members:
                 class_school = Class.objects.get(access_key=key)
                 student = Student.objects.get(user=request.user)
                 student.school_class.add(class_school)
                 messages.success(request, f'Udalo ci sie dolaczyc do klasy: {Class.objects.get(access_key=key)}')
-                return redirect('home')
             elif request.user.student.is_in_class(key):
                 messages.info(request, 'Nalezysz juz do tej klasy')
-            elif (Class.objects.get(access_key=key).members_quantity+1) > Class.objects.get(access_key=key).max_members:
+            elif (Class.objects.filter(access_key=key).first().members_quantity + 1) > Class.objects.filter(
+                    access_key=key).first().max_members:
                 messages.info(request, 'klasa przekroczyla mozliwa ilosc uczniow')
             else:
-                messages.error(request, 'klasa nie istnieje.')
-        except:
-            pass
+                messages.info(request, 'klasa nie istnieje')
+        if key[-3:] == 'szk' and len(key) == 11:
+            if School.objects.filter(key=key):
+                school = School.objects.get(key=key)
+                request.user.student.school.add(school)
+                messages.success(request, f'Dołączyłeś do szkoły: {school.name}')
+
+        return redirect('home')
     return render(request, 'student/join_to_class.html')
+
+
+@student_only
+def join_to_class_by_link(request, class_key):
+    key = class_key
+    if Class.objects.filter(access_key=key).exists():
+        if not request.user.student.is_in_class(key) and (Class.objects.filter(access_key=key).first().members_quantity + 1) <= Class.objects.filter(access_key=key).first().max_members:
+            class_school = Class.objects.get(access_key=key)
+            student = Student.objects.get(user=request.user)
+            student.school_class.add(class_school)
+            messages.success(request, f'Udalo ci sie dolaczyc do klasy: {Class.objects.get(access_key=key)}')
+        elif request.user.student.is_in_class(key):
+            messages.info(request, 'Nalezysz juz do tej klasy')
+        elif (Class.objects.filter(access_key=key).first().members_quantity + 1) > Class.objects.filter(
+                access_key=key).first().max_members:
+            messages.info(request, 'klasa przekroczyla mozliwa ilosc uczniow')
+        else:
+            messages.info(request, 'klasa nie istnieje')
+    return redirect('home')
 
 
 @student_only

@@ -8,7 +8,7 @@ from student.models import Student
 class BlankTest(models.Model):
     label = models.CharField(max_length=128, blank=False, null=False)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Class)
+    students = models.ForeignKey(Class, on_delete=models.CASCADE, null=True)
     is_active = models.BooleanField(default=False)
     countdown = models.DurationField(null=True)
     are_exists_allowed = models.BooleanField(default=True)
@@ -84,6 +84,7 @@ class Task(models.Model):
     students_test = models.ManyToManyField(Test)
     content = models.TextField(blank=True)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
+    file = models.FileField(upload_to='files/', blank=True, null=True)
     type = models.ForeignKey("TypeOfTask", on_delete=models.CASCADE)
     correct_answer = models.CharField(max_length=100, null=True, blank=True)
     points = models.IntegerField(null=True, blank=True, default=0)
@@ -165,3 +166,4 @@ class TestLog(models.Model):
 
     def __str__(self):
         return f"{self.context}"
+

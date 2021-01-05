@@ -32,6 +32,11 @@
         {% if task.image %}
         <img src="{{ task.image.url }}">
         {% endif %}
+        {% if task.file %}
+        <audio controls>
+        <source src="{{ task.file.url }}">
+        </audio>
+        {% endif %}
         {% if task.type.label == 'zamkniete' %}
             <ul>
             {% for option in task.answer_options %}

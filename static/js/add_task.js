@@ -8,6 +8,7 @@ const btn = document.getElementById('add_task_btn')
 const csrf = document.getElementsByName('csrfmiddlewaretoken')
 const form = document.getElementById('form')
 const task_id = document.getElementById('task_id')
+const file = document.getElementById('file')
 
 const info = document.getElementById('info')
 const addAnswerOptionForm = document.getElementById('addAnswerOptionForm')
@@ -32,6 +33,7 @@ add_task_form.addEventListener('submit', (e)=>{
     fd.append('content', content.value)
     fd.append('points', points.value)
     fd.append('image', image.files[0])
+    fd.append('file', file.files[0])
     $.ajax({
         type: 'POST',
         url: window.location.href,
@@ -44,6 +46,7 @@ add_task_form.addEventListener('submit', (e)=>{
             content.disabled = true
             task_id.innerText = response.data.task_id
             btn.disabled = true
+            file.disabled = true
 
             addAnswerOptionBtn.disabled = false
             addAnswerOptionIsCorrect.disabled = false

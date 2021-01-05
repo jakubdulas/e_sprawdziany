@@ -4,6 +4,7 @@ from django.urls import path
 urlpatterns = [
     path('register/', registerStudentPage, name='register_as_a_student'),
     path('class/join/', join_to_class, name='join_to_class'),
+    path('class/join/<str:class_key>/', join_to_class_by_link, name='join_to_class_by_link'),
     path('class/<int:id>/', class_details, name='class_details'),
     path('class/all/', class_list, name='class_list'),
     path('class/<int:id>/leave/', leave_class, name='leave_class'),

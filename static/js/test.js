@@ -108,8 +108,8 @@ const canvases = document.getElementsByTagName('canvas')
 const hiddenInputs = document.getElementsByClassName('hiddenInput')
 
 Array.from(canvases).forEach((canvas)=>{
-    canvas.width = window.innerWidth * 0.8
-    canvas.height = window.innerHeight * 0.8
+    canvas.width = window.innerWidth * 0.9
+    canvas.height = window.innerHeight * 0.9
     const ctx = canvas.getContext('2d')
     let painting = false
 
@@ -160,10 +160,11 @@ Array.from(canvases).forEach((canvas)=>{
         ctx.moveTo(e.layerX, e.layerY)
     }
 
-    window.addEventListener('resize', ()=>{
-        canvas.width = window.innerWidth * 0.8
-        canvas.height = window.innerHeight * 0.8
-    })
+    // window.addEventListener('resize', (e)=>{
+    //     e.preventDefault()
+    //     canvas.width = window.innerWidth * 0.8
+    //     canvas.height = window.innerHeight * 0.8
+    // })
 
     canvas.addEventListener("mousedown", startPositioning)
     canvas.addEventListener("mouseup", finishedPosition)

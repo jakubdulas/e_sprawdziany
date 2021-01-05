@@ -17,6 +17,7 @@ urlpatterns = [
     path('task/<int:blank_test_id>/delete_answer_option/<int:ans_opt_id>/', delete_answer_option, name='delete_answer_option'),
     path('task/<int:task_id>/delete/', delete_task, name='delete_task'),
     path('task/<int:task_id>/image/delete/', delete_image, name='delete_image'),
+    path('task/<int:task_id>/file/delete/', delete_audio_file, name='delete_audio_file'),
     path('task/<int:task_id>/add-correct-answer/', add_correct_answer_for_short_answer, name='add_correct_answer_for_short_answer'),
     path('create/', create_test, name='create_test'),
 

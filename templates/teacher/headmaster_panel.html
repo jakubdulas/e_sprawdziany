@@ -5,7 +5,11 @@
 {% block content %}
     <a href="{% url 'edit_school_information' %}">Edytuj informacje o szkole</a>
     <hr>
-    <h3>Kod: {{ school.key }}</h3>
+    <p>kod do dołączenia do szkoły:</p><span id="access_key">{{ school.key }}</span>
+    <p>link do dołączenia do szkoły:</p>
+    <p>(dzieki temu linkowi uczniowie moga szybko dołaczac do szkoły)</p>
+    <input id="text" type="text" >
+    <button onclick="copyLink()" id="copy">Kopiuj</button>
     <h3>Prośby o dołączenie do szkoły</h3>
     <ul>
     {% for r in requests_qs %}
@@ -28,4 +32,19 @@
     </li>
     {% endfor %}
     </ul>
+{% endblock %}
+{% block scripts %}
+<script>
+input = document.getElementById('text')
+access_key = document.getElementById('access_key')
+input.value = window.location.host + '/student/school/join/' +access_key.textContent
+
+
+function copyLink() {
+    input.select();
+    input.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+}
+
+</script>
 {% endblock %}

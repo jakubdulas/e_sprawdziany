@@ -22,13 +22,18 @@
         <br>
         {% if task.image %}
             <img src="{{ task.image.url }}"><br>
+            <button formaction="{% url 'delete_image' task.id %}">Usuń zdjęcie</button>
         {% endif %}
         <label>{% if task.image %}Zmień{% else %}Dodaj{% endif %} zdjęcie:</label>
-        <input type="file" name="image_{{ task.id }}" accept="image/*" id="id_image"><br>
-        {% if task.image %}
-        <button formaction="{% url 'delete_image' task.id %}">Usuń zdjęcie</button>
+        <input type="file" name="image_{{ task.id }}" accept="image/*"><br>
+        {% if task.file %}
+            <audio controls>
+            <source src="{{ task.file.url }}">
+            </audio><br>
+            <button formaction="{% url 'delete_audio_file' task.id %}">Usuń plik dźwiękowy</button><br>
         {% endif %}
-
+        <label>{% if task.file %}Zmień{% else %}Dodaj{% endif %} plik dźwiękowy:</label>
+        <input type="file" name="file_{{ task.id }}" accept="audio/*"><br>
         {% if task.type.label == 'zamkniete' %}
             <ul>
             {% for option in task.answer_options %}

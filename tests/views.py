@@ -111,15 +111,15 @@ def create_test(request):
                 label = '(bez nazwy)'
             countdown = parse_duration(request.POST['countdown'])
             test = BlankTest.objects.create(label=label, teacher=request.user.teacher, countdown=countdown)
-            for classroom in request.POST.getlist('classes'):
-                students = Class.objects.get(id=int(classroom))
-                test.students.add(students)
-                for student in students.students:
-                    Test.objects.create(
-                        label=label,
-                        student=student,
-                        blank_test=test
-                    )
+
+            students = Class.objects.get(id=int(request.POST['class']))
+            test.students = students
+            for student in students.students:
+                Test.objects.create(
+                    label=label,
+                    student=student,
+                    blank_test=test
+                )
 
             if 'are_exits_allowed' in request.POST.keys():
                 if request.POST['are_exits_allowed'] == 'on':
@@ -161,7 +161,10 @@ def create_task(request, blank_test_id):
         tests = Test.objects.filter(blank_test=test).all()
 
         if request.FILES:
-            task.image = request.FILES['image']
+            if 'image' in request.FILES.keys():
+                task.image = request.FILES['image']
+            if 'file' in request.FILES.keys():
+                task.file = request.FILES['file']
 
         for t in tests:
             task.students_test.add(t)
@@ -373,6 +376,9 @@ def edit_test(request, blank_test_id):
                 if f"image_{task.id}" in request.FILES.keys():
                     task.image = request.FILES[f'image_{task.id}']
                     task.save()
+                if f"file_{task.id}" in request.FILES.keys():
+                    task.file = request.FILES[f'file_{task.id}']
+                    task.save()
 
             if task.type.label == 'zamkniete':
                 for option in task.answer_options:
@@ -406,6 +412,14 @@ def delete_img_from_answer_option(request, blank_test_id, ans_opt_id):
     ans_opt.img = ''
     ans_opt.save()
     return redirect('edit_test', blank_test_id)
+
+
+@allowed_teacher('blank_test')
+def delete_audio_file(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.file = ''
+    task.save()
+    return redirect('edit_test', task.test.id)
 
 
 @allowed_teacher('blank_test')

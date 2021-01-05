@@ -21,7 +21,7 @@ class School(models.Model):
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    school = models.ManyToManyField(School)
+    school = models.ManyToManyField(School, blank=True)
     is_paid = models.BooleanField(default=False)
     free_trial_up = models.BooleanField(default=False)
 

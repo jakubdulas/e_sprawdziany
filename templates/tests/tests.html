@@ -4,7 +4,7 @@
     <table style="border-top: 1px solid black">
     <tr>
         <td>nazwa</td>
-        <td>klasy</td>
+        <td>klasa</td>
         <td></td>
         <td></td>
     </tr>
@@ -12,9 +12,7 @@
         <tr>
             <td><a href="{% url 'task_list' test.id %}">{{ test.label }}</a></td>
             <td>
-                {% for class in test.students.all %}
-                    <a href="{% url 'class_tests' test.id class.id %}">{{ class.name }}</a>
-                {% endfor %}
+                <a href="{% url 'class_tests' test.id test.students.id %}">{{ test.students.name }}</a>
             </td>
             <td><a href="{% url 'edit_test' test.id %}">Edytuj</a></td>
             <td><a href="{% url 'delete_test' test.id %}">Usuń</a></td>

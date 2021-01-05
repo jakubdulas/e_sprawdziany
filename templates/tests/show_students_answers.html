@@ -24,6 +24,11 @@
     {% if task.image %}
         <img src="{{ task.image.url }}">
     {% endif %}
+    {% if task.file %}
+    <audio controls>
+    <source src="{{ task.file.url }}">
+    </audio>
+    {% endif %}
     <p><b>Odpowiedz:</b></p>
     <p>
     {% if answer.task.type.label == 'zamkniete' %}
@@ -43,7 +48,7 @@
             <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer }}</p>
         {% endif %}
     {% elif answer.task.type.label == 'otwarte' %}
-        {{ answer.textarea }}
+        {{ answer.textarea|linebreaks }}
     {% elif answer.task.type.label == 'tablica' %}
         {% if answer.board %}
             <img src="{{ answer.board.url }}">

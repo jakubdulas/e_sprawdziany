@@ -131,9 +131,10 @@ class Answer(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     textarea = models.TextField(null=True, blank=True)
-    char_field = models.CharField(max_length=128, null=True, blank=True)
+    char_field = models.CharField(max_length=250, null=True, blank=True)
     board = models.ImageField(upload_to='boards/', null=True, blank=True)
     answer_option = models.OneToOneField(AnswerOption, on_delete=models.CASCADE, null=True, blank=True)
+    true_false = models.OneToOneField('TrueFalseTask', on_delete=models.CASCADE, null=True, blank=True)
     is_correct = models.BooleanField(default=False, null=True, blank=True)
     earned_points = models.IntegerField(null=True, blank=True, default=0)
 
@@ -167,3 +168,9 @@ class TestLog(models.Model):
     def __str__(self):
         return f"{self.context}"
 
+
+class TrueFalseTask(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    content = models.CharField(max_length=250)
+    is_correct = models.BooleanField(default=False)
+    points = models.IntegerField(default=0)

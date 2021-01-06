@@ -18,6 +18,8 @@
         <label>Plik dzwiękowy:</label>
         <input id="file" name="file" accept="audio/*" type="file"><br>
         <label>Ilość punktów za zadanie:</label>
+        <p hidden id="info3">Pozostaw 0 by każda z odpowiedzi była oceniania</p>
+        <p hidden id="info4">Wpisz liczbę by każda z odpowiedzi była oceniania jako całość (1 błąd = 0 punktów za zadanie)</p>
         <input id="points" type="number" name="points" value="0">
     </li>
     </ol>
@@ -45,6 +47,20 @@
     <label>Poprawna odpowiedz</label>
     <input disabled type="text" id="correct_answer_text">
     <button disabled type="submit" id="add_correct_answer_btn">Dodaj</button>
+</form>
+
+<ul id="true_false_options" hidden></ul>
+
+<form hidden id="addTrueFalseTask" method="post">
+{% csrf_token %}
+    <p>Zapisz by dodać opcję odpowiedzi</p>
+    <label>Treść:</label>
+    <input disabled type="text" id="trueFalseContent">
+    <input disabled id="true" type="radio" name="trueFalseTask"><label>Prawda</label>
+    <input disabled id="false" type="radio" name="trueFalseTask"><label>Fałsz</label><br>
+    <label>Punkty za poprawna odpowiedz:</label>
+    <input disabled id="pointsTF" value="0" type="number">
+    <button disabled type="submit" id="add_true_false_option_btn">Dodaj</button>
 </form>
 <br>
 <a href="{% url 'create_task' test.id %}">Dodaj kolejne zadanie</a>

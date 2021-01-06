@@ -372,6 +372,7 @@ def edit_test(request, blank_test_id):
 
         for task in test.tasks:
             task.content = request.POST[f'{task.id}_polecenie']
+            task.points = int(request.POST[f'{task.id}_points'])
             if request.FILES:
                 if f"image_{task.id}" in request.FILES.keys():
                     task.image = request.FILES[f'image_{task.id}']
@@ -393,9 +394,32 @@ def edit_test(request, blank_test_id):
                             option.img = request.FILES[f'{option.id}_image']
                     option.save()
 
+            if task.type.label == 'prawda/fałsz':
+                for option in task.truefalsetask_set.all():
+                    option.content = request.POST[f'{option.id}_content']
+                    if f"{option.id}_is_correct" in request.POST.keys():
+                        if request.POST[f"{option.id}_is_correct"] == 'true':
+                            option.is_correct = True
+                        else:
+                            option.is_correct = False
+                    if f"{option.id}_points" in request.POST.keys():
+                        print(task.points)
+                        if int(task.points) != 0:
+                            points = 0
+                        else:
+                            points = int(request.POST[f"{option.id}_points"])
+
+                        if request.POST[f"{option.id}_points"] != 0:
+                            points = int(request.POST[f"{option.id}_points"])
+                            task.points += points
+                            task.save()
+
+                        option.points = points
+                    option.save()
+
             if task.correct_answer:
                 task.correct_answer = request.POST[f'{task.id}_poprawnaodpowiedz']
-            task.points = request.POST[f'{task.id}_points']
+
             task.save()
         test.save()
         students_test = Test.objects.get(blank_test=test)
@@ -591,3 +615,36 @@ def test_logs(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     qs = test.get_logs()
     return render(request, 'tests/test_logs.html', {'test': test, 'logs': qs})
+
+
+@allowed_teacher('blank_test')
+def add_truefalse_option_ajax(request, blank_test_id):
+    if request.is_ajax():
+        task = get_object_or_404(Task, id=request.POST['task_id'])
+        data = {}
+        if request.POST['isTrue'] == '1':
+            is_correct = True
+            data['is_correct'] = 'PRAWDA'
+        else:
+            is_correct = False
+            data['is_correct'] = 'FAŁSZ'
+
+        if int(task.points) != 0:
+            points = 0
+        else:
+            points = int(request.POST['points'])
+
+        if request.POST['points'] != 0:
+            points = int(request.POST['points'])
+            task.points += points
+            task.save()
+
+        TrueFalseTask.objects.create(
+            task=task,
+            content=request.POST['content'],
+            is_correct=is_correct,
+            points=points
+        )
+
+        data['content'] = request.POST['content']
+        return JsonResponse(data)

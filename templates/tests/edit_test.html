@@ -56,12 +56,26 @@
             <li><a href="{% url 'add_answer_option' task.id %}">Dodaj opcje odpowiedzi</a></li>
             </ul>
         {% endif %}
+        {% if task.type.label == 'prawda/fałsz' %}
+            <ul>
+            {% for option in task.truefalsetask_set.all %}
+            <li><input type="text" value="{{ option.content }}" name="{{ option.id }}_content"></li>
+                <input type="radio" name="{{ option.id }}_is_correct" value="true" {% if option.is_correct %}checked{% endif %}><label>Prawda</label>
+                <input type="radio" name="{{ option.id }}_is_correct" value="false" {% if not option.is_correct %}checked{% endif %}><label>Fałsz</label><br>
+                <input type="number" name="{{ option.id }}_points" value="{{ option.points }}"><br><br>
+            {% endfor %}
+            </ul>
+        {% endif %}
         {% if task.correct_answer %}
         <label>poprawna odpowiedz:</label><br>
         <input name="{{ task.id }}_poprawnaodpowiedz" type="text" value="{{ task.correct_answer }}">
         {% endif %}
         <br>
         <label>Punkty do zdobycia:</label>
+        {% if task.type.label == 'prawda/fałsz' %}
+            <p>Pozostaw 0 by każda z odpowiedzi była oceniania</p>
+        <p>Wpisz liczbę by każda z odpowiedzi była oceniania jako całość (1 błąd = 0 punktów za zadanie)</p>
+        {% endif %}
         <input type="number" name="{{ task.id }}_points" value="{{ task.points }}">
         <br><hr>
     {% endfor %}

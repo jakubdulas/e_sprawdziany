@@ -54,6 +54,19 @@
             </p>
             </ul>
         {% endif %}
+        {% if task.type.label == 'prawda/fałsz' %}
+            <ol>
+            {% for option in task.truefalsetask_set.all %}
+            <li>{{ option.content }}
+            {% if option.is_correct %}
+            Prawda
+            {% else %}
+            Fałsz
+            {% endif %}
+            </li>
+            {% endfor %}
+            </ol>
+        {% endif %}
         {% if task.correct_answer %}
         <p><b>Poprawna odpowiedz: {{ task.correct_answer }}</b></p>
         {% endif %}

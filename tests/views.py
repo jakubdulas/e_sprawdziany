@@ -268,7 +268,6 @@ def add_answer_option(request, task_id):
 def add_answer_option_ajax(request, blank_test_id):
     if request.is_ajax():
         data = {}
-
         if request.POST['is_correct'] == '1':
             is_correct = True
         else:
@@ -278,15 +277,32 @@ def add_answer_option_ajax(request, blank_test_id):
             label=request.POST['text'],
             is_correct=is_correct
         )
-
         if request.FILES:
             obj.img = request.FILES['img']
             obj.save()
             data['imgUrl'] = obj.img.url
-
-
         data['ansOptionLabel'] = obj.label
+        return JsonResponse(data)
 
+
+@allowed_teacher('blank_test')
+def add_answer_option_edit_task(request, blank_test_id, task_id):
+    if request.is_ajax():
+        data = {}
+        if request.POST['is_correct'] == '1':
+            is_correct = True
+        else:
+            is_correct = False
+        obj = AnswerOption.objects.create(
+            task=Task.objects.get(id=request.POST['task_id']),
+            label=request.POST['text'],
+            is_correct=is_correct
+        )
+        if request.FILES:
+            obj.img = request.FILES['img']
+            obj.save()
+            data['imgUrl'] = obj.img.url
+        data['ansOptionLabel'] = obj.label
         return JsonResponse(data)
 
 
@@ -361,7 +377,7 @@ def edit_test(request, blank_test_id):
         'tasks': test.tasks
     }
     if request.method == 'POST':
-        test.label = request.POST['nazwa']
+        test.label = request.POST['name']
 
         if 'are_exits_allowed' in request.POST.keys():
             if request.POST['are_exits_allowed'] == 'on':
@@ -370,57 +386,8 @@ def edit_test(request, blank_test_id):
         else:
             test.are_exists_allowed = True
 
-        for task in test.tasks:
-            task.content = request.POST[f'{task.id}_polecenie']
-            task.points = int(request.POST[f'{task.id}_points'])
-            if request.FILES:
-                if f"image_{task.id}" in request.FILES.keys():
-                    task.image = request.FILES[f'image_{task.id}']
-                    task.save()
-                if f"file_{task.id}" in request.FILES.keys():
-                    task.file = request.FILES[f'file_{task.id}']
-                    task.save()
+        test.countdown = parse_duration(request.POST['countdown'])
 
-            if task.type.label == 'zamkniete':
-                for option in task.answer_options:
-                    option.label = request.POST[f'{option.id}_label']
-                    if f'{option.id}_is_correct' in request.POST.keys():
-                        if request.POST[f'{option.id}_is_correct'] == 'tak':
-                            option.is_correct = True
-                    else:
-                        option.is_correct = False
-                    if request.FILES:
-                        if f"{option.id}_image" in request.FILES.keys():
-                            option.img = request.FILES[f'{option.id}_image']
-                    option.save()
-
-            if task.type.label == 'prawda/fałsz':
-                for option in task.truefalsetask_set.all():
-                    option.content = request.POST[f'{option.id}_content']
-                    if f"{option.id}_is_correct" in request.POST.keys():
-                        if request.POST[f"{option.id}_is_correct"] == 'true':
-                            option.is_correct = True
-                        else:
-                            option.is_correct = False
-                    if f"{option.id}_points" in request.POST.keys():
-                        print(task.points)
-                        if int(task.points) != 0:
-                            points = 0
-                        else:
-                            points = int(request.POST[f"{option.id}_points"])
-
-                        if request.POST[f"{option.id}_points"] != 0:
-                            points = int(request.POST[f"{option.id}_points"])
-                            task.points += points
-                            task.save()
-
-                        option.points = points
-                    option.save()
-
-            if task.correct_answer:
-                task.correct_answer = request.POST[f'{task.id}_poprawnaodpowiedz']
-
-            task.save()
         test.save()
         students_test = Test.objects.get(blank_test=test)
         students_test.label = test.label
@@ -431,19 +398,113 @@ def edit_test(request, blank_test_id):
 
 
 @allowed_teacher('blank_test')
-def delete_img_from_answer_option(request, blank_test_id, ans_opt_id):
-    ans_opt = get_object_or_404(AnswerOption, id=ans_opt_id)
-    ans_opt.img = ''
-    ans_opt.save()
-    return redirect('edit_test', blank_test_id)
+def edit_task(request, blank_test_id, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    test = get_object_or_404(BlankTest, id=blank_test_id)
+
+    if request.method == 'POST':
+        task.content = request.POST['content']
+        task.points = int(request.POST['points'])
+
+        if request.FILES:
+            if 'image' in request.FILES.keys():
+                task.image = request.FILES['image']
+            if 'file' in request.FILES.keys():
+                task.file = request.FILES['file']
+
+        if task.type.label == 'zamkniete':
+            for option in task.answer_options:
+                option.label = request.POST[f'{option.id}_label']
+                if f'{option.id}_is_correct' in request.POST.keys():
+                    if request.POST[f'{option.id}_is_correct'] == 'on':
+                        option.is_correct = True
+                else:
+                    option.is_correct = False
+                if request.FILES:
+                    if f"{option.id}_image" in request.FILES.keys():
+                        option.img = request.FILES[f'{option.id}_image']
+                option.save()
+
+        if task.type.label == 'krotka odpowiedz':
+            task.correct_answer = request.POST['correct_answer']
+
+        if task.type.label == 'prawda/fałsz':
+            for option in task.truefalsetask_set.all():
+                option.content = request.POST[f"{option.id}_content"]
+                if request.POST[f'{option.id}_is_correct'] == 'true':
+                    option.is_correct = True
+                else:
+                    option.is_correct = False
+
+                option.points = request.POST[f"{option.id}_points"]
+                option.save()
+
+        task.save()
+        return redirect('edit_task', test.id, task.id)
+
+    return render(request, 'tests/edit_task.html', {"task": task, 'test': test})
 
 
 @allowed_teacher('blank_test')
+def get_answer_options(request, blank_test_id, task_id):
+    if request.is_ajax():
+        qs = list(Task.objects.filter(id=task_id).first().answer_options.values())
+        return JsonResponse({'qs': qs})
+
+
+@allowed_teacher('blank_test')
+def get_true_false_sentences(request, blank_test_id, task_id):
+    if request.is_ajax():
+        task = get_object_or_404(Task, id=task_id)
+        qs = list(task.truefalsetask_set.all().values())
+        return JsonResponse({'qs': qs})
+
+
+@allowed_teacher('blank_test')
+def add_true_false_sentence(request, blank_test_id, task_id):
+    if request.is_ajax():
+        task = get_object_or_404(Task, id=task_id)
+        if request.POST['is_correct'] == 'true':
+            is_correct = True
+        else:
+            is_correct = False
+
+        TrueFalseTask.objects.create(
+            task=task,
+            content=request.POST['content'],
+            is_correct=is_correct,
+            points=request.POST['points']
+        )
+        return JsonResponse({'data': 'sent'})
+
+
+@allowed_teacher('blank_test')
+def delete_answer_option_edit_task(request, blank_test_id, task_id, ans_opt_id):
+    ans_opt = get_object_or_404(AnswerOption, id=ans_opt_id)
+    ans_opt.delete()
+    return redirect('edit_task', blank_test_id, task_id)
+
+
+@allowed_teacher('blank_test')
+def delete_true_false_sentence(request, blank_test_id, task_id, tf_id):
+    tf = get_object_or_404(TrueFalseTask, id=tf_id)
+    tf.delete()
+    return redirect('edit_task', blank_test_id, task_id)
+
+@allowed_teacher('blank_test')
+def delete_img_from_answer_option(request, blank_test_id, task_id, ans_opt_id):
+    ans_opt = get_object_or_404(AnswerOption, id=ans_opt_id)
+    ans_opt.img = ''
+    ans_opt.save()
+    return redirect('edit_task', blank_test_id, task_id)
+
+
+@allowed_teacher('task')
 def delete_audio_file(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     task.file = ''
     task.save()
-    return redirect('edit_test', task.test.id)
+    return redirect('edit_task', task.test.id, task.id)
 
 
 @allowed_teacher('blank_test')
@@ -462,7 +523,7 @@ def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     if request.method == 'POST':
         task.delete()
-        return redirect('edit_test', blank_test_id=task.test.id)
+        return redirect('task_list', blank_test_id=task.test.id)
     return render(request, 'tests/delete_task.html', {'task': task})
 
 
@@ -562,7 +623,7 @@ def delete_image(request, task_id):
         task = get_object_or_404(Task, id=task_id)
         task.image = ''
         task.save()
-        return redirect('edit_test', blank_test_id=task.test.id)
+        return redirect('edit_task', task.test.id, task.id)
     return redirect('home')
 
 

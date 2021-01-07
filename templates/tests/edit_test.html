@@ -5,82 +5,15 @@
 <form method="post" enctype="multipart/form-data">
 {% csrf_token %}
     <label>Nazwa:</label>
-    <input name="nazwa" type="text" value="{{ test.label }}"><br>
+    <input name="name" type="text" value="{{ test.label }}"><br>
     <label>Czas trwania testu (godziny:minuty:sekundy):</label>
-    <input name="countdown" type="text" value="{{ test.countdown }}"><br>
+    <input name="countdown" type="text" value="{{ test.countdown }}" required><br>
     <label>Ogranicz wyjścia z testu: </label>
     <input id="are_exits_allowed" type="checkbox" name="are_exits_allowed" {% if not test.are_exists_allowed %} checked {% endif %}><br>
     <div id="allowed_exits_box" {% if test.are_exists_allowed %} hidden {% endif %}>
         <label>Liczba dopuszczonych wyjść</label>
         <input id="allowed_exits" name="allowed_exits" type="number" value="{{ test.allowed_exits }}">
     </div>
-    {% for task in tasks %}
-        <h3>Zadanie {{ forloop.counter }}</h3>
-        <a href="{% url 'delete_task' task.id %}">(usuń zadanie)</a><br><br>
-        <label>Polecenie:</label>
-        <textarea name="{{ task.id }}_polecenie">{{ task.content }}</textarea>
-        <br>
-        {% if task.image %}
-            <img src="{{ task.image.url }}"><br>
-            <button formaction="{% url 'delete_image' task.id %}">Usuń zdjęcie</button>
-        {% endif %}
-        <label>{% if task.image %}Zmień{% else %}Dodaj{% endif %} zdjęcie:</label>
-        <input type="file" name="image_{{ task.id }}" accept="image/*"><br>
-        {% if task.file %}
-            <audio controls>
-            <source src="{{ task.file.url }}">
-            </audio><br>
-            <button formaction="{% url 'delete_audio_file' task.id %}">Usuń plik dźwiękowy</button><br>
-        {% endif %}
-        <label>{% if task.file %}Zmień{% else %}Dodaj{% endif %} plik dźwiękowy:</label>
-        <input type="file" name="file_{{ task.id }}" accept="audio/*"><br>
-        {% if task.type.label == 'zamkniete' %}
-            <ul>
-            {% for option in task.answer_options %}
-                <li>
-                <input name="{{ option.id }}_label" type="text" value="{{ option.label }}">
-                {% if option.img %}
-                <img src="{{ option.img.url }}">
-                <label>Zmień zdjęcie</label>
-                <input type="file" name="{{ option.id }}_image" accept="image/*">
-                <a href="{% url 'delete_img_from_answer_option' test.id option.id %}">Usuń zdjęcie</a>
-                {% else %}
-                <label>Wybierz zdjęcie</label>
-                <input type="file" name="{{ option.id }}_image" accept="image/*">
-                {% endif %}
-                <p>Czy poprawna:</p>
-                <input name="{{ option.id }}_is_correct"  type="checkbox" class="is_correct" {% if option.is_correct %} checked {% endif %}>
-                </li>
-                <a href="{% url "delete_answer_option" test.id option.id %}">Usuń</a>
-            {% endfor %}
-            <li><a href="{% url 'add_answer_option' task.id %}">Dodaj opcje odpowiedzi</a></li>
-            </ul>
-        {% endif %}
-        {% if task.type.label == 'prawda/fałsz' %}
-            <ul>
-            {% for option in task.truefalsetask_set.all %}
-            <li><input type="text" value="{{ option.content }}" name="{{ option.id }}_content"></li>
-                <input type="radio" name="{{ option.id }}_is_correct" value="true" {% if option.is_correct %}checked{% endif %}><label>Prawda</label>
-                <input type="radio" name="{{ option.id }}_is_correct" value="false" {% if not option.is_correct %}checked{% endif %}><label>Fałsz</label><br>
-                <input type="number" name="{{ option.id }}_points" value="{{ option.points }}"><br><br>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        {% if task.correct_answer %}
-        <label>poprawna odpowiedz:</label><br>
-        <input name="{{ task.id }}_poprawnaodpowiedz" type="text" value="{{ task.correct_answer }}">
-        {% endif %}
-        <br>
-        <label>Punkty do zdobycia:</label>
-        {% if task.type.label == 'prawda/fałsz' %}
-            <p>Pozostaw 0 by każda z odpowiedzi była oceniania</p>
-        <p>Wpisz liczbę by każda z odpowiedzi była oceniania jako całość (1 błąd = 0 punktów za zadanie)</p>
-        {% endif %}
-        <input type="number" name="{{ task.id }}_points" value="{{ task.points }}">
-        <br><hr>
-    {% endfor %}
-    <br>
-    <a href="{% url 'create_task' test.id %}">Utworz zadanie</a><br>
 <button type="submit">Zapisz zmiany</button>
 </form>
 {% endblock %}

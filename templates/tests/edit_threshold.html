@@ -39,5 +39,7 @@ Progi punktowe
 <button type="submit">Zatwierdz</button>
 </form>
 <a href="{% url 'add_threshold' blanktest.id %}">Dodaj</a>
+{% if blanktest.threshold %}
 <a href="{% url 'delete_entire_threshold' blanktest.id %}">Usuń wszystko</a>
+{% endif %}
 {% endblock %}

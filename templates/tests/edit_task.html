@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edytuj zadanie{% endblock %}
+{% block content %}
+<div id="task_id" hidden>{{ task.id }}</div>
+<form method="post" enctype="multipart/form-data" autocomplete="off">
+{% csrf_token %}
+    <ol>
+    <li><label>Polecenie:</label></li>
+        <textarea name="content">{{ task.content }}</textarea>
+        {% if task.image %}
+        <img src="{{ task.image.url }}">
+        {% endif %}
+        <li>Typ zadania:</li><span id="type_of_task">{{ task.type.label }}</span>
+        <li>
+        <label>{% if task.image %}Zmień{% else %}Dodaj{% endif %} zdjęcie</label>
+        <input type="file" name="image" accept="image/*">
+        {% if task.image %}
+        <button formaction="{% url 'delete_image' task.id %}">Usuń zdjęcie</button>
+        {% endif %}
+        </li>
+        <li>
+        {% if task.file %}
+            <audio controls>
+            <source src="{{ task.file.url }}">
+            </audio><br>
+        {% endif %}
+        <label>{% if task.file %}Zmień{% else %}Dodak{% endif %} plik dzwiękowy:</label>
+        <input name="file" accept="audio/*" type="file"><br>
+        {% if task.file %}
+        <button formaction="{% url 'delete_audio_file' task.id %}">Usuń plik dźwiękowy</button><br>
+        {% endif %}
+        <label>Ilość punktów za zadanie:</label>
+        {% if task.type.label == 'prawda/fałsz' %}
+        <p>Pozostaw 0 by każda z odpowiedzi była oceniania</p>
+        <p>Wpisz liczbę by każda z odpowiedzi była oceniania jako całość (1 błąd = 0 punktów za zadanie)</p>
+        {% endif %}
+        <input type="number" name="points" value="{{ task.points }}">
+    </li>
+    </ol>
+
+    {% if task.type.label == 'zamkniete' %}
+        <h5>Opcje odpowiedzi:</h5>
+        <ul id="answer_options">
+        </ul>
+        <br>
+    {% endif %}
+    {% if task.type.label == 'krotka odpowiedz' %}
+    <label>Poprawna odpowiedz</label>
+    <input type="text" value="{{ task.correct_answer }}" id="correct_answer_text" name="correct_answer">
+    {% endif %}
+
+    {% if task.type.label == 'prawda/fałsz' %}
+        <ul id="trueFalseSentences"></ul>
+    {% endif %}
+
+    <button id="edit_task_btn" type="submit">Zapisz</button>
+</form><br><br>
+
+{% if task.type.label == 'zamkniete' %}
+<h5>Dodaj opcję odpowiedzi:</h5>
+<form id="addAnswerOptionForm" enctype="multipart/form-data" method="post">
+{% csrf_token %}
+    <label>Tekst: </label>
+    <input id="ans_option_text" name="label" type="text"><br>
+    <label>Dodaj zdjęcie: </label>
+    <input id="ans_option_image" name="ans_opt_image" type="file" accept="image/*"><br>
+    <label>Czy to poprawna odpowiedz?</label>
+    <input id="ans_option_is_correct" type="checkbox">
+    <button id="ans_option_button" type="submit">Dodaj</button>
+</form>
+{% endif %}
+
+
+{% if task.type.label == 'prawda/fałsz' %}
+<h5>Dodaj opcję odpowiedzi:</h5>
+<form id="addTrueFalseTaskForm" method="post">
+{% csrf_token %}
+    <label>Treść:</label>
+    <input type="text" id="trueFalseContent">
+    <input id="true" type="radio" name="trueFalseTask"><label>Prawda</label>
+    <input id="false" type="radio" name="trueFalseTask"><label>Fałsz</label><br>
+    <label>Punkty za poprawna odpowiedz:</label>
+    <input id="pointsTF" value="0" type="number">
+    <button type="submit" id="add_true_false_option_btn">Dodaj</button>
+</form>
+{% endif %}
+<br>
+<a href="{% url 'task_list' task.test.id %}">Zobacz sprawdzian</a>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'js/edit_task.js'%}"></script>
+{% endblock %}

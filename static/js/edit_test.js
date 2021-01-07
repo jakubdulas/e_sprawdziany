@@ -8,17 +8,3 @@ are_exits_allowed.addEventListener('change', ()=> {
         allowed_exits_box.hidden = true
     }
 })
-
-
-const items = document.getElementsByClassName('is_correct')
-Array.from(items).forEach((item)=>{
-    item.addEventListener('change', (e)=>{
-        const element = e.target
-        if (element.checked){
-            element.setAttribute('value', 'tak')
-        }else{
-            element.setAttribute('value', 'nie')
-        }
-
-    })
-})

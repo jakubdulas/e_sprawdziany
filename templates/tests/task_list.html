@@ -25,9 +25,12 @@
     {{ test.allowed_exits }}
     {% endif %}
 </p>
+    <hr>
 <ol>
     {% for task in tasks %}
         <h4>Zadanie {{ forloop.counter }}</h4>
+        <a href="{% url 'edit_task' test.id task.id %}">Edytuj zadanie</a>
+        <a href="{% url 'delete_task' task.id %}">Usuń zadanie</a>
         <p>{{ task.content|linebreaks }}</p>
         {% if task.image %}
         <img src="{{ task.image.url }}">

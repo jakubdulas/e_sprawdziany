@@ -60,6 +60,7 @@ class Test(models.Model):
     mark = models.CharField(max_length=1, null=True, blank=True)
     is_done = models.BooleanField(default=False)
     exits = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.label} | {self.student}"
@@ -67,13 +68,6 @@ class Test(models.Model):
     @property
     def tasks(self):
         return self.task_set.all()
-
-    @property
-    def total_points(self):
-        total = 0
-        for task in self.tasks:
-            total += task.answer_set.first().earned_points
-        return total
 
     def get_logs(self):
         return self.testlog_set.all()
@@ -101,7 +95,7 @@ class Task(models.Model):
 
     def students_answer(self, student):
         try:
-            return self.answer_set.get(student=student)
+            return self.answer_set.filter(student=student).all()
         except:
             return ""
 

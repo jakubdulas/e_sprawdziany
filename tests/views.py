@@ -41,11 +41,15 @@ def save_answers(request, test_id):
         test.is_active = False
         test.is_done = True
         test.save()
+        earned_total = 0
+        total = 0
         for task in test.tasks:
-            answer = Answer.objects.create(
-                student=student,
-                task=task,
-            )
+            if task.type.label != 'prawda/fałsz':
+                answer = Answer.objects.create(
+                    student=student,
+                    task=task,
+                )
+            total += task.points
             if f"{task.id}" in request.POST.keys():
                 if task.type.label == 'otwarte':
                     answer.textarea = request.POST[f"{task.id}"]
@@ -55,11 +59,15 @@ def save_answers(request, test_id):
                     answer.answer_option = answer_option
                     if answer_option.is_correct:
                         answer.is_correct = True
+                        answer.earned_points = task.points
+                        earned_total += answer.earned_points
                 elif task.type.label == 'krotka odpowiedz':
                     answer.char_field = request.POST[f'{task.id}']
                     if task.correct_answer != '':
                         if answer.char_field == task.correct_answer:
                             answer.is_correct = True
+                            answer.earned_points = task.points
+                            earned_total += answer.earned_points
                 elif task.type.label == 'tablica':
                     try:
                         data = request.POST[f'{task.id}']
@@ -69,19 +77,38 @@ def save_answers(request, test_id):
                         answer.board = img
                     except:
                         pass
-            answer.save()
+            if task.type.label == 'prawda/fałsz':
+                for option in task.truefalsetask_set.all():
+                    answer = Answer.objects.create(
+                        student=student,
+                        task=task,
+                    )
+                    if f"{option.id}_tf" in request.POST.keys():
+                        if request.POST[f'{option.id}_tf'] == 'true':
+                            if option.is_correct:
+                                answer.is_correct = True
+                                if option.points != 0:
+                                    answer.earned_points += option.points
+                                    earned_total += answer.earned_points
+                            answer.char_field = 'Prawda'
+                        else:
+                            if not option.is_correct:
+                                answer.is_correct = True
+                                if option.points != 0:
+                                    answer.earned_points += option.points
+                                    earned_total += answer.earned_points
+                            answer.char_field = 'Fałsz'
+                    answer.true_false = TrueFalseTask.objects.get(id=option.id)
+                    answer.save()
 
-        # sprawdzanie testu
-        earned_total = 0
-        total = 0
-        for task in test.tasks:
-            answer = Answer.objects.get(task=task, student=student)
-            total += task.points
-            if answer.is_correct:
-                answer.earned_points = task.points
-                earned_total += answer.earned_points
+                if (Answer.objects.filter(is_correct=True, task=task).all().count() == task.truefalsetask_set.all().count()
+                    and TrueFalseTask.objects.filter(task=task, points=0).all().count() == task.truefalsetask_set.all().count()):
+                    earned_total += task.points
+                else:
+                    earned_total += 0
             answer.save()
-
+        test.total_points = earned_total
+        test.save()
         if total != 0:
             percent = round(earned_total * 100 / total)
             if test.blank_test.autocheck:
@@ -334,11 +361,15 @@ def show_students_answers(request, test_id):
         earned_total = 0
 
         for task in test.tasks:
-            answer = task.students_answer(test.student)
-            if task.points >= int(request.POST[f'{task.id}']):
-                answer.earned_points = int(request.POST[f'{task.id}'])
-            answer.save()
-            earned_total += answer.earned_points
+            answers = task.students_answer(test.student)
+            for answer in answers:
+                if task.points >= int(request.POST[f'{task.id}']):
+                    answer.earned_points = int(request.POST[f'{task.id}'])
+                answer.save()
+                earned_total += answer.earned_points
+
+        test.total_points = earned_total
+        test.save()
 
         if total != 0:
             percent = earned_total * 100 / total

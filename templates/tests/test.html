@@ -42,6 +42,16 @@
             <input id="{{ task.id }}" class="color" type="color">
             <canvas id='{{ task.id }}' style="border: 1px solid black;"></canvas>
             <input name="{{ task.id }}" type="hidden" class="hiddenInput">
+        {% elif task.type.label == 'prawda/fałsz' %}
+            <ol>
+            {% for option in task.truefalsetask_set.all %}
+            <li>
+            <label>{{ option.content }}</label>
+            <input type="radio" name="{{ option.id }}_tf" value="true"><label>Prawda</label>
+            <input type="radio" name="{{ option.id }}_tf" value="false"><label>Fałsz</label>
+            </li>
+            {% endfor %}
+            </ol>
         {% endif %}
     {% endfor %}
     <button id="submit_form" type="submit">Submit</button>

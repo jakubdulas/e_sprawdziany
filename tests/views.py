@@ -44,11 +44,10 @@ def save_answers(request, test_id):
         earned_total = 0
         total = 0
         for task in test.tasks:
-            if task.type.label != 'prawda/fałsz':
-                answer = Answer.objects.create(
-                    student=student,
-                    task=task,
-                )
+            answer = Answer.objects.create(
+                student=student,
+                task=task,
+            )
             total += task.points
             if f"{task.id}" in request.POST.keys():
                 if task.type.label == 'otwarte':
@@ -79,29 +78,29 @@ def save_answers(request, test_id):
                         pass
             if task.type.label == 'prawda/fałsz':
                 for option in task.truefalsetask_set.all():
-                    answer = Answer.objects.create(
-                        student=student,
-                        task=task,
+                    answer_for_tf = AnswerForTF.objects.create(
+                        answer=answer,
+                        true_false=option,
                     )
                     if f"{option.id}_tf" in request.POST.keys():
                         if request.POST[f'{option.id}_tf'] == 'true':
+                            answer_for_tf.checked = True
                             if option.is_correct:
-                                answer.is_correct = True
+                                answer_for_tf.is_correct = True
                                 if option.points != 0:
                                     answer.earned_points += option.points
                                     earned_total += answer.earned_points
-                            answer.char_field = 'Prawda'
                         else:
+                            answer_for_tf.checked = False
                             if not option.is_correct:
-                                answer.is_correct = True
+                                answer_for_tf.is_correct = True
                                 if option.points != 0:
                                     answer.earned_points += option.points
                                     earned_total += answer.earned_points
-                            answer.char_field = 'Fałsz'
-                    answer.true_false = TrueFalseTask.objects.get(id=option.id)
                     answer.save()
+                    answer_for_tf.save()
 
-                if (Answer.objects.filter(is_correct=True, task=task).all().count() == task.truefalsetask_set.all().count()
+                if (AnswerForTF.objects.filter(is_correct=True, task=task).all().count() == task.truefalsetask_set.all().count()
                     and TrueFalseTask.objects.filter(task=task, points=0).all().count() == task.truefalsetask_set.all().count()):
                     earned_total += task.points
                 else:
@@ -115,6 +114,14 @@ def save_answers(request, test_id):
                 for mark in test.blank_test.threshold:
                     if mark.to_percent >= percent >= mark.from_percent:
                         test.mark = mark.mark
+                        Grade.objects.create(
+                            teacher=test.blank_test.teacher,
+                            test=test,
+                            student=student,
+                            mark=mark.mark,
+                            category=test.label,
+                            description=f"{earned_total}/{total}"
+                        )
                         test.save()
 
         if test.blank_test.autocheck and test.mark:
@@ -361,12 +368,11 @@ def show_students_answers(request, test_id):
         earned_total = 0
 
         for task in test.tasks:
-            answers = task.students_answer(test.student)
-            for answer in answers:
-                if task.points >= int(request.POST[f'{task.id}']):
-                    answer.earned_points = int(request.POST[f'{task.id}'])
-                answer.save()
-                earned_total += answer.earned_points
+            answer = task.students_answer(test.student)
+            if task.points >= int(request.POST[f'{task.id}']):
+                answer.earned_points = int(request.POST[f'{task.id}'])
+            answer.save()
+            earned_total += answer.earned_points
 
         test.total_points = earned_total
         test.save()
@@ -376,6 +382,16 @@ def show_students_answers(request, test_id):
 
             for mark in test.blank_test.threshold:
                 if mark.to_percent >= percent >= mark.from_percent:
+                    obj, created = Grade.objects.get_or_create(
+                        teacher=test.blank_test.teacher,
+                        test=test,
+                        student=test.student
+                    )
+                    obj.mark = mark.mark
+                    obj.category = test.label,
+                    obj.description = f"{earned_total}/{total}"
+
+                    obj.save()
                     test.mark = mark.mark
                     test.save()
 
@@ -590,7 +606,7 @@ def add_threshold(request, blank_test_id):
     }
     if request.method == 'POST':
         try:
-            Mark.objects.create(
+            Threshold.objects.create(
                 mark=request.POST['mark'],
                 from_percent=request.POST['from_percent'],
                 to_percent=request.POST['to_percent'],
@@ -599,7 +615,7 @@ def add_threshold(request, blank_test_id):
         except:
             messages.error(request, 'cos poszlo nie tak')
         return redirect('add_threshold', blank_test.id)
-    return render(request, 'tests/threshold.html',context=context)
+    return render(request, 'tests/threshold.html', context=context)
 
 
 # @paid_subscription
@@ -637,10 +653,10 @@ def delete_entire_threshold(request, blank_test_id):
 # @paid_subscription
 # @allowed_teacher_to_blanktest
 @allowed_teacher('blank_test')
-def delete_threshold(request, blank_test_id, mark_id):
+def delete_threshold(request, blank_test_id, threshold_id):
     if request.method == 'POST':
         blank_test = get_object_or_404(BlankTest, id=blank_test_id)
-        mark = get_object_or_404(Mark, id=mark_id)
+        mark = get_object_or_404(Threshold, id=threshold_id)
         mark.delete()
         return redirect('add_threshold', blank_test_id=blank_test.id)
     return render(request, 'tests/edit_threshold.html')

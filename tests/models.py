@@ -31,7 +31,7 @@ class BlankTest(models.Model):
 
     @property
     def threshold(self):
-        return self.mark_set.all()
+        return self.threshold_set.all()
 
     @property
     def autocheck(self):
@@ -95,7 +95,7 @@ class Task(models.Model):
 
     def students_answer(self, student):
         try:
-            return self.answer_set.filter(student=student).all()
+            return self.answer_set.filter(student=student).first()
         except:
             return ""
 
@@ -128,7 +128,6 @@ class Answer(models.Model):
     char_field = models.CharField(max_length=250, null=True, blank=True)
     board = models.ImageField(upload_to='boards/', null=True, blank=True)
     answer_option = models.OneToOneField(AnswerOption, on_delete=models.CASCADE, null=True, blank=True)
-    true_false = models.OneToOneField('TrueFalseTask', on_delete=models.CASCADE, null=True, blank=True)
     is_correct = models.BooleanField(default=False, null=True, blank=True)
     earned_points = models.IntegerField(null=True, blank=True, default=0)
 
@@ -145,7 +144,7 @@ class Answer(models.Model):
         return self.task.test
 
 
-class Mark(models.Model):
+class Threshold(models.Model):
     mark = models.CharField(max_length=2)
     from_percent = models.IntegerField()
     to_percent = models.IntegerField()
@@ -168,3 +167,25 @@ class TrueFalseTask(models.Model):
     content = models.CharField(max_length=250)
     is_correct = models.BooleanField(default=False)
     points = models.IntegerField(default=0)
+
+
+class AnswerForTF(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, null=True)
+    checked = models.BooleanField(blank=True, null=True)
+    true_false = models.OneToOneField(TrueFalseTask, on_delete=models.CASCADE, null=True)
+    is_correct = models.BooleanField(default=False, null=True)
+
+
+class Grade(models.Model):
+    mark = models.CharField(max_length=3, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, blank=True, null=True)
+    test = models.OneToOneField(Test, on_delete=models.CASCADE, blank=True, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
+    category = models.CharField(max_length=250, blank=True, null=True)
+    date = models.DateField(auto_now_add=True)
+    description = models.TextField(blank=True, null=True)
+    weight = models.IntegerField(default=0, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.mark} | {self.student.user.first_name} {self.student.user.last_name}"

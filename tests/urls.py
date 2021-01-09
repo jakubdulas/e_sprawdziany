@@ -32,7 +32,7 @@ urlpatterns = [
     path('<int:blank_test_id>/threshold/', add_threshold, name='add_threshold'),
     path('<int:blank_test_id>/threshold/edit/', edit_threshold, name='edit_threshold'),
     path('<int:blank_test_id>/threshold/delete/', delete_entire_threshold, name='delete_entire_threshold'),
-    path('<int:blank_test_id>/threshold/<int:mark_id>/delete/', delete_threshold, name='delete_threshold'),
+    path('<int:blank_test_id>/threshold/<int:threshold_id>/delete/', delete_threshold, name='delete_threshold'),
 
 
     path('<int:test_id>/answers/', show_students_answers, name='show_students_answers'),

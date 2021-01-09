@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from teacher.models import Teacher
 from student.models import Student
+from django.contrib.auth.models import User
 
 
 def home(request):
@@ -42,3 +43,13 @@ def logoutView(request):
 @unauthenticated_user
 def registerView(request):
     return render(request, 'general/register.html')
+
+
+def profile_view(request, username):
+    user = get_object_or_404(User, username=username)
+    if Teacher.objects.filter(user=user):
+        profile = Teacher.objects.get(user=user)
+    elif Student.objects.filter(user=user):
+        profile = Student.objects.get(user=user)
+
+    return render(request, 'general/profile_view.html', context={'profile': profile})

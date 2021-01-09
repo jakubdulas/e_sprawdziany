@@ -115,6 +115,43 @@ if (typeOfTask.textContent == 'zamkniete'){
 
 if (typeOfTask.textContent == 'prawda/fałsz'){
     const trueFalseSentences = document.getElementById('trueFalseSentences')
+    const pointsTask = document.getElementById('points')
+
+    const addTrueFalseTaskForm = document.getElementById('addTrueFalseTaskForm')
+    const trueFalseContent = document.getElementById('trueFalseContent')
+    const isTrue = document.getElementById('true')
+    const pointsTF = document.getElementById('pointsTF')
+    const pointsFields = document.getElementsByClassName('pointsTF')
+
+    pointsTask.addEventListener('change', (e)=>{
+        if (e.target.value != '0'){
+            Array.from(pointsFields).forEach((item)=>{
+                item.disabled = true
+                item.value = 0
+            })
+            pointsTF.disabled = true
+            pointsTF.value = 0
+        }else{
+            Array.from(pointsFields).forEach((item)=>{
+            item.disabled = false
+            })
+            pointsTF.disabled = false
+        }
+    })
+
+    if (pointsTask.value != '0'){
+        Array.from(pointsFields).forEach((item)=>{
+            item.disabled = true
+            item.value = 0
+        })
+        pointsTF.disabled = true
+        pointsTF.value = 0
+    }else{
+        Array.from(pointsFields).forEach((item)=>{
+        item.disabled = false
+        })
+        pointsTF.disabled = false
+    }
 
     const get_true_false_sentences = ()=>{
         $.ajax({
@@ -155,7 +192,12 @@ if (typeOfTask.textContent == 'prawda/fałsz'){
                     const points = document.createElement('input')
                     points.setAttribute('value', item.points)
                     points.setAttribute('type', 'number')
+                    points.setAttribute('class', 'pointsTF')
                     points.setAttribute('name', `${item.id}_points`)
+                    if (pointsTask.value != '0'){
+                        points.setAttribute('value', 0)
+                        points.disabled = true
+                    }
                     const a = document.createElement('a')
                     a.setAttribute('href', window.location.href + `delete-true-false-sentence/${item.id}/`)
                     a.textContent = 'Usuń'
@@ -182,11 +224,6 @@ if (typeOfTask.textContent == 'prawda/fałsz'){
     }
 
     get_true_false_sentences()
-
-    const addTrueFalseTaskForm = document.getElementById('addTrueFalseTaskForm')
-    const trueFalseContent = document.getElementById('trueFalseContent')
-    const isTrue = document.getElementById('true')
-    const pointsTF = document.getElementById('pointsTF')
 
 
     addTrueFalseTaskForm.addEventListener('submit', (e)=>{

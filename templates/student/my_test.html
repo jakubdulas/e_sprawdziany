@@ -18,46 +18,46 @@
     {% endif %}
     <p><b>Odpowiedz:</b></p>
     <p>
-        {% if answer.first.task.type.label == 'zamkniete' %}
-        {{ answer.first.char_field }}
-        {% if answer.first.answer_option.img %}
-            <img src="{{ answer.first.answer_option.img.url }}">
+        {% if answer.task.type.label == 'zamkniete' %}
+        {{ answer.char_field }}
+        {% if answer.answer_option.img %}
+            <img src="{{ answer.answer_option.img.url }}">
         {% endif %}
-        {% if not answer.first.is_correct %}
+        {% if not answer.is_correct %}
             <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer_option.label }}</p>
             {% if task.correct_answer_option.img %}
                 <img src="{{ task.correct_answer_option.img.url }}">
             {% endif %}
         {% endif %}
-    {% elif answer.first.task.type.label == 'krotka odpowiedz' %}
-        {{ answer.first.char_field }}
-        {% if not answer.first.is_correct %}
+    {% elif answer.task.type.label == 'krotka odpowiedz' %}
+        {{ answer.char_field }}
+        {% if not answer.is_correct %}
             <p><b>Poprawna odpowiedz:</b> {{ task.correct_answer }}</p>
         {% endif %}
     {% elif task.type.label == 'prawda/fałsz' %}
         <ol>
-        {% for a in answer %}
-        <li>{{ a.true_false.content }} | {{ a.char_field }}</li>
-        {% if not a.is_correct %}
-            <p>Poprawna odpowiedz: {% if a.true_false.is_correct %} Prawda {% else %} Fałsz {% endif %}</p>
+        {% for tf_answer in answer.answerfortf_set.all %}
+        <li>{{ tf_answer.true_false.content }} | {% if tf_answer.checked %}Prawda{% else %}Fałsz{% endif %}</li>
+        {% if not tf_answer.is_correct %}
+            <p>Poprawna odpowiedz: {% if tf_answer.true_false.is_correct %} Prawda {% else %} Fałsz {% endif %}</p>
         {% endif %}
         {% endfor %}
         </ol>
-    {% elif answer.first.task.type.label == 'tablica' %}
-        {% if answer.first.board %}
-            <img src="{{ answer.first.board.url }}">
+    {% elif answer.task.type.label == 'tablica' %}
+        {% if answer.board %}
+            <img src="{{ answer.board.url }}">
         {% else %}
             <p>Nie udzieliłes odpowiedzi na to pytanie</p>
         {% endif %}
-    {% elif answer.first.task.type.label == 'otwarte' %}
-        <p>{{ answer.first.textarea|linebreaks }}</p>
+    {% elif answer.task.type.label == 'otwarte' %}
+        <p>{{ answer.textarea|linebreaks }}</p>
     {% endif %}
     </p>
         <p>
         Punktacja:
         </p>
         <p>
-            {{ answer.first.earned_points }} /
+            {{ answer.earned_points }} /
             <b>{{ task.points }}</b>
         </p>
     {% endfor %}

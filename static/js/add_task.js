@@ -69,7 +69,11 @@ add_task_form.addEventListener('submit', (e)=>{
             trueFalseContent.disabled = false
             isTrue.disabled = false
             isFalse.disabled = false
-            pointsTF.disabled = false
+
+            if (points.value == '0') {
+                pointsTF.disabled = false
+            }
+
             addTrueFalseTaskBtn.disabled = false
 
             info.innerText = ''
@@ -262,5 +266,4 @@ addTrueFalseTaskFrom.addEventListener('submit', (e)=>{
         contentType: false,
         processData: false,
     })
-
 })

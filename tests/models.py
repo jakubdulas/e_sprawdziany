@@ -13,6 +13,7 @@ class BlankTest(models.Model):
     countdown = models.DurationField(null=True)
     are_exists_allowed = models.BooleanField(default=True)
     allowed_exits = models.IntegerField(default=0)
+    ignore_upper_case = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.label)

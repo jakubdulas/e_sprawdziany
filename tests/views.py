@@ -24,6 +24,7 @@ def test(request, test_id):
     #!!!!!!!!!! odkomentować gry doda sie frontend !!!!!!!!!!!
     end = datetime.datetime.now() + test.blank_test.countdown
     # test.is_active = False
+    # test.is_done = False
     test.save()
     context = {
         'test': test,
@@ -63,10 +64,16 @@ def save_answers(request, test_id):
                 elif task.type.label == 'krotka odpowiedz':
                     answer.char_field = request.POST[f'{task.id}']
                     if task.correct_answer != '':
-                        if answer.char_field == task.correct_answer:
-                            answer.is_correct = True
-                            answer.earned_points = task.points
-                            earned_total += answer.earned_points
+                        if test.blank_test.ignore_upper_case:
+                            if answer.char_field.lower() == task.correct_answer.lower():
+                                answer.is_correct = True
+                                answer.earned_points = task.points
+                                earned_total += answer.earned_points
+                        else:
+                            if answer.char_field == task.correct_answer:
+                                answer.is_correct = True
+                                answer.earned_points = task.points
+                                earned_total += answer.earned_points
                 elif task.type.label == 'tablica':
                     try:
                         data = request.POST[f'{task.id}']
@@ -144,7 +151,8 @@ def create_test(request):
             if label == '':
                 label = '(bez nazwy)'
             countdown = parse_duration(request.POST['countdown'])
-            test = BlankTest.objects.create(label=label, teacher=request.user.teacher, countdown=countdown)
+            test = BlankTest.objects.create(label=label, teacher=request.user.teacher,
+                                            countdown=countdown)
 
             students = Class.objects.get(id=int(request.POST['class']))
             test.students = students
@@ -432,6 +440,16 @@ def edit_test(request, blank_test_id):
                 test.allowed_exits = request.POST['allowed_exits']
         else:
             test.are_exists_allowed = True
+
+        print(request.POST)
+
+        if 'ignore_upper' in request.POST.keys():
+            if request.POST['ignore_upper'] == 'on':
+                ignore_upper = True
+        else:
+            ignore_upper = False
+
+        test.ignore_upper_case = ignore_upper
 
         test.countdown = parse_duration(request.POST['countdown'])
 

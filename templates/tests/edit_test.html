@@ -14,6 +14,8 @@
         <label>Liczba dopuszczonych wyjść</label>
         <input id="allowed_exits" name="allowed_exits" type="number" value="{{ test.allowed_exits }}">
     </div>
+    <label>Ignoruj wielkie litery podczas sprawdzania krótkiej odpowiedzi</label>
+    <input type="checkbox" name="ignore_upper" {% if test.ignore_upper_case %} checked {% endif %}>
 <button type="submit">Zapisz zmiany</button>
 </form>
 {% endblock %}

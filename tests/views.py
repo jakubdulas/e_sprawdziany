@@ -154,13 +154,24 @@ def create_test(request):
             test = BlankTest.objects.create(label=label, teacher=request.user.teacher,
                                             countdown=countdown)
 
+            numberOfGroups = int(request.POST['number_of_groups'])
+
             students = Class.objects.get(id=int(request.POST['class']))
             test.students = students
+
+            for number in range(numberOfGroups):
+                TestGroup.objects.create(
+                    number=(number+1),
+                    blank_test=test
+                )
+
             for student in students.students:
                 Test.objects.create(
                     label=label,
                     student=student,
-                    blank_test=test
+                    blank_test=test,
+                    group=TestGroup.objects.filter(blank_test=test).get(
+                        number=random.randint(1, TestGroup.objects.filter(blank_test=test).count()))
                 )
 
             if 'are_exits_allowed' in request.POST.keys():
@@ -174,7 +185,6 @@ def create_test(request):
 
             messages.success(request, "test zostal stworzony")
             return redirect('add_threshold', blank_test_id=test.id)
-            # return redirect('create_task', id=test.id)
         except:
             messages.error(request, "cos poszlo nie tak")
     context = {
@@ -187,8 +197,9 @@ def create_test(request):
 # @paid_subscription
 # @allowed_teacher_to_blanktest
 @allowed_teacher('blank_test')
-def create_task(request, blank_test_id):
+def create_task(request, blank_test_id, group_id):
     test = get_object_or_404(BlankTest, id=blank_test_id)
+    group = get_object_or_404(TestGroup, id=group_id)
     types_of_task = TypeOfTask.objects.all()
 
     data = {}
@@ -197,7 +208,8 @@ def create_task(request, blank_test_id):
             test=test,
             content=request.POST['content'],
             type=TypeOfTask.objects.get(id=int(request.POST['type'])),
-            points=request.POST['points']
+            points=request.POST['points'],
+            group=group
         )
 
         tests = Test.objects.filter(blank_test=test).all()
@@ -219,6 +231,7 @@ def create_task(request, blank_test_id):
     context = {
         'test': test,
         'types_of_task': types_of_task,
+        'group': group
     }
     return render(request, 'tests/add_task.html', context=context)
 
@@ -226,7 +239,7 @@ def create_task(request, blank_test_id):
 # @paid_subscription
 # @allowed_teacher_to_blanktest
 @allowed_teacher('blank_test')
-def get_json_type_of_task_data(request, blank_test_id):
+def get_json_type_of_task_data(request, blank_test_id, group_id):
     qs = list(TypeOfTask.objects.values())
     return JsonResponse({'data': qs})
 
@@ -307,7 +320,7 @@ def add_answer_option(request, task_id):
 # @paid_subscription
 # @allowed_teacher_to_blanktest
 @allowed_teacher('blank_test')
-def add_answer_option_ajax(request, blank_test_id):
+def add_answer_option_ajax(request, blank_test_id, group_id):
     if request.is_ajax():
         data = {}
         if request.POST['is_correct'] == '1':
@@ -351,7 +364,7 @@ def add_answer_option_edit_task(request, blank_test_id, task_id):
 # @paid_subscription
 # @allowed_teacher_to_blanktest
 @allowed_teacher('blank_test')
-def add_correct_answer_to_short_answer_ajax(request, blank_test_id):
+def add_correct_answer_to_short_answer_ajax(request, blank_test_id, group_id):
     if request.is_ajax():
         task = Task.objects.get(id=request.POST['task_id'])
         task.correct_answer = request.POST["correct_answer"]
@@ -372,7 +385,7 @@ def show_students_answers(request, test_id):
         tasks_answers.append(tuple((task, task.students_answer(test.student))))
 
     if request.method == 'POST':
-        total = test.blank_test.total_points
+        total = test.group.points
         earned_total = 0
 
         for task in test.tasks:
@@ -422,8 +435,6 @@ def test_list(request):
 
 
 #edytuj test
-# @paid_subscription
-# @allowed_teacher_to_blanktest
 @allowed_teacher('blank_test')
 def edit_test(request, blank_test_id):
     test = get_object_or_404(BlankTest, id=blank_test_id)
@@ -744,7 +755,7 @@ def test_logs(request, test_id):
 
 
 @allowed_teacher('blank_test')
-def add_truefalse_option_ajax(request, blank_test_id):
+def add_truefalse_option_ajax(request, blank_test_id, group_id):
     if request.is_ajax():
         task = get_object_or_404(Task, id=request.POST['task_id'])
         data = {}

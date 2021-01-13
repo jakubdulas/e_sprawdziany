@@ -19,7 +19,7 @@ urlpatterns = [
     path('<int:blank_test_id>/task/<int:task_id>/edit/delete-true-false-sentence/<int:tf_id>/', delete_true_false_sentence, name='delete_true_false_sentence'),
     path('<int:blank_test_id>/task/<int:task_id>/edit/ans-opt/<int:ans_opt_id>/delete-img/', delete_img_from_answer_option, name='delete_img_from_answer_option'),
     path('<int:blank_test_id>/delete/', delete_test, name='delete_test'),
-    path('<int:blank_test_id>/task/add/', create_task, name='create_task'),
+    path('<int:blank_test_id>/<int:group_id>/task/add/', create_task, name='create_task'),
     path('task/<int:task_id>/add-answer-option/', add_answer_option, name='add_answer_option'),
     path('task/<int:blank_test_id>/delete_answer_option/<int:ans_opt_id>/', delete_answer_option, name='delete_answer_option'),
     path('task/<int:task_id>/delete/', delete_task, name='delete_task'),
@@ -41,10 +41,10 @@ urlpatterns = [
     path('<int:blank_test_id>/class/<int:class_id>/', class_tests, name='class_tests'),
 
     #ajax
-    path('<int:blank_test_id>/task/add/get-types-of-tasks/', get_json_type_of_task_data, name='get_json_type_of_task_data'),
-    path('<int:blank_test_id>/task/add/answer-option/', add_answer_option_ajax, name='add_answer_option_ajax'),
-    path('<int:blank_test_id>/task/add/truefalse-option/', add_truefalse_option_ajax, name='add_truefalse_option_ajax'),
-    path('<int:blank_test_id>/task/add/correct-answer/', add_correct_answer_to_short_answer_ajax, name='add_correct_answer_to_short_answer_ajax'),
+    path('<int:blank_test_id>/<int:group_id>/task/add/get-types-of-tasks/', get_json_type_of_task_data, name='get_json_type_of_task_data'),
+    path('<int:blank_test_id>/<int:group_id>/task/add/answer-option/', add_answer_option_ajax, name='add_answer_option_ajax'),
+    path('<int:blank_test_id>/<int:group_id>/task/add/truefalse-option/', add_truefalse_option_ajax, name='add_truefalse_option_ajax'),
+    path('<int:blank_test_id>/<int:group_id>/task/add/correct-answer/', add_correct_answer_to_short_answer_ajax, name='add_correct_answer_to_short_answer_ajax'),
     path('<int:blank_test_id>/task/add/<int:task_id>/get-answer-options/', get_answer_options_ajax, name='get_answer_options_ajax'),
     path('<int:test_id>/student_left_test/', student_left_test, name='student_left_test'),
     path('<int:test_id>/send_test_log/', send_test_log, name='send_test_log'),

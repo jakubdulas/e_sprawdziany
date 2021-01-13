@@ -9,7 +9,7 @@
 {% if messages %}
 <ul>
     {% for message in messages %}
-    <li>{{ message }}</li>
+    <li id="message">{{ message }}</li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -28,6 +28,7 @@
 {% endif %}
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
 {% block scripts %}
 {% endblock %}
 </body>

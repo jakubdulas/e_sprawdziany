@@ -4,7 +4,8 @@
 <a href="{% url 'test_list' %}"><-- powrot do testów</a>
 
 <h1>{{ test.label }}</h1>
-<h2>{{ student.user.first_name }} {{ student.user.last_name }}</h2>
+<h2>Grupa {{ test.group.number }}</h2>
+<h3>{{ student.user.first_name }} {{ student.user.last_name }}</h3>
 <a href="{% url 'test_logs' test.id %}">Logi</a>
 <p>Wysłane: {% if test.is_done %}Tak{% else %}Nie{% endif %}</p>
 <p>Wyjścia ze sprawdzianu:
@@ -86,6 +87,6 @@
     {% if test.mark %}
     <p></p>
     <h1>Ocena: {{ test.mark }}</h1>
-    <h3>{{ test.total_points }} / {{ test.blank_test.total_points }}</h3>
+    <h3>{{ test.total_points }} / {{ test.group.points }}</h3>
     {% endif %}
 {% endblock %}

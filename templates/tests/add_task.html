@@ -63,7 +63,7 @@
     <button disabled type="submit" id="add_true_false_option_btn">Dodaj</button>
 </form>
 <br>
-<a href="{% url 'create_task' test.id %}">Dodaj kolejne zadanie</a>
+<a href="{% url 'create_task' test.id group.id %}">Dodaj kolejne zadanie</a>
 <a href="{% url 'task_list' test.id %}">Zobacz sprawdzian</a>
 {% endblock %}
 {% block scripts %}

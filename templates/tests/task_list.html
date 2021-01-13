@@ -27,7 +27,9 @@
 </p>
     <hr>
 <ol>
-    {% for task in tasks %}
+    {% for group in test.testgroup_set.all %}
+    <h2>Grupa {{ group.number }}</h2>
+    {% for task in group.task_set.all %}
         <h4>Zadanie {{ forloop.counter }}</h4>
         <a href="{% url 'edit_task' test.id task.id %}">Edytuj zadanie</a>
         <a href="{% url 'delete_task' task.id %}">Usuń zadanie</a>
@@ -76,7 +78,8 @@
         <p>Punktów do zdobycia: {{ task.points }}</p>
     {% endfor %}
 
-    <a href="{% url 'create_task' test.id %}">Dodaj zadanie</a>
+    <a href="{% url 'create_task' test.id group.id %}">Dodaj zadanie</a>
+    {% endfor %}
 
 </ol>
 {% endblock %}

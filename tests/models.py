@@ -45,12 +45,17 @@ class BlankTest(models.Model):
                     return False
         return foo
 
+
+class TestGroup(models.Model):
+    number = models.IntegerField()
+    blank_test = models.ForeignKey(BlankTest, on_delete=models.CASCADE)
+
     @property
-    def total_points(self):
-        total = 0
-        for task in self.tasks:
-            total += task.points
-        return total
+    def points(self):
+        points = 0
+        for task in self.task_set.all():
+            points += task.points
+        return points
 
 
 class Test(models.Model):
@@ -58,6 +63,7 @@ class Test(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
     blank_test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
+    group = models.ForeignKey(TestGroup, on_delete=models.CASCADE, null=True)
     mark = models.CharField(max_length=1, null=True, blank=True)
     is_done = models.BooleanField(default=False)
     exits = models.IntegerField(default=0)
@@ -68,7 +74,7 @@ class Test(models.Model):
 
     @property
     def tasks(self):
-        return self.task_set.all()
+        return self.group.task_set.all()
 
     def get_logs(self):
         return self.testlog_set.all()
@@ -76,6 +82,7 @@ class Test(models.Model):
 
 class Task(models.Model):
     test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
+    group = models.ForeignKey(TestGroup, on_delete=models.CASCADE, null=True)
     students_test = models.ManyToManyField(Test)
     content = models.TextField(blank=True)
     image = models.ImageField(upload_to='images/', blank=True, null=True)

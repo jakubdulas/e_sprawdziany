@@ -15,21 +15,24 @@ from django.core.files.base import ContentFile
 
 # Create your views here.
 
-
+from django.utils import timezone
 #rozwiązywanie testu
 @allowed_student
 def test(request, test_id):
     # test = Test.objects.get(id=id)
     test = get_object_or_404(Test, id=test_id)
     #!!!!!!!!!! odkomentować gry doda sie frontend !!!!!!!!!!!
-    end = datetime.datetime.now() + test.blank_test.countdown
+    # end = datetime.datetime.now() + test.blank_test.countdown
+    end = test.blank_test.countdown.total_seconds()*1000
+
     # test.is_active = False
     # test.is_done = False
     test.save()
     context = {
         'test': test,
         'tasks': test.tasks,
-        'end_test': end.strftime("%m %d, %Y %H:%M:%S"),
+        # 'end_test': end.strftime("%m %d, %Y %H:%M:%S"),
+        'end_test': end,
     }
 
     return render(request, 'tests/test.html', context=context)

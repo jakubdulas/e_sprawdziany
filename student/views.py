@@ -87,7 +87,8 @@ def class_list(request):
 def leave_class(request, id):
     classlist = Class.objects.get(id=id)
     if request.POST:
-        request.user.student.school_class.reverse(classlist)
+        request.user.student.school_class.remove(classlist)
+        return redirect('home')
     return render(request, 'student/leave.html', {'class': classlist})
 
 

@@ -6,5 +6,5 @@ urlpatterns = [
     path('login/', loginView, name='login'),
     path('logout/', logoutView, name='logout'),
     path('register/', registerView, name='register'),
-    path('<str:username>/', profile_view, name='profile'),
+    path('profile/', profile_view, name='profile'),
 ]

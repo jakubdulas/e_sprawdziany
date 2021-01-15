@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}
+Home
+{% endblock %}
+{% block content %}
+<h1>Hello: <a href="{% url 'profile' %}">{{ student.user.first_name }} {{ student.user.last_name }}</a></h1>
+<a href="{% url 'class_list' %}">Klasy</a>
+<a href="{% url 'active_tests' %}">Aktywne testy</a>
+<a href="{% url 'my_tests' %}">Moje sprawdziny</a>
+{% endblock %}

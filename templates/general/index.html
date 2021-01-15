@@ -1,30 +1,5 @@
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
 {% block content %}
-{% if user.is_authenticated %}
-    <h1>Hello: {{ user }}</h1>
-{% else %}
-    <h1>Hi there!</h1>
-{% endif %}
-{% if teacher %}
-    <a href="{% url 'create_class' %}">Stworz klase</a>
-    <a href="{% url 'teachers_class_list' %}">Klasy</a>
-    <a href="{% url 'create_test' %}">Stwórz test</a>
-    <a href="{% url 'test_list' %}">Testy</a>
-    {% if teacher.is_headmaster and teacher.headmaster.school %}
-        <a href="{% url 'headmaster_panel' %}">Panel dyrektora</a>
-    {% endif %}
-
-    <a href="{% url 'choose_school' %}">Dołącz do szkoły</a>
-    {% if teacher.is_headmaster and not teacher.headmaster.school %}
-    <a href="{% url 'create_school' %}">Dodaj szkołę</a>
-    {% endif %}
-{% elif student %}
-    <a href="{% url 'class_list' %}">Klasy</a>
-    <a href="{% url 'active_tests' %}">Aktywne testy</a>
-    <a href="{% url 'my_tests' %}">Moje sprawdziny</a>
-{% endif %}
-{% if request.user.is_superuser %}
-<a href="{% url 'administration-home' %}">Administracja</a>
-{% endif %}
+<h1>Hi there!</h1>
 {% endblock %}

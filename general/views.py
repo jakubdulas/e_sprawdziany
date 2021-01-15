@@ -13,9 +13,10 @@ def home(request):
     if request.user.is_authenticated:
         if Teacher.objects.filter(user=request.user):
             context['teacher'] = request.user.teacher
+            return render(request, 'general/index_teacher.html', context=context)
         elif Student.objects.filter(user=request.user):
             context['student'] = request.user.student
-
+            return render(request, 'general/index_student.html', context=context)
     return render(request, 'general/index.html', context=context)
 
 
@@ -45,8 +46,8 @@ def registerView(request):
     return render(request, 'general/register.html')
 
 
-def profile_view(request, username):
-    user = get_object_or_404(User, username=username)
+def profile_view(request):
+    user = request.user
     if Teacher.objects.filter(user=user):
         profile = Teacher.objects.get(user=user)
     elif Student.objects.filter(user=user):

@@ -93,6 +93,7 @@ def leave_class(request, id):
 
 
 @members_only
+@student_only
 def class_details(request, id):
     class_room = Class.objects.get(id=id)
     return render(request, "student/class_details.html", {"class": class_room})

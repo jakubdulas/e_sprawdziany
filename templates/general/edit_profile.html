@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}
+Edytuj profil
+{% endblock %}
+{% block content %}
+<a href="{% url 'profile' %}"><--- zobacz profil</a>
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">Zapisz zmiany</button>
+</form>
+<a href="{% url 'change_password' %}">Zmień hasło</a>
+{% endblock %}

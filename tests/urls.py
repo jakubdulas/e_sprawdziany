@@ -40,6 +40,8 @@ urlpatterns = [
     path('list/', test_list, name='test_list'),
     path('<int:blank_test_id>/class/<int:class_id>/', class_tests, name='class_tests'),
 
+    path('<int:blank_test_id>/task/<int:task_id>/statistics/', show_statistics, name='task_statistics'),
+
     #ajax
     path('<int:blank_test_id>/<int:group_id>/task/add/get-types-of-tasks/', get_json_type_of_task_data, name='get_json_type_of_task_data'),
     path('<int:blank_test_id>/<int:group_id>/task/add/answer-option/', add_answer_option_ajax, name='add_answer_option_ajax'),

@@ -78,6 +78,9 @@
             Uczeń jeszcze nie wysłał odpowiedzi
         {% endif %}
         </p>
+
+        <label>Uwagi:</label><br>
+        <textarea name="{{ task.id }}_comment">{{ answer.comment }}</textarea>
     {% endfor %}
     {% if test.is_done %}
     <button type="submit">Zatwierdz</button>

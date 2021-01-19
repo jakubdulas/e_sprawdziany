@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}
+Oceny
+{% endblock %}
+{% block content %}
+<a href="{% url 'teachers_class_details' class.id %}"><--- klasa</a>
+<h1>{{ class.name }}</h1>
+<table border="1">
+{% for student in qs %}
+<tr>
+    <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+    <td>
+        {% for grade in student.grade_set.all %}
+            <a href="{% url 'show_students_answers' grade.test.id %}" style="padding: 0px 5px">{{ grade.mark }}</a>
+        {% endfor %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

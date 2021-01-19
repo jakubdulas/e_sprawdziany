@@ -3,9 +3,9 @@
 {{ profile.user.first_name }} {{ profile.user.last_name }}
 {% endblock %}
 {% block content %}
+<a href="{% url 'edit_profile' %}">Edytuj profil</a>
 <h1>{{ profile.user.first_name }} {{ profile.user.last_name }}</h1>
 <p>ID: {{ profile.id }}</p>
 <p>{{ profile.user.username }}</p>
 <p>Jesteś z nami od {{ profile.user.date_joined }}</p>
-
 {% endblock %}

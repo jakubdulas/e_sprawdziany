@@ -114,6 +114,7 @@ const colorInputs = document.getElementsByClassName('color')
 const clearBtns = document.getElementsByClassName('clearBtn')
 const canvases = document.getElementsByTagName('canvas')
 const hiddenInputs = document.getElementsByClassName('hiddenInput')
+const rubber = document.getElementsByClassName('rubber')
 
 Array.from(canvases).forEach((canvas)=>{
     canvas.width = window.innerWidth * 0.9
@@ -139,6 +140,7 @@ Array.from(canvases).forEach((canvas)=>{
         })
     })
 
+
     Array.from(hiddenInputs).forEach((hidden)=>{
         canvas.addEventListener('mouseup', (e)=>{
             if (e.target.id == hidden.name){
@@ -158,6 +160,8 @@ Array.from(canvases).forEach((canvas)=>{
     }
 
     function draw(e){
+        e.preventDefault()
+
         if (!painting) return
         ctx.lineWidth = 3
         ctx.lineCap = 'round'
@@ -168,6 +172,7 @@ Array.from(canvases).forEach((canvas)=>{
         ctx.moveTo(e.layerX, e.layerY)
     }
 
+
     // window.addEventListener('resize', (e)=>{
     //     e.preventDefault()
     //     canvas.width = window.innerWidth * 0.8
@@ -175,8 +180,11 @@ Array.from(canvases).forEach((canvas)=>{
     // })
 
     canvas.addEventListener("mousedown", startPositioning)
+    canvas.addEventListener("touchstart", startPositioning)
     canvas.addEventListener("mouseup", finishedPosition)
+    canvas.addEventListener("touchend", finishedPosition)
     canvas.addEventListener("mousemove", draw)
+    canvas.addEventListener("touchmove", draw)
     canvas.addEventListener("mouseout", finishedPosition)
 })
 

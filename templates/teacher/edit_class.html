@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}
+    Edytuj klasę
+{% endblock %}
+{% block content %}
+<a href="{% url 'class_details' class.id %}"><--- klasa</a>
+<p>kod do klasy:</p><span id="access_key">{{ class.access_key }}</span>
+<p>link do dołączenia do klasy:</p>
+<input id="text" type="text" >
+<button onclick="copyLink()" id="copy">Kopiuj</button><br>
+
+<h3>Edytuj klasę:</h3>
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">Zapisz zmiany</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+input = document.getElementById('text')
+access_key = document.getElementById('access_key')
+input.value = window.location.host + '/student/class/join/' +access_key.textContent
+
+
+function copyLink() {
+    input.select();
+    input.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+}
+
+</script>
+{% endblock %}

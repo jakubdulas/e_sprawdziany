@@ -39,6 +39,9 @@ def choose_school(request):
             form.instance.teacher = teacher
             if form.is_valid():
                 form.save()
+                messages.success(request, 'Prośba o dołączenie została wysłana')
+        else:
+            messages.info(request, 'Jesteś już w tej szkole')
         return redirect('home')
     context = {'teacher': teacher, 'form': form}
     return render(request, 'teacher/choose_school.html', context=context)
@@ -217,6 +220,33 @@ def students_view(request):
     return render(request, 'teacher/headmaster_panel-students.html', {'students': students_qs})
 
 
-def view_profile(request, username):
-    user = get_object_or_404(User, username=username)
+@teacher_only
+@members_only
+def class_grades_view(request, class_id):
+    class_room = get_object_or_404(Class, id=class_id)
+    qs = Student.objects.filter(school_class=class_room).all()
 
+    context = {
+        'qs': qs,
+        'class': class_room
+    }
+
+    return render(request, 'teacher/class_grades.html', context=context)
+
+
+@teacher_only
+@members_only
+def edit_class(request, class_id):
+    class_room = get_object_or_404(Class, id=class_id)
+    form = CreateClass(instance=class_room)
+    if request.method == 'POST':
+        form = CreateClass(request.POST, instance=class_room)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'zapisano zmiany')
+            return redirect('teachers_class_details', class_id)
+    context = {
+        'form': form,
+        'class': class_room
+    }
+    return render(request, 'teacher/edit_class.html', context=context)

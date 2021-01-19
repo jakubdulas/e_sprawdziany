@@ -1,29 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}{{ class.name }}{% endblock %}
 {% block content %}
-    <p>kod do klasy:</p><span id="access_key">{{ class.access_key }}</span>
-    <p>link do dołączenia do klasy:</p>
-    <input id="text" type="text" >
-    <button onclick="copyLink()" id="copy">Kopiuj</button>
+    <a href="{% url 'edit_class' class.id %}">Informacje o klasie</a>
+    <a href="{% url 'class_grades_view' class.id %}">Oceny uczniów</a>
     <ol>
     {% for member in class.students %}
-    <li>{{ member }} - <a href="{% url 'remove_student_from_class' class.id member.id %}">(usuń ucznia)</a></li>
+    <li>{{ member.user.first_name }} {{ member.user.last_name }} - <a href="{% url 'remove_student_from_class' class.id member.id %}">(usuń ucznia)</a></li>
     {% endfor %}
     </ol>
         <a href="{% url 'delete_class' class.id %}">Usuń klase</a>
-{% endblock %}
-{% block scripts %}
-<script>
-input = document.getElementById('text')
-access_key = document.getElementById('access_key')
-input.value = window.location.host + '/student/class/join/' +access_key.textContent
-
-
-function copyLink() {
-    input.select();
-    input.setSelectionRange(0, 99999); /* For mobile devices */
-    document.execCommand("copy");
-}
-
-</script>
 {% endblock %}

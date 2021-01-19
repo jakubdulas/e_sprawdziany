@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}
+Statystyki do zadania
+{% endblock %}
+{% block content %}
+<a href="{% url 'task_list' task.test.id %}"><--- powrót do testu</a>
+<p>{{ task.content }}</p>
+{% if task.type.label == 'krotka odpowiedz' or task.type.label == 'zamkniete' %}
+<p>Udzielone odpowiedzi: {{ answered }}/{{ task.answer_set.count }}</p>
+<p>Średnia punktów: {{ average }}/{{ task.points }}</p>
+<p>% poprawnych odpowiedzi: {{ correct_percent }}</p>
+<p>% niepoprawnych odpowiedzi: {{ incorrect_percent }}</p>
+{% elif task.type.label == 'otwarte' %}
+<p>Średnia punktów: {{ average }}/{{ task.points }}</p>
+{% endif %}
+{% endblock %}

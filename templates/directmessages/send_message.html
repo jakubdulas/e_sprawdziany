@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Nowa wiadomość
+{% endblock %}
+{% block content %}
+<form method="post">
+<label>Adresat</label><br>
+<input name="recipient" value="teachers" type="radio"><span>Nauczyciele</span><br>
+<input name="recipient" value="students" type="radio"><span>Uczniowie</span><br>
+<div id="recipientsBox"></div>
+<label>Tytuł</label><br>
+<input name="title" type="text"><br>
+<label>Treść</label><br>
+<textarea name="body"></textarea><br>
+<button type="submit">Wyślij</button>
+<a href="{% url 'home' %}">Anuluj</a>
+</form>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/new_message.js' %}"></script>
+{% endblock %}

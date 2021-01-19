@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tests.apps.TestsConfig',
     'student.apps.StudentConfig',
     'general.apps.GeneralConfig',
+    'directmessages.apps.DirectmessagesConfig',
     'administration.apps.AdministrationConfig',
     'django_filters',
 ]

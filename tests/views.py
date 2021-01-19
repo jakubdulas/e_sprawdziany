@@ -91,6 +91,7 @@ def save_answers(request, test_id):
                     answer_for_tf = AnswerForTF.objects.create(
                         answer=answer,
                         true_false=option,
+                        task=task,
                     )
                     if f"{option.id}_tf" in request.POST.keys():
                         if request.POST[f'{option.id}_tf'] == 'true':
@@ -113,6 +114,8 @@ def save_answers(request, test_id):
                 if (AnswerForTF.objects.filter(is_correct=True, task=task).all().count() == task.truefalsetask_set.all().count()
                     and TrueFalseTask.objects.filter(task=task, points=0).all().count() == task.truefalsetask_set.all().count()):
                     earned_total += task.points
+                    answer.earned_points += task.points
+                    answer.is_correct = True
                 else:
                     earned_total += 0
             answer.save()
@@ -393,6 +396,8 @@ def show_students_answers(request, test_id):
 
         for task in test.tasks:
             answer = task.students_answer(test.student)
+            if f"{task.id}_comment" in request.POST.keys():
+                answer.comment = request.POST[f'{task.id}_comment']
             if task.points >= int(request.POST[f'{task.id}']):
                 answer.earned_points = int(request.POST[f'{task.id}'])
             answer.save()
@@ -788,3 +793,29 @@ def add_truefalse_option_ajax(request, blank_test_id, group_id):
 
         data['content'] = request.POST['content']
         return JsonResponse(data)
+
+
+@allowed_teacher('blank_test')
+def show_statistics(request, blank_test_id, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    answers = task.answer_set.all()
+    points = 0
+    for answer in answers:
+        points += answer.earned_points
+    average = points/answers.count()
+    answered = answers.count()
+    correct = answers.filter(is_correct=True).count()
+    incorrect = answers.filter(is_correct=False).count()
+
+    correct_percent = (correct/answered) * 100
+    incorrect_percent = (incorrect/answered) * 100
+
+    context = {
+        'task': task,
+        'average': average,
+        'answered': answered,
+        'correct_percent': correct_percent,
+        'incorrect_percent': incorrect_percent,
+    }
+
+    return render(request, 'tests/show_statistics.html', context=context)

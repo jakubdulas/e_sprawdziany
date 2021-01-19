@@ -138,6 +138,7 @@ class Answer(models.Model):
     answer_option = models.OneToOneField(AnswerOption, on_delete=models.CASCADE, null=True, blank=True)
     is_correct = models.BooleanField(default=False, null=True, blank=True)
     earned_points = models.IntegerField(null=True, blank=True, default=0)
+    comment = models.TextField(null=True, blank=True, default='')
 
     def __str__(self):
         if self.textarea:

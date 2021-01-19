@@ -29,3 +29,4 @@ class CreateSchool(forms.ModelForm):
         model = School
         fields = '__all__'
         exclude = ['is_paid', 'free_trial_up', 'key']
+

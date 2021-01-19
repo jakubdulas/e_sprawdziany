@@ -60,6 +60,9 @@
             {{ answer.earned_points }} /
             <b>{{ task.points }}</b>
         </p>
+
+        <p>Uwagi: </p>
+        <p>{{ answer.comment|linebreaks }}</p>
     {% endfor %}
     </ol>
 

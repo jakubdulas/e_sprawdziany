@@ -21,7 +21,7 @@ def allowed_teacher(name):
             if request.user.is_authenticated:
                 if Teacher.objects.filter(user=request.user):
                     teacher = Teacher.objects.filter(user=request.user).first()
-                    if teacher.is_paid or teacher.free_trial:
+                    if teacher.school.is_paid or not teacher.school.free_trial_up:
                         if name == 'blank_test':
                             if BlankTest.objects.filter(teacher=teacher, id=kwargs['blank_test_id']):
                                 return view_func(request, *args, **kwargs)

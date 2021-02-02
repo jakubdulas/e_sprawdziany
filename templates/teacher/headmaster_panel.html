@@ -4,34 +4,12 @@
 {% endblock %}
 {% block content %}
     <a href="{% url 'edit_school_information' %}">Edytuj informacje o szkole</a>
-    <hr>
-    <p>kod do dołączenia do szkoły:</p><span id="access_key">{{ school.key }}</span>
-    <p>link do dołączenia do szkoły:</p>
-    <p>(dzieki temu linkowi uczniowie moga szybko dołaczac do szkoły)</p>
-    <input id="text" type="text" >
-    <button onclick="copyLink()" id="copy">Kopiuj</button>
-    <h3>Prośby o dołączenie do szkoły</h3>
-    <ul>
-    {% for r in requests_qs %}
-    <li>
-    {{ r.teacher.user.first_name }} {{ r.teacher.user.last_name }}
-    <a href="{% url 'accept_teacher' r.id %}">(akceptuj)</a>
-    <a href="{% url 'reject_teacher' r.id %}">(usuń)</a>
-    </li>
-    {% endfor %}
-    </ul>
+    <h3>Rok szkolny: <a href="{% url 'school_year_details' school_year.id %}">{{ school_year.name }}</a></h3>
+    <a href="{% url 'bells' %}">Rozkład dzwonków</a>
+
     <h3><a href="{% url 'students_view' %}">Uczniowie</a></h3>
-    <h3>Nauczyciele</h3>
-    <ul>
-    {% for t in teachers_qs %}
-    <li>
-    {{ t.user.first_name }} {{ t.user.last_name }}
-    {% if t.headmaster.school != school  %}
-    <a href="{% url 'dismiss_teacher' t.id %}">(Wyrzuć nauczyciela)</a>
-    {% endif %}
-    </li>
-    {% endfor %}
-    </ul>
+    <h3><a href="{% url 'teachers_view' %}">Nauczyciele</a></h3>
+    <h3><a href="{% url 'teachers_class_list' %}">Klasy</a></h3>
 {% endblock %}
 {% block scripts %}
 <script>

@@ -2,7 +2,7 @@
 {% block title %}Twoje klasy{% endblock %}
 {% block content %}
     <ul>
-    {% for class in classes %}
+    {% for class in class_qs %}
         <li>
         <a href={% url 'teachers_class_details' class.id %}>{{ class.name }}</a>
         </li>

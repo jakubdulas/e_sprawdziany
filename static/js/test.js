@@ -114,13 +114,15 @@ const colorInputs = document.getElementsByClassName('color')
 const clearBtns = document.getElementsByClassName('clearBtn')
 const canvases = document.getElementsByTagName('canvas')
 const hiddenInputs = document.getElementsByClassName('hiddenInput')
-const rubber = document.getElementsByClassName('rubber')
+const rubbers = document.getElementsByClassName('rubberBtn')
+const pencils = document.getElementsByClassName('pencilBtn')
 
 Array.from(canvases).forEach((canvas)=>{
     canvas.width = window.innerWidth * 0.9
     canvas.height = window.innerHeight * 0.9
     const ctx = canvas.getContext('2d')
     let painting = false
+    let rubbering = false
 
     Array.from(colorInputs).forEach((color)=>{
         color.addEventListener('change', (e)=>{
@@ -149,19 +151,56 @@ Array.from(canvases).forEach((canvas)=>{
         })
     })
 
+    let drawingTurnedOn
+
+    Array.from(pencils).forEach((pencil)=>{
+        pencil.addEventListener('click', (e)=>{
+            e.preventDefault()
+            drawingTurnedOn = true
+        })
+    })
+
+    Array.from(rubbers).forEach((rubber)=>{
+        rubber.addEventListener('click', (e)=>{
+            e.preventDefault()
+            drawingTurnedOn = false
+        })
+    })
+
+    function startCleaning(e){
+        if (drawingTurnedOn) return
+        rubbering = true
+        clean(e)
+    }
+
+    function clean(e){
+        e.preventDefault()
+        if (drawingTurnedOn) return
+        if (!rubbering) return
+        ctx.clearRect(e.layerX-10, e.layerY-10, 20, 20)
+    }
+
+    function finishCleaning(){
+        if (drawingTurnedOn) return
+        if (!rubbering) return
+        rubbering = false
+    }
+
     function startPositioning(e){
+        if (!drawingTurnedOn) return
         painting = true
         draw(e)
     }
 
     function finishedPosition(){
+        if (!drawingTurnedOn) return
         painting = false
         ctx.beginPath()
     }
 
     function draw(e){
         e.preventDefault()
-
+        if (!drawingTurnedOn) return
         if (!painting) return
         ctx.lineWidth = 3
         ctx.lineCap = 'round'
@@ -180,13 +219,21 @@ Array.from(canvases).forEach((canvas)=>{
     // })
 
     canvas.addEventListener("mousedown", startPositioning)
+    canvas.addEventListener("mousedown", startCleaning)
     canvas.addEventListener("touchstart", startPositioning)
+    canvas.addEventListener("touchstart", startCleaning)
     canvas.addEventListener("mouseup", finishedPosition)
+    canvas.addEventListener("mouseup", finishCleaning)
     canvas.addEventListener("touchend", finishedPosition)
+    canvas.addEventListener("touchend", finishCleaning)
     canvas.addEventListener("mousemove", draw)
+    canvas.addEventListener("mousemove", clean)
     canvas.addEventListener("touchmove", draw)
+    canvas.addEventListener("touchmove", clean)
     canvas.addEventListener("mouseout", finishedPosition)
+    canvas.addEventListener("mouseout", finishCleaning)
 })
+
 
 
 document.addEventListener('contextmenu', (e)=>{

@@ -151,14 +151,19 @@ def create_test(request):
     # classes = Teacher.objects.get(user=request.user).class_set.all()
 
     if request.method == "POST":
+        print(request.POST)
         try:
             label = request.POST['label']
 
             if label == '':
                 label = '(bez nazwy)'
+
             countdown = parse_duration(request.POST['countdown'])
-            test = BlankTest.objects.create(label=label, teacher=request.user.teacher,
-                                            countdown=countdown)
+            test = BlankTest.objects.create(label=label,
+                                            teacher=request.user.teacher,
+                                            countdown=countdown,
+                                            instruction=request.POST['instruction']
+                                            )
 
             numberOfGroups = int(request.POST['number_of_groups'])
 
@@ -193,6 +198,7 @@ def create_test(request):
             return redirect('add_threshold', blank_test_id=test.id)
         except:
             messages.error(request, "cos poszlo nie tak")
+            return redirect('create_test')
     context = {
         'classes': classes
     }
@@ -460,7 +466,7 @@ def edit_test(request, blank_test_id):
         else:
             test.are_exists_allowed = True
 
-        print(request.POST)
+        test.instruction = request.POST['instruction']
 
         if 'ignore_upper' in request.POST.keys():
             if request.POST['ignore_upper'] == 'on':

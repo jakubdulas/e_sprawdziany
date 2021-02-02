@@ -4,6 +4,8 @@
 <h1>{{ test.label }}</h1>
 <h2>{{ student.user.first_name }} {{ student.user.last_name }}</h2>
 <hr>
+<p>{{ test.blank_test.instruction }}</p>
+<hr>
     <ol>
     {% for task, answer in tasks_answers %}
     <h3>Zadanie {{ forloop.counter }}</h3>

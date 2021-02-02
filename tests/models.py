@@ -9,6 +9,7 @@ class BlankTest(models.Model):
     label = models.CharField(max_length=128, blank=False, null=False)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     students = models.ForeignKey(Class, on_delete=models.CASCADE, null=True)
+    instruction = models.TextField(null=True)
     is_active = models.BooleanField(default=False)
     countdown = models.DurationField(null=True)
     are_exists_allowed = models.BooleanField(default=True)

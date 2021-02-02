@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ teacher.user.first_name }} {{ teacher.user.last_name }}
+{% endblock %}
+{% block content %}
+<h3>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</h3>
+{% if teacher != request.user.teacher %}
+<a href="{% url 'dismiss_teacher' teacher.id %}">(Wyrzuć nauczyciela)</a>
+{% endif %}
+{#<a href="{% url %}"></a>#}
+{% endblock %}

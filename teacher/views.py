@@ -9,64 +9,21 @@ from general.decorators import *
 from general.forms import *
 import random
 from student.models import Student
-
-
-@unauthenticated_user
-def registerTeacherPage(request):
-    form = RegisterForm()
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            new_user = authenticate(username=form.cleaned_data['username'],
-                                    password=form.cleaned_data['password1'],)
-            login(request, new_user)
-            Teacher.objects.create(user=new_user)
-            messages.success(request, 'Zalogowano pomyślnie.')
-            return redirect('choose_school')
-        messages.error(request, 'cos poszlo nie tak.')
-    context = {'form': form}
-    return render(request, 'teacher/teacher.html', context)
-
-
-@teacher_only
-def choose_school(request):
-    teacher = Teacher.objects.get(user=request.user)
-    form = SendRequestForJoiningToSchool
-    if request.POST:
-        form = SendRequestForJoiningToSchool(request.POST)
-        if School.objects.filter(id=form.data.get('school')).first() not in request.user.teacher.school.all():
-            form.instance.teacher = teacher
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Prośba o dołączenie została wysłana')
-        else:
-            messages.info(request, 'Jesteś już w tej szkole')
-        return redirect('home')
-    context = {'teacher': teacher, 'form': form}
-    return render(request, 'teacher/choose_school.html', context=context)
+from django.forms import inlineformset_factory
+import datetime
 
 
 @paid_subscription
-@teacher_only
+@headmaster_only
 def create_class(request):
     teacher = Teacher.objects.get(user=request.user)
     form = CreateClass()
     if request.POST:
         form = CreateClass(request.POST)
-        keys = 'abcdefghijklmnoprstuwyzABCDEFGHIJKLMNOPRSTUWYZ123456789'
-        key = ''
-        for i in range(6):
-            key += str(keys[random.randint(0, len(keys))])
-        while Class.objects.filter(access_key=key):
-            key = ''
-            for i in range(6):
-                key += str(keys[random.randint(0, len(keys))])
-        form.instance.access_key = key
         form.instance.teacher = teacher
         if form.is_valid():
             form.save()
-            return render(request, 'teacher/class_code.html', {'code': key})
+            return redirect('home')
     context = {'form': form}
     return render(request, 'teacher/create_class.html', context=context)
 
@@ -74,30 +31,23 @@ def create_class(request):
 @paid_subscription
 @teacher_only
 def teachers_class_list(request):
-    classes = Class.objects.filter(teacher=request.user.teacher).all()
+    school_year = SchoolYear.objects.filter(
+        school=request.user.teacher.school,
+        start__lte=datetime.datetime.today().date(),
+        end__gte=datetime.datetime.today().date(),
+    ).first()
+    class_qs = Class.objects.filter(school_year=school_year, school=request.user.teacher.school)
     context = {
-        'classes': classes
+        'class_qs': class_qs
     }
     return render(request, 'teacher/classes.html', context=context)
 
 
 @paid_subscription
 @teacher_only
-@members_only
 def teachers_class_details(request, id):
-    class_room = Class.objects.get(id=id)
+    class_room = get_object_or_404(Class, id=id)
     return render(request, "teacher/class_details.html", {"class": class_room})
-
-
-@paid_subscription
-@teacher_only
-@members_only
-def delete_class(request, id):
-    class_room = Class.objects.get(id=id)
-    if request.method == "POST":
-        class_room.delete()
-        return redirect('home')
-    return render(request, 'teacher/delete_class.html', {"class": class_room})
 
 
 @paid_subscription
@@ -109,44 +59,6 @@ def remove_student_from_class(request, id, student_id):
     student.school_class.remove(class_room)
     student.save()
     return redirect('teachers_class_details', id=id)
-
-
-@headmaster_only
-def create_school(request):
-    headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
-    if not headmaster.school:
-        form = CreateSchool
-        context = {
-            'form': form
-        }
-        if request.method == 'POST':
-            form = CreateSchool(request.POST)
-            if form.is_valid():
-                keys = 'abcdefghijklmnoprstuwyzABCDEFGHIJKLMNOPRSTUWYZ123456789'
-                key = ''
-                for i in range(8):
-                    key += str(keys[random.randint(0, len(keys)-1)])
-                    if i == 7:
-                        key += 'szk'
-                while Class.objects.filter(access_key=key):
-                    key = ''
-                    for i in range(8):
-                        key += str(keys[random.randint(0, len(keys)-1)])
-                        if i == 7:
-                            key += 'szk'
-                form.instance.key = key
-                form.save()
-                headmaster.school = form.instance
-                headmaster.save()
-                request.user.teacher.school.add(form.instance)
-                request.user.teacher.save()
-                messages.success(request, 'Udało ci się dodać szkołe')
-                return render(request, 'teacher/school_code.html', {'code': key})
-            else:
-                messages.error(request, 'Nie udało ci się dodać szkoły')
-            return redirect('create_school')
-        return render(request, 'teacher/create_school.html', context=context)
-    return render('home')
 
 
 @headmaster_only
@@ -171,33 +83,24 @@ def edit_school_information(request):
 
 
 @headmaster_only
-def accept_teacher(request, id):
-    headmaster = Headmaster.objects.get(teacher=request.user.teacher)
-    request_for_joining = get_object_or_404(RequestForJoiningToSchool, id=id)
-    request_for_joining.teacher.school.add(headmaster.school)
-    request_for_joining.teacher.is_paid = headmaster.school.is_paid
-    request_for_joining.teacher.save()
-
-    request_for_joining.delete()
-    return redirect('headmaster_panel')
-
-
-@headmaster_only
-def reject_teacher(request, id):
-    request_for_joining = get_object_or_404(RequestForJoiningToSchool, id=id)
-    request_for_joining.delete()
-    return redirect('headmaster_panel')
-
-
-@headmaster_only
 def headmaster_panel(request):
     headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
-    requests_qs = RequestForJoiningToSchool.objects.filter(school=headmaster.school).all()
     teachers_qs = Teacher.objects.filter(school=headmaster.school).all()
+    school_year = SchoolYear.objects.filter(
+        school=request.user.teacher.school,
+        start__lte=datetime.datetime.today().date(),
+        end__gte=datetime.datetime.today().date(),
+    ).first()
+
+    term1 = SchoolTerm.objects.filter(school=request.user.teacher.school, number=1, school_year=school_year).first()
+    term2 = SchoolTerm.objects.filter(school=request.user.teacher.school, number=2, school_year=school_year).first()
+
     context = {
-        'requests_qs': requests_qs,
         'teachers_qs': teachers_qs,
-        'school': headmaster.school
+        'school': headmaster.school,
+        'term1': term1,
+        'term2': term2,
+        'school_year': school_year
     }
     return render(request, 'teacher/headmaster_panel.html', context=context)
 
@@ -207,7 +110,7 @@ def dismiss_teacher(request, id):
     headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
     teacher = get_object_or_404(Teacher, id=id)
     if headmaster.school in teacher.school.all():
-        teacher.school.remove(headmaster.school)
+        teacher.school = ''
         teacher.is_paid = False
         teacher.save()
         return redirect('headmaster_panel')
@@ -218,6 +121,12 @@ def dismiss_teacher(request, id):
 def students_view(request):
     students_qs = Student.objects.filter(school=request.user.teacher.headmaster.school).all()
     return render(request, 'teacher/headmaster_panel-students.html', {'students': students_qs})
+
+
+@headmaster_only
+def teachers_view(request):
+    teachers_qs = Teacher.objects.filter(school=request.user.teacher.headmaster.school).all()
+    return render(request, 'teacher/headmaster_panel-teachers.html', {'teachers': teachers_qs})
 
 
 @teacher_only
@@ -250,3 +159,75 @@ def edit_class(request, class_id):
         'class': class_room
     }
     return render(request, 'teacher/edit_class.html', context=context)
+
+
+@headmaster_only
+def bells_view(request):
+    qs = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
+    context = {
+        'qs': qs
+    }
+    return render(request, 'teacher/bells.html', context)
+
+
+@headmaster_only
+def add_edit_bells(request):
+    BellFormSet = inlineformset_factory(School, Bell, fields='__all__')
+    formset = BellFormSet(instance=request.user.teacher.school)
+    if request.method == 'POST':
+        formset = BellFormSet(request.POST, instance=request.user.teacher.school)
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, 'Zaktualizowano rozkład dzwonków')
+        else:
+            messages.success(request, 'Wystąpił błąd. Spróbuj ponowanie.')
+        return redirect('edit_bells')
+    context = {
+        'formset': formset
+    }
+    return render(request, 'teacher/edit_bell_schedule.html', context)
+
+
+@teacher_only
+def teacher_details(request, teacher_id):
+    teacher = get_object_or_404(Teacher, id=teacher_id)
+    context = {
+        'teacher': teacher
+    }
+    return render(request, 'teacher/teacher_details.html', context)
+
+
+@headmaster_only
+def edit_term(request, number):
+    number = int(number)
+    form = SchoolTermForm(instance=SchoolTerm.objects.filter(school=request.user.teacher.school, number=number).first())
+    if request.method == 'POST':
+        form = SchoolTermForm(request.POST, instance=SchoolTerm.objects.filter(school=request.user.teacher.school, number=number).first())
+        form.instance.number = number
+        form.instance.school = request.user.teacher.school
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Zaktualizowano semestr {number}.')
+            return redirect('headmaster_panel')
+        else:
+            messages.success(request, f'Wystąpił błąd')
+            return redirect('add_term', number)
+    context = {
+        'form': form
+    }
+    return render(request, 'teacher/add_term.html', context)
+
+
+@headmaster_only
+def school_year_details(request, school_year_id):
+    school_year = get_object_or_404(SchoolYear, id=school_year_id)
+    term1 = SchoolTerm.objects.filter(school=request.user.teacher.school, number=1, school_year=school_year).first()
+    term2 = SchoolTerm.objects.filter(school=request.user.teacher.school, number=2, school_year=school_year).first()
+
+    context = {
+        'school_year': school_year,
+        'term1': term1,
+        'term2': term2
+    }
+
+    return render(request, 'teacher/school_year_details.html', context)

@@ -8,7 +8,6 @@ class School(models.Model):
     city = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=6)
     phone_number = models.CharField(max_length=10)
-    key = models.CharField(max_length=11, null=True, unique=True)
     is_paid = models.BooleanField(default=False)
     free_trial_up = models.BooleanField(default=False)
 
@@ -19,11 +18,30 @@ class School(models.Model):
         return self.teacher_set.all()
 
 
+class SchoolYear(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    name = models.CharField(max_length=120)
+    start = models.DateField(null=True)
+    end = models.DateField(null=True)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class SchoolTerm(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE, null=True)
+    number = models.IntegerField()
+    start = models.DateField()
+    end = models.DateField()
+
+    def __str__(self):
+        return f"{self.school.name} | Semestr {self.number}"
+
+
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    school = models.ManyToManyField(School, blank=True)
-    is_paid = models.BooleanField(default=False)
-    free_trial_up = models.BooleanField(default=False)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"{self.user} | teacher"
@@ -47,9 +65,10 @@ class Teacher(models.Model):
 
 class Class(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    access_key = models.CharField(max_length=6, unique=True)
+    number = models.IntegerField(default=1)
     name = models.CharField(max_length=100)
-    max_members = models.IntegerField()
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE, null=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name_plural = 'Classes'
@@ -70,14 +89,16 @@ class Class(models.Model):
         return self.blanktest_set.all()
 
 
-class RequestForJoiningToSchool(models.Model):
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.teacher} | {self.school}"
-
-
 class Headmaster(models.Model):
     teacher = models.OneToOneField(Teacher, on_delete=models.CASCADE, null=True)
     school = models.OneToOneField(School, on_delete=models.CASCADE, null=True, blank=True)
+
+
+class Bell(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    number_of_lesson = models.IntegerField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.school.name} | {self.number_of_lesson}"

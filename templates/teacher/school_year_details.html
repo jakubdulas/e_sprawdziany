@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ school_year.name }}
+{% endblock %}
+{% block content %}
+<h3>Rok szkolny: {{ school_year.name }}</h3>
+<table border="1">
+<tr>
+    <th><a href="{% url 'add_term' 1 %}">Semestr 1</a></th>
+    <td>{{ term1.start|date:"d-m-Y" }}</td>
+    <td>{{ term1.end|date:"d-m-Y" }}</td>
+</tr>
+<tr>
+    <th><a href="{% url 'add_term' 2 %}">Semestr 2</a></th>
+    <td>{{ term2.start|date:"d-m-Y" }}</td>
+    <td>{{ term2.end|date:"d-m-Y" }}</td>
+</tr>
+</table>
+{% endblock %}

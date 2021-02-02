@@ -26,6 +26,8 @@
     {% endif %}
 </p>
     <hr>
+    <p>{{ test.instruction }}</p>
+    <hr>
 <ol>
     {% for group in test.testgroup_set.all %}
     <h2>Grupa {{ group.number }}</h2>

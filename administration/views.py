@@ -2,7 +2,7 @@ from django.shortcuts import render ,get_object_or_404
 from django.http import HttpResponse
 from .decorators import *
 from teacher.models import Teacher, School, Headmaster
-from .filters import TeacherFilter, SchoolFilter
+from .filters import SchoolFilter, TeacherFilter
 
 
 @superuser_only

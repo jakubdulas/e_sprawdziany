@@ -5,7 +5,7 @@ from teacher.models import Class,  School
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    school = models.ManyToManyField(School)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
     school_class = models.ManyToManyField(Class, blank=True)
 
     def __str__(self):

@@ -8,5 +8,4 @@
     <li>{{ member.user.first_name }} {{ member.user.last_name }} - <a href="{% url 'remove_student_from_class' class.id member.id %}">(usuń ucznia)</a></li>
     {% endfor %}
     </ol>
-        <a href="{% url 'delete_class' class.id %}">Usuń klase</a>
 {% endblock %}

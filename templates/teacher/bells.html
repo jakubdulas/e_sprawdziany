@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}
+Rozkład dzwonków
+{% endblock %}
+{% block content %}
+<a href="{% url 'headmaster_panel' %}"><--- powrót</a>
+<table border="1">
+{% for bell in qs %}
+    <tr>
+    <td>{{ bell.number_of_lesson }}</td>
+    <td>{{ bell.start_time|date:"H:i" }}</td>
+    <td>{{ bell.end_time|date:"H:i" }}</td>
+    </tr>
+{% endfor %}
+<a href="{% url 'edit_bells' %}">{% if request.user.teacher.school.bell_set %}Edytuj{% else %}Dodaj{% endif %} rozkład dzwonków</a>
+</table>
+{% endblock %}

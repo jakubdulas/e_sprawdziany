@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}
+Klasy
+{% endblock %}
+{% block content %}
+<ul>
+{% for class in class_qs %}
+<li><a href="{% url 'teachers_class_details' class.id %}">{{ class.number }} {{ class.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

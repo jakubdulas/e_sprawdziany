@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}
+Rozkład dzwonków
+{% endblock %}
+{% block content %}
+<a href="{% url 'bells' %}"><--- dzwonki</a>
+<form method="post">
+{% csrf_token %}
+{{ formset.management_form }}
+{% for form in formset %}
+    {{ form }}
+    <hr>
+{% endfor %}
+<button type="submit">Zapisz</button>
+<button type="submit">Dodaj więcej</button>
+</form>
+{% endblock %}

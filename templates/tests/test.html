@@ -7,6 +7,9 @@
 <br>
 <div id="endTestBox" hidden>{{ end_test }}</div>
 <div id="timeLeft"></div>
+<hr>
+<p>{{ test.blank_test.instruction }}</p>
+<hr>
 <form id="testForm" method="POST" action="{% url 'save_answers' test.id %}" autocomplete="off">
 {% csrf_token %}
     {% for task in tasks %}
@@ -39,6 +42,8 @@
             <input name="{{ task.id }}" type="text">
         {% elif task.type.label == 'tablica' %}
             <button id="{{ task.id }}" class="clearBtn">Clear all</button>
+            <button id="{{ task.id }}" class="rubberBtn">Gumka</button>
+            <button id="{{ task.id }}" class="pencilBtn">Ołówek</button>
             <input id="{{ task.id }}" class="color" type="color">
             <canvas id='{{ task.id }}' style="border: 1px solid black;"></canvas>
             <input name="{{ task.id }}" type="hidden" class="hiddenInput">

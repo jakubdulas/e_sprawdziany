@@ -37,6 +37,7 @@ const info4 = document.getElementById('info4')
 
 add_task_form.addEventListener('submit', (e)=>{
     e.preventDefault()
+    btn.disabled = true
     const fd = new FormData()
     fd.append('csrfmiddlewaretoken', csrf[0].value)
     fd.append('type', type_of_task_dropdown.value)
@@ -50,6 +51,7 @@ add_task_form.addEventListener('submit', (e)=>{
         enctype: 'multipart/form-data',
         data: fd,
         success: function (response){
+
             type_of_task_dropdown.disabled = true
             image.disabled = true
             points.disabled = true
@@ -81,6 +83,7 @@ add_task_form.addEventListener('submit', (e)=>{
 
         },
         error: function (response){
+            btn.disabled = false
             add_task_form.reset()
         },
         cache: false,
@@ -163,6 +166,7 @@ type_of_task_dropdown.addEventListener('change', (e)=>{
 
 addAnswerOptionForm.addEventListener('submit', (e)=>{
     e.preventDefault()
+    addAnswerOptionBtn.disabled = true
     const fd = new FormData()
     fd.append('csrfmiddlewaretoken', csrf[0].value)
     fd.append('task_id', task_id.innerText)
@@ -183,6 +187,7 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
         data: fd,
         success: function (response){
             answerOptions.hidden = false
+            addAnswerOptionBtn.disabled = false
 
             const option = document.createElement('li')
             option.textContent = response.ansOptionLabel
@@ -198,7 +203,8 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
             addAnswerOptionForm.reset()
         },
         error: function (response){
-
+            addAnswerOptionBtn.disabled = false
+            addAnswerOptionForm.reset()
         },
         cache: false,
         contentType: false,
@@ -209,6 +215,7 @@ addAnswerOptionForm.addEventListener('submit', (e)=>{
 
 addCorrectAnswerForm.addEventListener('submit', (e)=>{
     e.preventDefault()
+    addCorrectAnswerBtn.disabled = true
     const fd = new FormData()
     fd.append('csrfmiddlewaretoken', csrf[0].value)
     fd.append('task_id', task_id.innerText)
@@ -219,12 +226,13 @@ addCorrectAnswerForm.addEventListener('submit', (e)=>{
         url: window.location.href + 'correct-answer/',
         data: fd,
         success: function (response){
+            addCorrectAnswerBtn.disabled = false
             correctAnswer.hidden = false
             correctAnswer.textContent = response.correct_answer
             addCorrectAnswerForm.hidden = true
         },
         error: function (response){
-
+            addCorrectAnswerBtn.disabled = false
         },
         cache: false,
         contentType: false,
@@ -235,6 +243,7 @@ addCorrectAnswerForm.addEventListener('submit', (e)=>{
 
 addTrueFalseTaskFrom.addEventListener('submit', (e)=>{
     e.preventDefault()
+    addTrueFalseTaskBtn.disabled = true
     const fd = new FormData()
     fd.append('content', trueFalseContent.value)
     fd.append('csrfmiddlewaretoken', csrf[0].value)
@@ -251,6 +260,7 @@ addTrueFalseTaskFrom.addEventListener('submit', (e)=>{
         type: 'POST',
         data: fd,
         success: function (response){
+            addTrueFalseTaskBtn.disabled = false
             tfOptions.hidden = false
 
             const option = document.createElement('li')
@@ -260,7 +270,8 @@ addTrueFalseTaskFrom.addEventListener('submit', (e)=>{
             addTrueFalseTaskFrom.reset()
         },
         error: function (response){
-
+            addTrueFalseTaskBtn.disabled = false
+            addTrueFalseTaskFrom.reset()
         },
         cache: false,
         contentType: false,

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}
+Lekcja
+{% endblock %}
+{% block content %}
+<h1>{{ lesson.schedule_element.group.name }}</h1>
+<p>Godzina lekcyjna: {{ lesson.schedule_element.bell.number_of_lesson }}</p>
+<ol>
+{% for student in lesson.schedule_element.group.students.all %}
+<li>{{ student.user.first_name }} {{ student.user.last_name }}</li>
+{% endfor %}
+</ol>
+{% endblock %}

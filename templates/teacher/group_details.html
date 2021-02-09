@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+    <a href="{% url 'teachers_class_list' %}"><--- klasy</a><br>
+    <a href="{% url 'edit_group' group.id %}">Edytuj</a>
+    <table>
+    {% for fn, ln, grades in list %}
+    <tr>
+        <td>{{ fn }} {{ ln }}</td>
+        <td>
+            {% for grade in grades %}
+                <span style="padding: 0px 5px">{{ grade.mark }}</span>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

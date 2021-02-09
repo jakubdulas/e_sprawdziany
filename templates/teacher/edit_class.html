@@ -3,11 +3,7 @@
     Edytuj klasę
 {% endblock %}
 {% block content %}
-<a href="{% url 'class_details' class.id %}"><--- klasa</a>
-<p>kod do klasy:</p><span id="access_key">{{ class.access_key }}</span>
-<p>link do dołączenia do klasy:</p>
-<input id="text" type="text" >
-<button onclick="copyLink()" id="copy">Kopiuj</button><br>
+<a href="{% url 'teachers_class_details' class.id %}"><--- klasa</a>
 
 <h3>Edytuj klasę:</h3>
 <form method="post">

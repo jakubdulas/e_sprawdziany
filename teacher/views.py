@@ -8,24 +8,8 @@ from .forms import *
 from general.decorators import *
 from general.forms import *
 import random
-from student.models import Student
 from django.forms import inlineformset_factory
 import datetime
-
-
-@paid_subscription
-@headmaster_only
-def create_class(request):
-    teacher = Teacher.objects.get(user=request.user)
-    form = CreateClass()
-    if request.POST:
-        form = CreateClass(request.POST)
-        form.instance.teacher = teacher
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    context = {'form': form}
-    return render(request, 'teacher/create_class.html', context=context)
 
 
 @paid_subscription
@@ -36,7 +20,7 @@ def teachers_class_list(request):
         start__lte=datetime.datetime.today().date(),
         end__gte=datetime.datetime.today().date(),
     ).first()
-    class_qs = Class.objects.filter(school_year=school_year, school=request.user.teacher.school)
+    class_qs = SchoolClass.objects.filter(school_year=school_year, class_template__school=request.user.teacher.school).all()
     context = {
         'class_qs': class_qs
     }
@@ -46,19 +30,8 @@ def teachers_class_list(request):
 @paid_subscription
 @teacher_only
 def teachers_class_details(request, id):
-    class_room = get_object_or_404(Class, id=id)
+    class_room = get_object_or_404(SchoolClass, id=id)
     return render(request, "teacher/class_details.html", {"class": class_room})
-
-
-@paid_subscription
-@members_only
-@teacher_only
-def remove_student_from_class(request, id, student_id):
-    class_room = get_object_or_404(Class, id=id)
-    student = get_object_or_404(Student, id=student_id)
-    student.school_class.remove(class_room)
-    student.save()
-    return redirect('teachers_class_details', id=id)
 
 
 @headmaster_only
@@ -130,10 +103,9 @@ def teachers_view(request):
 
 
 @teacher_only
-@members_only
 def class_grades_view(request, class_id):
-    class_room = get_object_or_404(Class, id=class_id)
-    qs = Student.objects.filter(school_class=class_room).all()
+    class_room = get_object_or_404(SchoolClass, id=class_id)
+    qs = class_room.students.all()
 
     context = {
         'qs': qs,
@@ -144,9 +116,8 @@ def class_grades_view(request, class_id):
 
 
 @teacher_only
-@members_only
 def edit_class(request, class_id):
-    class_room = get_object_or_404(Class, id=class_id)
+    class_room = get_object_or_404(SchoolClass, id=class_id)
     form = CreateClass(instance=class_room)
     if request.method == 'POST':
         form = CreateClass(request.POST, instance=class_room)
@@ -231,3 +202,259 @@ def school_year_details(request, school_year_id):
     }
 
     return render(request, 'teacher/school_year_details.html', context)
+
+
+def add_class_template(request):
+    form = CreateClassTemplateForm()
+    if request.method == 'POST':
+        form = CreateClassTemplateForm(request.POST)
+        form.instance.school = request.user.teacher.school
+        if form.is_valid():
+            form.save()
+
+            for i in range(4):
+                obj = SchoolClass.objects.create(
+                    number=i + 1,
+                    school_year=SchoolYear.objects.filter(
+                        school=form.instance.school,
+                        start__lte=datetime.datetime.today().date(),
+                        end__gte=datetime.datetime.today().date(),
+                    ).first(),
+                    class_template=form.instance
+                )
+
+                if i+1 == 1:
+                    for sub in form.instance.subjects_1.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 2:
+                    for sub in form.instance.subjects_2.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 3:
+                    for sub in form.instance.subjects_3.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 4:
+                    for sub in form.instance.subjects_4.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 5:
+                    for sub in form.instance.subjects_5.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 6:
+                    for sub in form.instance.subjects_6.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 7:
+                    for sub in form.instance.subjects_7.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+                elif i+1 == 8:
+                    for sub in form.instance.subjects_8.all():
+                        group = Group.objects.create(
+                            subject=sub,
+                            name=f"{obj.number} {obj.class_template.name} {sub.name}",
+                        )
+                        group.related_classes.add(obj)
+                        group.students.set(obj.students.all())
+                        group.save()
+
+            messages.success(request, 'Dodano szblon klasy')
+            return redirect('headmaster_panel')
+    context = {
+        'form': form
+    }
+    return render(request, 'teacher/add_class_template.html', context)
+
+
+def class_groups(request, class_id):
+    school_class = get_object_or_404(SchoolClass, id=class_id)
+    groups = school_class.group_set.all()
+    context = {
+        'groups': groups,
+        'class': school_class
+    }
+    return render(request, 'teacher/class_groups.html', context)
+
+
+def edit_group(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    form = GroupForm(instance=group)
+    if request.method == "POST":
+        form = GroupForm(request.POST, instance=group)
+        if form.is_valid():
+            form.save()
+            return redirect('teachers_class_list')
+    context = {
+        'form': form,
+        'group': group,
+    }
+    return render(request, 'teacher/group_edit.html', context)
+
+
+def add_group(request, class_id):
+    school_class = get_object_or_404(SchoolClass, id=class_id)
+    form = GroupForm()
+    if request.method == "POST":
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Grupa została utworzona')
+            return redirect('teachers_class_list', class_id)
+    context = {
+        'form': form,
+        'class': school_class,
+    }
+    return render(request, 'teacher/group_edit.html', context)
+
+
+def teachers_schedule(request):
+    bells = Bell.objects.filter(school=request.user.teacher.school).all()
+    list = []
+    for bell in bells:
+        list.append(
+            tuple(
+                (
+                    bell.number_of_lesson,
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=0, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=1, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=2, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=3, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=4, bell=bell).first(),
+                )
+            )
+        )
+
+    context = {
+        'list': list
+    }
+    return render(request, 'teacher/teachers_schedule.html', context)
+
+
+def add_schedule_element(request, day_of_week, bell):
+    bell = Bell.objects.filter(school=request.user.teacher.school, number_of_lesson=bell).first()
+    obj = ScheduleElement.objects.filter(teacher=request.user.teacher, bell=bell, day_of_week=day_of_week).first()
+    form = ScheduleElementForm(teacher=request.user.teacher, instance=obj)
+    if request.method == 'POST':
+        form = ScheduleElementForm(request.user.teacher, request.POST, instance=obj)
+        form.instance.day_of_week = int(day_of_week)
+        form.instance.bell = bell
+        form.instance.teacher = request.user.teacher
+        if form.is_valid():
+            form.save()
+            return redirect('teachers_schedule')
+    context = {
+        'form': form,
+        'obj': obj
+    }
+    return render(request, 'teacher/add_schedule_element.html', context)
+
+
+def delete_schedule_element(request, schedule_element_id):
+    if request.method == "POST":
+        obj = get_object_or_404(ScheduleElement, id=schedule_element_id)
+        obj.delete()
+    return redirect('teachers_schedule')
+
+
+def group_detail_view(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    list = []
+    for student in group.students.all():
+        list.append(
+            tuple(
+                (
+                    student.user.first_name,
+                    student.user.last_name,
+                    student.grade_set.filter(subject=group.subject).all()
+                )
+            )
+        )
+
+    context = {
+        'group': group,
+        'list': list
+    }
+    return render(request, 'teacher/group_details.html', context)
+
+
+def start_lesson(request):
+    if request.method == "POST":
+        bell = Bell.objects.filter(
+            start_time__lte=datetime.datetime.today().time(),
+            end_time__gte=datetime.datetime.today().time(),
+            school=request.user.teacher.school,
+        ).first()
+
+        if not bell:
+            return redirect('home')
+
+        schedule_element = ScheduleElement.objects.filter(
+            bell=bell,
+            day_of_week=datetime.datetime.today().weekday(),
+            teacher=request.user.teacher
+        ).first()
+
+        if not schedule_element:
+            return redirect('home')
+
+        lesson = Lesson.objects.filter(
+            schedule_element=schedule_element,
+            date=datetime.datetime.today().date()
+        ).first()
+
+        if not lesson:
+            lesson = Lesson.objects.create(
+                schedule_element=schedule_element,
+            )
+
+        return redirect('lesson_details', lesson.id)
+    return redirect('home')
+
+
+def lesson_details(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    context = {
+        'lesson': lesson
+    }
+
+    return render(request, 'teacher/lesson.html', context)
+

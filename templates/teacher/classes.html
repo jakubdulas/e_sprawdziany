@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Twoje klasy{% endblock %}
+{% block title %}Klasy{% endblock %}
 {% block content %}
+    <a href="{% url 'headmaster_panel' %}"><--- panel</a>
     <ul>
     {% for class in class_qs %}
         <li>
-        <a href={% url 'teachers_class_details' class.id %}>{{ class.name }}</a>
+        <a href={% url 'teachers_class_details' class.id %}>{{ class.number }} {{ class.class_template.name }}</a>
         </li>
     {% endfor %}
     </ul>

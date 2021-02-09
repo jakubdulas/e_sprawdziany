@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Grupy - {{ class.number }} {{ class.class_template.name }}{% endblock %}
+{% block content %}
+    <a href="{% url 'teachers_class_details' class.id %}"><--- klasa</a>
+    <ul>
+    {% for group in groups  %}
+    <li><a href="{% url 'group_detail_view' group.id %}">{{ group.name }}</a></li>
+    {% endfor %}
+    <li><a href="{% url 'add_group' class.id %}">+ dodaj grupę</a></li>
+    </ul>
+{% endblock %}

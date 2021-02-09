@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}
+Edytuj grupę
+{% endblock %}
+{% block content %}
+<a href="{% url 'teachers_class_list' %}"><--- klasy</a><br>
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">Zapisz</button>
+</form>
+{% endblock %}

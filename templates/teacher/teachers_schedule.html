@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}
+Plan lekcji
+{% endblock %}
+{% block content %}
+<a href="{% url 'profile' %}"><--- Profile</a>
+
+<table>
+    <tr>
+        <td>Numer lekcji</td>
+        <td>Poniedziałek</td>
+        <td>Wtorek</td>
+        <td>Środa</td>
+        <td>Czwartek</td>
+        <td>Piątek</td>
+    </tr>
+    {% for no, pon, wt, sr, czw, pt in list %}
+    <tr>
+        <td>{{ no }}</td>
+        <td>
+            {% if pon %}
+            <a href="{% url 'add_schedule_element' 0 no %}">{{ pon.group.name }}</a>
+            {% else %}
+            <a href="{% url 'add_schedule_element' 0 no %}">Dodaj</a>
+            {% endif %}
+        </td>
+        <td>
+            {% if wt %}
+            <a href="{% url 'add_schedule_element' 1 no %}">{{ wt.group.name }}</a>
+            {% else %}
+            <a href="{% url 'add_schedule_element' 1 no %}">Dodaj</a>
+            {% endif %}
+        </td>
+        <td>
+            {% if sr %}
+            <a href="{% url 'add_schedule_element' 2 no %}">{{ sr.group.name }}</a>
+            {% else %}
+            <a href="{% url 'add_schedule_element' 2 no %}">Dodaj</a>
+            {% endif %}
+        </td>
+        <td>
+            {% if czw %}
+            <a href="{% url 'add_schedule_element' 3 no %}">{{ czw.group.name }}</a>
+            {% else %}
+            <a href="{% url 'add_schedule_element' 3 no %}">Dodaj</a>
+            {% endif %}
+        </td>
+        <td>
+            {% if pt %}
+            <a href="{% url 'add_schedule_element' 4 no %}">{{ pt.group.name }}</a>
+            {% else %}
+            <a href="{% url 'add_schedule_element' 4 no %}">Dodaj</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}{{ class.name }}{% endblock %}
 {% block content %}
+    <a href="{% url 'teachers_class_list' %}"><--- klasy</a><br>
     <a href="{% url 'edit_class' class.id %}">Informacje o klasie</a>
-    <a href="{% url 'class_grades_view' class.id %}">Oceny uczniów</a>
+    <a href="{% url 'class_groups' class.id %}">Grupy</a>
     <ol>
-    {% for member in class.students %}
-    <li>{{ member.user.first_name }} {{ member.user.last_name }} - <a href="{% url 'remove_student_from_class' class.id member.id %}">(usuń ucznia)</a></li>
+    {% for member in class.students.all %}
+    <li>{{ member.user.first_name }} {{ member.user.last_name }}</li>
     {% endfor %}
     </ol>
+
+
+
 {% endblock %}

@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from teacher.models import Teacher
-from student.models import Student
+from teacher.models import Teacher, Student
 # Create your views here.
 
 

@@ -9,10 +9,18 @@
     <a href="{% url 'test_list' %}">Testy</a>
     {% if teacher.is_headmaster and teacher.headmaster.school %}
         <a href="{% url 'headmaster_panel' %}">Szkoła</a>
-        <a href="{% url 'create_class' %}">Stworz klase</a>
     {% endif %}
 
     {% if request.user.is_superuser %}
     <a href="{% url 'administration-home' %}">Administracja</a>
     {% endif %}
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <form method="post" action="{% url 'start_lesson' %}">
+    {% csrf_token %}
+    <button type="submit">Rozpocznij lekcję</button>
+    </form>
 {% endblock %}

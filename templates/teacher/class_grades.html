@@ -11,7 +11,7 @@ Oceny
     <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
     <td>
         {% for grade in student.grade_set.all %}
-            <a href="{% url 'show_students_answers' grade.test.id %}" style="padding: 0px 5px">{{ grade.mark }}</a>
+            <span style="padding: 0px 5px">{{ grade.mark }}</span>
         {% endfor %}
     </td>
 </tr>

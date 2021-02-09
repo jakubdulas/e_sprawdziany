@@ -20,7 +20,7 @@
     <label>Klasa:</label>
     <select name="class" required>
         {% for class in classes %}
-        <option value="{{ class.id }}">{{ class.name }}</option>
+        <option value="{{ class.id }}">{{ class.number }} {{ class.class_template.name }}</option>
         {% endfor %}
     </select>
     <br>

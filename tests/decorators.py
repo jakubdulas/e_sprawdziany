@@ -1,5 +1,4 @@
-from student.models import Student
-from teacher.models import Teacher
+from teacher.models import Teacher, Student
 from .models import Test, BlankTest, Task
 from django.shortcuts import redirect, get_object_or_404
 

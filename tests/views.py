@@ -147,8 +147,7 @@ def save_answers(request, test_id):
 @paid_subscription
 @teacher_only
 def create_test(request):
-    classes = get_object_or_404(Teacher, user=request.user).class_set.all()
-    # classes = Teacher.objects.get(user=request.user).class_set.all()
+    classes = get_object_or_404(Teacher, user=request.user).schoolclass_set.all()
 
     if request.method == "POST":
         print(request.POST)
@@ -167,7 +166,7 @@ def create_test(request):
 
             numberOfGroups = int(request.POST['number_of_groups'])
 
-            students = Class.objects.get(id=int(request.POST['class']))
+            students = SchoolClass.objects.get(id=int(request.POST['class']))
             test.students = students
 
             for number in range(numberOfGroups):
@@ -721,7 +720,7 @@ def delete_image(request, task_id):
 @allowed_teacher('blank_test')
 def class_tests(request, blank_test_id, class_id):
     tests = []
-    classroom = get_object_or_404(Class, id=class_id)
+    classroom = get_object_or_404(SchoolClass, id=class_id)
     blank_test = get_object_or_404(BlankTest, id=blank_test_id)
     for student in classroom.students:
         tests.append(student.test_set.filter(blank_test=blank_test).first())

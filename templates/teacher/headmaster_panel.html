@@ -5,24 +5,10 @@
 {% block content %}
     <a href="{% url 'edit_school_information' %}">Edytuj informacje o szkole</a>
     <h3>Rok szkolny: <a href="{% url 'school_year_details' school_year.id %}">{{ school_year.name }}</a></h3>
-    <a href="{% url 'bells' %}">Rozkład dzwonków</a>
+    <a href="{% url 'bells' %}">Rozkład dzwonków</a><br>
+    <a href="{% url 'add_class_template' %}">Dodaj szablon klasy</a>
 
     <h3><a href="{% url 'students_view' %}">Uczniowie</a></h3>
     <h3><a href="{% url 'teachers_view' %}">Nauczyciele</a></h3>
     <h3><a href="{% url 'teachers_class_list' %}">Klasy</a></h3>
-{% endblock %}
-{% block scripts %}
-<script>
-input = document.getElementById('text')
-access_key = document.getElementById('access_key')
-input.value = window.location.host + '/student/school/join/' +access_key.textContent
-
-
-function copyLink() {
-    input.select();
-    input.setSelectionRange(0, 99999); /* For mobile devices */
-    document.execCommand("copy");
-}
-
-</script>
 {% endblock %}

@@ -1,6 +1,5 @@
 from django.db import models
-from teacher.models import Teacher, Class
-from student.models import Student
+from teacher.models import Teacher, SchoolClass, Student, Subject
 
 
 # Create your models here.
@@ -8,7 +7,7 @@ from student.models import Student
 class BlankTest(models.Model):
     label = models.CharField(max_length=128, blank=False, null=False)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    students = models.ForeignKey(Class, on_delete=models.CASCADE, null=True)
+    students = models.ForeignKey(SchoolClass, on_delete=models.CASCADE, null=True)
     instruction = models.TextField(null=True)
     is_active = models.BooleanField(default=False)
     countdown = models.DurationField(null=True)
@@ -190,6 +189,7 @@ class AnswerForTF(models.Model):
 class Grade(models.Model):
     mark = models.CharField(max_length=3, null=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, blank=True, null=True)
+    subject = models.ForeignKey(Subject, on_delete=models.DO_NOTHING, blank=True, null=True)
     test = models.OneToOneField(Test, on_delete=models.CASCADE, blank=True, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
     category = models.CharField(max_length=250, blank=True, null=True)

@@ -19,8 +19,25 @@
     <br>
     <br>
     <br>
+    {% if present_lesson %}
     <form method="post" action="{% url 'start_lesson' %}">
     {% csrf_token %}
+        <h4>Obecna lekcja:</h4>
+        <h1>{{ present_lesson.group.name }}</h1>
+        <h2>Lekcja: {{ present_lesson.bell.number_of_lesson }}</h2>
+        <h2>Od {{ present_lesson.bell.start_time|date:"H:i" }} do {{ present_lesson.bell.end_time|date:"H:i" }}</h2>
     <button type="submit">Rozpocznij lekcję</button>
     </form>
+    {% endif %}
+
+    {% if next_lesson %}
+    <form method="post" action="{% url 'start_next_lesson' %}">
+    {% csrf_token %}
+        <h4>Następna lekcja:</h4>
+        <h1>{{ next_lesson.group.name }}</h1>
+        <h2>Lekcja: {{ next_lesson.bell.number_of_lesson }}</h2>
+        <h2>Od {{ next_lesson.bell.start_time|date:"H:i" }} do {{ next_lesson.bell.end_time|date:"H:i" }}</h2>
+    <button type="submit">Rozpocznij lekcję</button>
+    </form>
+    {% endif %}
 {% endblock %}

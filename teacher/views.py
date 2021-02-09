@@ -346,7 +346,7 @@ def add_group(request, class_id):
 
 
 def teachers_schedule(request):
-    bells = Bell.objects.filter(school=request.user.teacher.school).all()
+    bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
     list = []
     for bell in bells:
         list.append(
@@ -417,34 +417,47 @@ def group_detail_view(request, group_id):
 
 def start_lesson(request):
     if request.method == "POST":
-        bell = Bell.objects.filter(
-            start_time__lte=datetime.datetime.today().time(),
-            end_time__gte=datetime.datetime.today().time(),
-            school=request.user.teacher.school,
-        ).first()
-
-        if not bell:
-            return redirect('home')
-
-        schedule_element = ScheduleElement.objects.filter(
-            bell=bell,
-            day_of_week=datetime.datetime.today().weekday(),
-            teacher=request.user.teacher
-        ).first()
-
-        if not schedule_element:
-            return redirect('home')
+        present_lesson = ScheduleElement.objects.filter(
+            teacher=request.user.teacher,
+            bell__end_time__gte=datetime.datetime.today().time(),
+            bell__start_time__lte=datetime.datetime.today().time(),
+            day_of_week=datetime.datetime.today().weekday()
+        ).order_by('bell__number_of_lesson').first()
 
         lesson = Lesson.objects.filter(
-            schedule_element=schedule_element,
+            schedule_element=present_lesson,
             date=datetime.datetime.today().date()
         ).first()
 
         if not lesson:
             lesson = Lesson.objects.create(
-                schedule_element=schedule_element,
+                schedule_element=present_lesson,
             )
 
+        return redirect('lesson_details', lesson.id)
+    return redirect('home')
+
+
+def start_next_lesson(request):
+    if request.method == "POST":
+        next_lesson = ScheduleElement.objects.filter(
+            teacher=request.user.teacher,
+            bell__start_time__gt=datetime.datetime.today().time(),
+            day_of_week=datetime.datetime.today().weekday()
+        ).order_by('bell__number_of_lesson').first()
+
+        if not next_lesson:
+            return redirect('home')
+
+        lesson = Lesson.objects.filter(
+            schedule_element=next_lesson,
+            date=datetime.datetime.today().date()
+        ).first()
+
+        if not lesson:
+            lesson = Lesson.objects.create(
+                schedule_element=next_lesson,
+            )
         return redirect('lesson_details', lesson.id)
     return redirect('home')
 

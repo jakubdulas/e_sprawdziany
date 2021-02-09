@@ -155,6 +155,6 @@ class ScheduleElement(models.Model):
 class Lesson(models.Model):
     schedule_element = models.ForeignKey(ScheduleElement, on_delete=models.SET_NULL, null=True, blank=True)
     topic = models.CharField(max_length=100)
-    date = models.DateField(null=True)
+    date = models.DateField(auto_now_add=True, null=True)
     notes = models.TextField()
     homework = models.TextField()

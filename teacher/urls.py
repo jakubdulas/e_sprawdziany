@@ -25,5 +25,6 @@ urlpatterns = [
     path('my-schedule/', teachers_schedule, name='teachers_schedule'),
     path('my-schedule/delete/<int:schedule_element_id>/', delete_schedule_element, name='delete_schedule_element'),
     path('start-lesson/', start_lesson, name='start_lesson'),
+    path('start-next-lesson/', start_next_lesson, name='start_next_lesson'),
     path('lesson/<int:lesson_id>/', lesson_details, name='lesson_details'),
 ]

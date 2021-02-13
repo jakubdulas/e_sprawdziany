@@ -2,14 +2,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from .models import *
 from .decorators import *
+from django.http import JsonResponse
 from .forms import *
 from general.decorators import *
 from general.forms import *
 import random
 from django.forms import inlineformset_factory
 import datetime
+from django.utils.dateparse import parse_date
 
 
 @paid_subscription
@@ -205,9 +208,9 @@ def school_year_details(request, school_year_id):
 
 
 def add_class_template(request):
-    form = CreateClassTemplateForm()
+    form = CreateClassTemplateForm(school=request.user.teacher.school)
     if request.method == 'POST':
-        form = CreateClassTemplateForm(request.POST)
+        form = CreateClassTemplateForm(request.user.teacher.school, request.POST)
         form.instance.school = request.user.teacher.school
         if form.is_valid():
             form.save()
@@ -415,55 +418,33 @@ def group_detail_view(request, group_id):
     return render(request, 'teacher/group_details.html', context)
 
 
-def start_lesson(request):
+def start_next_lesson(request, schedule_element_id):
     if request.method == "POST":
-        present_lesson = ScheduleElement.objects.filter(
-            teacher=request.user.teacher,
-            bell__end_time__gte=datetime.datetime.today().time(),
-            bell__start_time__lte=datetime.datetime.today().time(),
-            day_of_week=datetime.datetime.today().weekday()
-        ).order_by('bell__number_of_lesson').first()
+        next_lesson = get_object_or_404(ScheduleElement, id=schedule_element_id)
 
-        lesson = Lesson.objects.filter(
-            schedule_element=present_lesson,
-            date=datetime.datetime.today().date()
+        replacement = Replacement.objects.filter(
+            date=datetime.datetime.today().date(),
+            schedule_element=next_lesson,
         ).first()
-
-        if not lesson:
-            lesson = Lesson.objects.create(
-                schedule_element=present_lesson,
-            )
-
-        return redirect('lesson_details', lesson.id)
-    return redirect('home')
-
-
-def start_next_lesson(request):
-    if request.method == "POST":
-        next_lesson = ScheduleElement.objects.filter(
-            teacher=request.user.teacher,
-            bell__start_time__gt=datetime.datetime.today().time(),
-            day_of_week=datetime.datetime.today().weekday()
-        ).order_by('bell__number_of_lesson').first()
-
-        if not next_lesson:
-            return redirect('home')
 
         lesson = Lesson.objects.filter(
             schedule_element=next_lesson,
-            date=datetime.datetime.today().date()
+            date=datetime.datetime.today().date(),
+            replacement=replacement
         ).first()
 
         if not lesson:
             lesson = Lesson.objects.create(
                 schedule_element=next_lesson,
+                replacement=replacement
             )
-        return redirect('lesson_details', lesson.id)
+
+        return redirect('lesson_details', lesson_slug=lesson.slug)
     return redirect('home')
 
 
-def lesson_details(request, lesson_id):
-    lesson = get_object_or_404(Lesson, id=lesson_id)
+def lesson_details(request, lesson_slug):
+    lesson = get_object_or_404(Lesson, slug=lesson_slug)
 
     context = {
         'lesson': lesson
@@ -471,3 +452,107 @@ def lesson_details(request, lesson_id):
 
     return render(request, 'teacher/lesson.html', context)
 
+
+def teachers_diary(request):
+
+    return render(request, 'teacher/teachers_diary.html')
+
+
+def schedule_replacement(request):
+    classes = SchoolClass.objects.filter(
+        class_template__school=request.user.teacher.school,
+        school_year=SchoolYear.get_current_school_year()
+    ).all()
+    bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
+    teachers = Teacher.objects.filter(school=request.user.teacher.school).all()
+    subjects = request.user.teacher.school.subjects.all()
+
+    if request.method == 'POST':
+        try:
+            schedule_element = ScheduleElement.objects.filter(
+                day_of_week=datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d').weekday(),
+                group__related_classes=SchoolClass.objects.get(id=int(request.POST['class'])),
+                teacher=Teacher.objects.get(id=int(request.POST['teacher'])),
+                bell=Bell.objects.get(id=int(request.POST['bell']))
+            ).first()
+
+            if not schedule_element:
+                messages.error(request, 'Ta klasa nie ma w tym czasie lekcji')
+                return redirect('schedule_replacement')
+
+            Replacement.objects.create(
+                date=datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d').date(),
+                schedule_element=schedule_element,
+                teacher=Teacher.objects.get(id=int(request.POST['proxy'])),
+                subject=Subject.objects.get(id=int(request.POST['subject']))
+            )
+            messages.success(request, 'Zaplanowano zastępstwo')
+            return redirect('teachers_diary')
+        except:
+            messages.error(request, 'Zastępstwo nie zostało utworzone. Spróbuj ponownie')
+            return redirect('schedule_replacement')
+
+    context = {
+        'classes': classes,
+        'bells': bells,
+        'teachers': teachers,
+        'subjects': subjects
+    }
+    return render(request, 'teacher/schedule_replacement.html', context)
+
+
+def cancel_lesson(request):
+    classes = SchoolClass.objects.filter(
+        class_template__school=request.user.teacher.school,
+        school_year=SchoolYear.get_current_school_year()
+    ).all()
+    bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
+
+    if request.method == "POST":
+        try:
+            schedule_element = ScheduleElement.objects.filter(
+                day_of_week=datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d').weekday(),
+                group=Group.objects.get(id=int(request.POST['group'])),
+                bell=Bell.objects.get(id=int(request.POST['bell']))
+            ).first()
+
+            if not schedule_element:
+                messages.error(request, 'Klasa nie ma wtedy lekcji')
+                return redirect('cancel_lesson')
+
+            Lesson.objects.create(
+                schedule_element=schedule_element,
+                date=datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d').date(),
+                is_canceled=True
+            )
+            return redirect('teachers_diary')
+        except:
+            messages.error(request, 'Coś poszło nie tak')
+            return redirect('cancel_lesson')
+
+    context = {
+        'classes': classes,
+        'bells': bells
+    }
+
+    return render(request, 'teacher/cancel_lesson.html', context)
+
+
+def get_groups_ajax(request, schoolclass_id):
+    if request.is_ajax():
+        schoolclass = SchoolClass.objects.get(id=schoolclass_id)
+        groups = list(schoolclass.group_set.values('name', 'id'))
+        return JsonResponse({'groups': groups})
+    return redirect('home')
+
+
+def lesson_list(request):
+    lessons = Lesson.objects.filter(
+        Q(schedule_element__teacher=request.user.teacher) | Q(replacement__teacher=request.user.teacher)
+    ).order_by('-date', '-schedule_element__bell__number_of_lesson').all()
+
+    context = {
+        'lessons': lessons
+    }
+
+    return render(request, 'teacher/lesson_list.html', context)

@@ -17,39 +17,47 @@ def home(request):
         if Teacher.objects.filter(user=request.user):
             context['teacher'] = request.user.teacher
 
+            present_replacement = Replacement.objects.filter(
+                schedule_element__bell__end_time__gte=datetime.datetime.today().time(),
+                schedule_element__bell__start_time__lte=datetime.datetime.today().time(),
+                teacher=request.user.teacher,
+                date=datetime.datetime.today().date(),
+            ).order_by('schedule_element__bell__number_of_lesson').first()
+
             present_lesson = ScheduleElement.objects.filter(
                 teacher=request.user.teacher,
                 bell__end_time__gte=datetime.datetime.today().time(),
                 bell__start_time__lte=datetime.datetime.today().time(),
-                day_of_week=datetime.datetime.today().weekday()
-            ).order_by('bell__number_of_lesson').first()
+                day_of_week=datetime.datetime.today().weekday(),
+            ).order_by('bell__number_of_lesson').exclude(
+                replacement__date=datetime.datetime.today().date()).exclude(
+                lesson__is_canceled=True).first()
 
             context['present_lesson'] = present_lesson
+            context['present_replacement'] = present_replacement
+
+            next_replacement = Replacement.objects.filter(
+                schedule_element__bell__start_time__gt=datetime.datetime.today().time(),
+                teacher=request.user.teacher,
+                date=datetime.datetime.today().date(),
+            ).order_by('schedule_element__bell__number_of_lesson').first()
 
             next_lesson = ScheduleElement.objects.filter(
                 teacher=request.user.teacher,
                 bell__start_time__gt=datetime.datetime.today().time(),
                 day_of_week=datetime.datetime.today().weekday()
-            ).order_by('bell__number_of_lesson').first()
-
-            # if not next_lesson:
-            #     next_lesson = ScheduleElement.objects.filter(
-            #         teacher=request.user.teacher,
-            #         bell__start_time__gt=datetime.time(0, 0, 0),
-            #         day_of_week=datetime.datetime.today().weekday()+1 if datetime.datetime.today().weekday()+1 != 7 else 0
-            #     ).order_by('day_of_week', 'bell__number_of_lesson').first()
-            #     i = datetime.datetime.today().weekday()
-            #     while not next_lesson:
-            #         i += 1
-            #         if i == 7:
-            #             i = 0
-            #         next_lesson = ScheduleElement.objects.filter(
-            #             teacher=request.user.teacher,
-            #             bell__start_time__gt=datetime.time(0, 0, 0),
-            #             day_of_week=i
-            #         ).order_by('day_of_week', 'bell__number_of_lesson').first()
+            ).order_by('bell__number_of_lesson').exclude(
+                replacement__date=datetime.datetime.today().date()
+            ).exclude(lesson__is_canceled=True).first()
 
             context['next_lesson'] = next_lesson
+            context['next_replacement'] = next_replacement
+
+            if next_lesson and next_replacement:
+                if (next_replacement.schedule_element.bell.number_of_lesson <=
+                        next_lesson.bell.number_of_lesson):
+                    context['next_replacement'] = next_replacement
+                    context['next_lesson'] = None
 
             return render(request, 'general/index_teacher.html', context=context)
         elif Student.objects.filter(user=request.user):

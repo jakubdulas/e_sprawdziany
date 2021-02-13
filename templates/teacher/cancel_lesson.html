@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    Odwołaj lekcję
+{% endblock %}
+{% block content %}
+<h1>Odwołaj lekcję</h1>
+
+<form method="post">
+{% csrf_token %}
+<label>Data: </label><input type="date" name="date"><br>
+<label>Godzina lekcyjna: </label>
+<select name="bell">
+    <option>------</option>
+    {% for bell in bells %}
+    <option value="{{ bell.id }}">{{ bell.number_of_lesson }}</option>
+    {% endfor %}
+</select><br>
+<label>Klasa: </label>
+<select id="school_class">
+    <option value="-1">------</option>
+    {% for class in classes %}
+    <option value="{{ class.id }}">{{ class.number }} {{ class.class_template.name }}</option>
+    {% endfor %}
+</select><br>
+<label>Grupa: </label>
+<select name="group" id="group" >
+    <option value="-1">------</option>
+</select><br>
+<button type="submit">Zatwierdz</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/cancel_lesson.js' %}"></script>
+{% endblock %}

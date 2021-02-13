@@ -5,6 +5,8 @@
 {% block content %}
 <h1>Hello: <a href="{% url 'profile' %}">{{ teacher.user.first_name }} {{ teacher.user.last_name }}</a></h1>
     <a href="{% url 'teachers_class_list' %}">Klasy</a>
+    <a href="{% url 'teachers_diary' %}">Terminarz</a>
+    <a href="{% url 'lesson_list' %}">Zajęcia</a>
     <a href="{% url 'create_test' %}">Stwórz test</a>
     <a href="{% url 'test_list' %}">Testy</a>
     {% if teacher.is_headmaster and teacher.headmaster.school %}
@@ -19,25 +21,73 @@
     <br>
     <br>
     <br>
+
     {% if present_lesson %}
-    <form method="post" action="{% url 'start_lesson' %}">
-    {% csrf_token %}
         <h4>Obecna lekcja:</h4>
         <h1>{{ present_lesson.group.name }}</h1>
         <h2>Lekcja: {{ present_lesson.bell.number_of_lesson }}</h2>
         <h2>Od {{ present_lesson.bell.start_time|date:"H:i" }} do {{ present_lesson.bell.end_time|date:"H:i" }}</h2>
+    <form method="post" action="{% url 'start_next_lesson' present_lesson.id %}">
+    {% csrf_token %}
+    <button type="submit">Rozpocznij lekcję</button>
+    </form>
+    {% elif present_replacement %}
+        <h4>Obecna lekcja:</h4>
+        <h5>Zastępstwo za: {{ present_replacement.schedule_element.teacher.user.first_name }}
+         {{ present_replacement.schedule_element.teacher.user.last_name }}
+        </h5>
+        <h1>
+            {% for class in present_replacement.schedule_element.group.related_classes.all %}
+                {{ class.number }} {{ class.class_template.name }}
+            {% endfor %}
+            {{ present_replacement.subject }}
+        </h1>
+        <h2>Lekcja: {{ present_replacement.schedule_element.bell.number_of_lesson }}</h2>
+        <h2>Od {{ present_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ present_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>
+    <form method="post" action="{% url 'start_next_lesson' present_replacement.schedule_element.id %}">
+    {% csrf_token %}
     <button type="submit">Rozpocznij lekcję</button>
     </form>
     {% endif %}
 
+    {% if not present_replacement and not present_lesson and next_replacement or next_lesson %}
+        <h1>Odpoczywaj póki możesz :D</h1>
+    {% endif %}
+
     {% if next_lesson %}
-    <form method="post" action="{% url 'start_next_lesson' %}">
-    {% csrf_token %}
         <h4>Następna lekcja:</h4>
         <h1>{{ next_lesson.group.name }}</h1>
         <h2>Lekcja: {{ next_lesson.bell.number_of_lesson }}</h2>
         <h2>Od {{ next_lesson.bell.start_time|date:"H:i" }} do {{ next_lesson.bell.end_time|date:"H:i" }}</h2>
+    <form method="post" action="{% url 'start_next_lesson' next_lesson.id %}">
+    {% csrf_token %}
+    <button type="submit">Rozpocznij lekcję</button>
+    </form>
+    {% elif next_replacement %}
+        <h4>Następna lekcja:</h4>
+        <h5>Zastępstwo za: {{ next_replacement.schedule_element.teacher.user.first_name }}
+        {{ next_replacement.schedule_element.teacher.user.last_name }}
+        </h5>
+        <h1>
+            {% for class in next_replacement.schedule_element.group.related_classes.all %}
+                {{ class.number }} {{ class.class_template.name }}
+            {% endfor %}
+            {{ next_replacement.subject }}
+        </h1>
+        <h2>Lekcja: {{ next_replacement.schedule_element.bell.number_of_lesson }}</h2>
+        <h2>Od {{ next_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ next_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>
+    <form method="post" action="{% url 'start_next_lesson' next_replacement.schedule_element.id %}">
+    {% csrf_token %}
     <button type="submit">Rozpocznij lekcję</button>
     </form>
     {% endif %}
+
+    {% if not next_lesson and not next_replacement and present_lesson or present_replacement %}
+        <h1>Wygląda na to, że to twoja ostatnia lekcja na dziś</h1>
+    {% endif %}
+
+    {% if not next_lesson and not next_replacement and not present_replacement and not present_lesson %}
+        <h1>Niech żyje wolność...</h1>
+    {% endif %}
+
 {% endblock %}

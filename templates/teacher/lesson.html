@@ -3,7 +3,19 @@
 Lekcja
 {% endblock %}
 {% block content %}
-<h1>{{ lesson.schedule_element.group.name }}</h1>
+{% if lesson.replacement %}
+<h1>Zastępstwo</h1>
+{% endif %}
+<h1>
+    {% if lesson.replacement %}
+    {% for class in lesson.schedule_element.group.related_classes.all %}
+        {{ class.number }} {{ class.class_template.name }}
+    {% endfor %}
+    {{ lesson.replacement.subject }}
+    {% else %}
+    {{ lesson.schedule_element.group.name }}
+    {% endif %}
+</h1>
 <p>Godzina lekcyjna: {{ lesson.schedule_element.bell.number_of_lesson }}</p>
 <ol>
 {% for student in lesson.schedule_element.group.students.all %}

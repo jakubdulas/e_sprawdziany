@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}
+    Terminarz
+{% endblock %}
+{% block content %}
+<h1>Terminarz</h1>
+<a href="{% url 'schedule_replacement' %}">Zaplanuj zastępstwo</a>
+<a href="{% url 'cancel_lesson' %}">Odwołaj lekcję</a>
+{% endblock %}

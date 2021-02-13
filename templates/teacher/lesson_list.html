@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}
+Zajęcia
+{% endblock %}
+{% block content %}
+<ol>
+{% for lesson in lessons %}
+<li>{{ lesson.date|date:"d-m-Y" }} - <a href="{% url 'lesson_details' lesson.slug %}">{{ lesson.schedule_element.bell.number_of_lesson }}
+{{ lesson.schedule_element.group.name }}</a></li>
+{% endfor %}
+</ol>
+{% endblock %}

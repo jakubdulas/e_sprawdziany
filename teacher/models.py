@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
 import datetime
+import random
 
 
 class School(models.Model):
@@ -14,6 +15,7 @@ class School(models.Model):
     is_paid = models.BooleanField(default=False)
     free_trial_up = models.BooleanField(default=False)
     join_date = models.DateTimeField(auto_now_add=True, null=True)
+    subjects = models.ManyToManyField("Subject")
 
     def __str__(self):
         return str(self.name)
@@ -30,6 +32,14 @@ class SchoolYear(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+    @staticmethod
+    def get_current_school_year():
+        school_year = SchoolYear.objects.filter(
+            start__lte=datetime.datetime.today().date(),
+            end__gte=datetime.datetime.today().date(),
+        ).first()
+        return school_year
 
 
 class SchoolTerm(models.Model):
@@ -152,9 +162,35 @@ class ScheduleElement(models.Model):
     day_of_week = models.IntegerField()
 
 
+class Replacement(models.Model):
+    date = models.DateField()
+    schedule_element = models.ForeignKey(ScheduleElement, on_delete=models.CASCADE, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True)
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
+
+
 class Lesson(models.Model):
     schedule_element = models.ForeignKey(ScheduleElement, on_delete=models.SET_NULL, null=True, blank=True)
     topic = models.CharField(max_length=100)
     date = models.DateField(auto_now_add=True, null=True)
     notes = models.TextField()
     homework = models.TextField()
+    replacement = models.ForeignKey(Replacement, on_delete=models.SET_NULL, null=True, blank=True)
+    is_canceled = models.BooleanField(default=False)
+    slug = models.SlugField(null=True, unique=True)
+
+
+@receiver(pre_save, sender=Lesson)
+def set_slug_to_lesson(sender, instance, *args, **kwargs):
+    if not instance.slug:
+        signs = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm"
+        code = ""
+        for _ in range(30):
+            code += signs[random.randint(0, len(signs)-1)]
+
+        while sender.objects.filter(slug=code):
+            code = ""
+            for _ in range(30):
+                code += signs[random.randint(0, len(signs) - 1)]
+
+        instance.slug = code

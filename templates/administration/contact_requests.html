@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}
+Zgłoszenia
+{% endblock %}
+{% block content %}
+<table border="1px">
+<tr>
+    <td>Imię i nazwisko</td>
+    <td>Email</td>
+    <td>Numer telefonu</td>
+    <td></td>
+</tr>
+{% for item in qs %}
+<tr>
+    <td>{{ item.name }}</td>
+    <td>{{ item.email }}</td>
+    <td>{{ item.phone_number }}</td>
+    <td><form method="post" action="{% url 'contact_request_accepted' item.id %}">{% csrf_token %}<button type="submit">Usuń</button></form></td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

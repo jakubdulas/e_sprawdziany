@@ -31,4 +31,5 @@ urlpatterns = [
     path('diary/cancel-lesson/', cancel_lesson, name='cancel_lesson'),
     path('diary/cancel-lesson/get_groups/<int:schoolclass_id>/', get_groups_ajax),
     path('lessons/', lesson_list, name='lesson_list'),
+    path('lesson/<slug:lesson_slug>/take-the-register/', take_the_register, name='take_the_register'),
 ]

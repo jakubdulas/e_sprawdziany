@@ -17,6 +17,7 @@ Lekcja
     {% endif %}
 </h1>
 <p>Godzina lekcyjna: {{ lesson.schedule_element.bell.number_of_lesson }}</p>
+<a href="{% url 'take_the_register' lesson.slug %}">Sprawdz obecność</a>
 <ol>
 {% for student in lesson.schedule_element.group.students.all %}
 <li>{{ student.user.first_name }} {{ student.user.last_name }}</li>

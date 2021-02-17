@@ -50,10 +50,6 @@
     </form>
     {% endif %}
 
-    {% if not present_replacement and not present_lesson and next_replacement or next_lesson %}
-        <h1>Odpoczywaj póki możesz :D</h1>
-    {% endif %}
-
     {% if next_lesson %}
         <h4>Następna lekcja:</h4>
         <h1>{{ next_lesson.group.name }}</h1>
@@ -82,12 +78,5 @@
     </form>
     {% endif %}
 
-    {% if not next_lesson and not next_replacement and present_lesson or present_replacement %}
-        <h1>Wygląda na to, że to twoja ostatnia lekcja na dziś</h1>
-    {% endif %}
-
-    {% if not next_lesson and not next_replacement and not present_replacement and not present_lesson %}
-        <h1>Niech żyje wolność...</h1>
-    {% endif %}
 
 {% endblock %}

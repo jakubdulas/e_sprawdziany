@@ -556,3 +556,68 @@ def lesson_list(request):
     }
 
     return render(request, 'teacher/lesson_list.html', context)
+
+
+#sprawdzanie obecnosci
+def take_the_register(request, lesson_slug):
+    lesson = get_object_or_404(Lesson, slug=lesson_slug)
+    students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
+    students = []
+    for student in students_qs:
+        students.append(
+            tuple(
+                (
+                    student,
+                    Frequency.objects.filter(lesson=lesson, student=student).first()
+                )
+            )
+        )
+    context = {
+        'students': students,
+        'lesson': lesson
+    }
+
+    if request.method == 'POST':
+        for student, frequency in students:
+            if frequency:
+                frequency.is_absent = False
+                frequency.is_late = False
+                frequency.is_exempt = False
+
+                if f"frequency_{student.id}" in request.POST.keys():
+                    if request.POST[f"frequency_{student.id}"] == 'present':
+                        frequency.delete()
+                    elif request.POST[f"frequency_{student.id}"] == 'absent':
+                        frequency.is_absent = True
+                        frequency.save()
+                    elif request.POST[f"frequency_{student.id}"] == 'late':
+                        frequency.is_late = True
+                        frequency.save()
+                    elif request.POST[f"frequency_{student.id}"] == 'exempt':
+                        frequency.is_exempt = True
+                        frequency.save()
+            else:
+                if f"frequency_{student.id}" in request.POST.keys():
+                    if request.POST[f"frequency_{student.id}"] == 'absent':
+                        Frequency.objects.create(
+                            lesson=lesson,
+                            student=student,
+                            term=SchoolTerm.get_current_school_term(),
+                            is_absent=True
+                        )
+                    elif request.POST[f"frequency_{student.id}"] == 'late':
+                        Frequency.objects.create(
+                            lesson=lesson,
+                            student=student,
+                            term=SchoolTerm.get_current_school_term(),
+                            is_late=True
+                        )
+                    elif request.POST[f"frequency_{student.id}"] == 'exempt':
+                        Frequency.objects.create(
+                            lesson=lesson,
+                            student=student,
+                            term=SchoolTerm.get_current_school_term(),
+                            is_exempt=True
+                        )
+        return redirect('lesson_details', lesson_slug)
+    return render(request, 'teacher/take_the_register.html', context)

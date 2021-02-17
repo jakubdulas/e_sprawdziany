@@ -44,6 +44,7 @@ def save_answers(request, test_id):
         student = request.user.student
         test.is_active = False
         test.is_done = True
+        test.is_done = True
         test.save()
         earned_total = 0
         total = 0

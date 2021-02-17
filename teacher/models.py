@@ -52,6 +52,14 @@ class SchoolTerm(models.Model):
     def __str__(self):
         return f"{self.school.name} | Semestr {self.number}"
 
+    @staticmethod
+    def get_current_school_term():
+        school_term = SchoolTerm.objects.filter(
+            start__lte=datetime.datetime.today().date(),
+            end__gte=datetime.datetime.today().date(),
+        ).first()
+        return school_term
+
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -178,6 +186,16 @@ class Lesson(models.Model):
     replacement = models.ForeignKey(Replacement, on_delete=models.SET_NULL, null=True, blank=True)
     is_canceled = models.BooleanField(default=False)
     slug = models.SlugField(null=True, unique=True)
+
+
+class Frequency(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    is_absent = models.BooleanField(default=False)
+    is_late = models.BooleanField(default=False)
+    is_exempt = models.BooleanField(default=False)
+    excuse = models.BooleanField(default=False)
+    term = models.ForeignKey(SchoolTerm, on_delete=models.CASCADE)
 
 
 @receiver(pre_save, sender=Lesson)

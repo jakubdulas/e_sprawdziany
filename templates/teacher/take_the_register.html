@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}
+    Sprawdz obecność
+{% endblock %}
+{% block content %}
+<a href="{% url 'lesson_details' lesson.slug %}"><--- lekcja</a>
+<form method="post">
+{% csrf_token %}
+    <table>
+    <tr>
+        <td>Nr</td>
+        <td>Imię i nazwisko</td>
+        <td>Obecny</td>
+        <td>Nieobecny</td>
+        <td>Spoźniony</td>
+        <td>Zwolniony</td>
+    </tr>
+    {% for student, frequency in students %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+        <td>
+            <input name="frequency_{{ student.id }}"
+                   value="present"
+                   type="radio"
+                    {% if not frequency %}
+                    checked
+                    {% endif %}
+            >
+        </td>
+        <td>
+            <input name="frequency_{{ student.id }}"
+                   value="absent"
+                   type="radio"
+                    {% if frequency.is_absent %}
+                    checked
+                    {% endif %}
+            >
+        </td>
+        <td>
+            <input name="frequency_{{ student.id }}"
+                   value="late"
+                   type="radio"
+                    {% if frequency.is_late %}
+                    checked
+                    {% endif %}
+            >
+        </td>
+        <td>
+            <input name="frequency_{{ student.id }}"
+                   value="exempt"
+                   type="radio"
+                    {% if frequency.is_exempt %}
+                    checked
+                    {% endif %}
+            >
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+    <button type="submit">Zatwierdź</button>
+</form>
+{% endblock %}

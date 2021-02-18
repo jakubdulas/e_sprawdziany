@@ -8,6 +8,7 @@ from .decorators import *
 from django.http import JsonResponse
 from .forms import *
 from general.decorators import *
+from tests.models import Grade
 from general.forms import *
 import random
 from django.forms import inlineformset_factory
@@ -446,8 +447,62 @@ def start_next_lesson(request, schedule_element_id):
 def lesson_details(request, lesson_slug):
     lesson = get_object_or_404(Lesson, slug=lesson_slug)
 
+    if lesson.replacement:
+        prev_lesson = Lesson.objects.filter(
+            Q(replacement__subject=lesson.replacement.subject) | Q(
+                schedule_element__group__subject=lesson.replacement.subject),
+            schedule_element__group=lesson.schedule_element.group,
+        ).exclude(id=lesson.id).order_by('-id').first()
+    else:
+        prev_lesson = Lesson.objects.filter(
+            Q(replacement__subject=lesson.schedule_element.group.subject) | Q(
+                schedule_element__group__subject=lesson.schedule_element.group.subject),
+            schedule_element__group=lesson.schedule_element.group,
+        ).exclude(id=lesson.id).order_by('-id').first()
+
+    students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
+    term1 = []
+    term2 = []
+    for student in students_qs:
+        term1.append(
+            tuple(
+                (
+                    student,
+                    Frequency.objects.filter(lesson=lesson, student=student).first(),
+                    Grade.objects.filter(
+                        student=student,
+                        subject=lesson.replacement.subject if lesson.replacement else lesson.schedule_element.group.subject,
+                        school_term=SchoolTerm.objects.filter(
+                            school_year=SchoolYear.get_current_school_year(),
+                            number=1,
+                        ).first()
+                    ).all()
+                )
+            )
+        )
+
+        term2.append(
+            tuple(
+                (
+                    student,
+                    Frequency.objects.filter(lesson=lesson, student=student).first(),
+                    Grade.objects.filter(
+                        student=student,
+                        subject=lesson.replacement.subject if lesson.replacement else lesson.schedule_element.group.subject,
+                        school_term=SchoolTerm.objects.filter(
+                            school_year=SchoolYear.get_current_school_year(),
+                            number=2
+                        ).first()
+                    ).all()
+                )
+            )
+        )
+
     context = {
-        'lesson': lesson
+        'lesson': lesson,
+        'prev_lesson': prev_lesson,
+        'term1': term1,
+        'term2': term2,
     }
 
     return render(request, 'teacher/lesson.html', context)
@@ -486,6 +541,11 @@ def schedule_replacement(request):
                 teacher=Teacher.objects.get(id=int(request.POST['proxy'])),
                 subject=Subject.objects.get(id=int(request.POST['subject']))
             )
+
+            # Lesson.objects.create(
+            #     schedule_element=schedule_element,
+            #     date=
+            # )
             messages.success(request, 'Zaplanowano zastępstwo')
             return redirect('teachers_diary')
         except:

@@ -64,7 +64,6 @@ class Test(models.Model):
     is_active = models.BooleanField(default=False)
     blank_test = models.ForeignKey(BlankTest, on_delete=models.CASCADE, null=True)
     group = models.ForeignKey(TestGroup, on_delete=models.CASCADE, null=True)
-    mark = models.CharField(max_length=1, null=True, blank=True)
     is_done = models.BooleanField(default=False)
     exits = models.IntegerField(default=0)
     total_points = models.IntegerField(default=0)
@@ -184,19 +183,3 @@ class AnswerForTF(models.Model):
     checked = models.BooleanField(blank=True, null=True)
     true_false = models.OneToOneField(TrueFalseTask, on_delete=models.CASCADE, null=True)
     is_correct = models.BooleanField(default=False, null=True)
-
-
-class Grade(models.Model):
-    mark = models.CharField(max_length=3, null=True)
-    teacher = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, blank=True, null=True)
-    subject = models.ForeignKey(Subject, on_delete=models.DO_NOTHING, blank=True, null=True)
-    test = models.OneToOneField(Test, on_delete=models.CASCADE, blank=True, null=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
-    category = models.CharField(max_length=250, blank=True, null=True)
-    date = models.DateField(auto_now_add=True)
-    description = models.TextField(blank=True, null=True)
-    weight = models.IntegerField(default=0, blank=True, null=True)
-    school_term = models.ForeignKey(SchoolTerm, null=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return f"{self.mark} | {self.student.user.first_name} {self.student.user.last_name}"

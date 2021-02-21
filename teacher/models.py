@@ -16,6 +16,7 @@ class School(models.Model):
     free_trial_up = models.BooleanField(default=False)
     join_date = models.DateTimeField(auto_now_add=True, null=True)
     subjects = models.ManyToManyField("Subject")
+    grades = models.ManyToManyField("GradeTemplate")
 
     def __str__(self):
         return str(self.name)
@@ -34,8 +35,9 @@ class SchoolYear(models.Model):
         return str(self.name)
 
     @staticmethod
-    def get_current_school_year():
+    def get_current_school_year(school):
         school_year = SchoolYear.objects.filter(
+            school=school,
             start__lte=datetime.datetime.today().date(),
             end__gte=datetime.datetime.today().date(),
         ).first()
@@ -53,8 +55,9 @@ class SchoolTerm(models.Model):
         return f"{self.school.name} | Semestr {self.number}"
 
     @staticmethod
-    def get_current_school_term():
+    def get_current_school_term(school):
         school_term = SchoolTerm.objects.filter(
+            school=school,
             start__lte=datetime.datetime.today().date(),
             end__gte=datetime.datetime.today().date(),
         ).first()
@@ -196,6 +199,42 @@ class Frequency(models.Model):
     is_exempt = models.BooleanField(default=False)
     excuse = models.BooleanField(default=False)
     term = models.ForeignKey(SchoolTerm, on_delete=models.CASCADE)
+
+
+class GradeTemplate(models.Model):
+    sign = models.CharField(max_length=3, null=True)
+    value = models.FloatField()
+
+    def __str__(self):
+        return self.sign
+
+
+class Grade(models.Model):
+    mark = models.ForeignKey(GradeTemplate, on_delete=models.CASCADE, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, blank=True, null=True)
+    subject = models.ForeignKey(Subject, on_delete=models.DO_NOTHING, blank=True, null=True)
+    test = models.OneToOneField("tests.Test", on_delete=models.CASCADE, blank=True, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
+    category = models.CharField(max_length=250, blank=True, null=True)
+    date = models.DateField(auto_now_add=True)
+    description = models.TextField(blank=True, null=True)
+    weight = models.IntegerField(default=0, blank=True, null=True)
+    school_term = models.ForeignKey(SchoolTerm, null=True, on_delete=models.SET_NULL)
+    include_in_mean = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.mark} | {self.student.user.first_name} {self.student.user.last_name}"
+
+
+class FinalGrade(models.Model):
+    mark = models.CharField(max_length=2)
+    term = models.ForeignKey(SchoolTerm, on_delete=models.CASCADE, null=True, blank=True)
+    is_predicted = models.BooleanField(default=False)
+    is_annual = models.BooleanField(default=False)
+    date = models.DateField(auto_now_add=True, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
 
 
 @receiver(pre_save, sender=Lesson)

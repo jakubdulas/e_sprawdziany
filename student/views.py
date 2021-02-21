@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .decorators import *
 from tests.models import Test
 from tests.decorators import *
+from teacher.models import SchoolClass
 
 
 @unauthenticated_user
@@ -37,7 +38,7 @@ def class_list(request):
 @members_only
 @student_only
 def class_details(request, id):
-    class_room = Class.objects.get(id=id)
+    class_room = SchoolClass.objects.get(id=id)
     return render(request, "student/class_details.html", {"class": class_room})
 
 

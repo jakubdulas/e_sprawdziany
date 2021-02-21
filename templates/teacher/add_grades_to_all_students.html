@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}
+Wstaw oceny
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+<label>Waga</label><br>
+<input type="number" name="weight"><br>
+<label>Kategoria</label><br>
+<input type="text" name="category"><br>
+<label>Komentarz</label><br>
+<textarea name="description"></textarea><br>
+<label>Licz do średniej</label><br>
+<input checked type="checkbox" name="include_in_mean"><br><br><br>
+{% for student in students %}
+<span>{{ forloop.counter }}</span>
+<span>{{ student.user.first_name }} {{ student.user.last_name }}</span>
+<select name="{{ student.id }}_grade">
+    <option value="-1">------</option>
+    {% for grade in grades %}
+    <option value="{{ grade.id }}">{{ grade.sign }}</option>
+    {% endfor %}
+</select><br>
+{% endfor %}
+<br><br>
+<input type="hidden" name="next" value="{{ request.GET.next }}">
+<button type="submit">Zatwierdz</button>
+</form>
+{% endblock %}

@@ -3,16 +3,143 @@
 {% block content %}
     <a href="{% url 'teachers_class_list' %}"><--- klasy</a><br>
     <a href="{% url 'edit_group' group.id %}">Edytuj</a>
-    <table>
-    {% for fn, ln, grades in list %}
-    <tr>
-        <td>{{ fn }} {{ ln }}</td>
-        <td>
-            {% for grade in grades %}
-                <span style="padding: 0px 5px">{{ grade.mark }}</span>
-            {% endfor %}
-        </td>
-    </tr>
-    {% endfor %}
-    </table>
+{#    <table>#}
+{#    {% for fn, ln, grades in list %}#}
+{#    <tr>#}
+{#        <td>{{ fn }} {{ ln }}</td>#}
+{#        <td>#}
+{#            {% for grade in grades %}#}
+{#                <span style="padding: 0px 5px">{{ grade.mark }}</span>#}
+{#            {% endfor %}#}
+{#        </td>#}
+{#    </tr>#}
+{#    {% endfor %}#}
+{#    </table>#}
+
+<h3>Semestr 1</h3>
+<a href="{% url 'add_grades_to_all_students' group.id term1.id group.subject.id %}?next={{ request.path|urlencode }}">Wstaw oceny wszystkim za jednym zamachem</a>
+<table border="1">
+<tr>
+    <td>Nr</td>
+    <td>Imię i nazwisko</td>
+    <td>Oceny</td>
+    <td>Średnia ocen</td>
+    <td>Proponowana śródroczna</td>
+    <td>Śródroczna</td>
+</tr>
+{% for student, grades, term1_mean, term1_predicted_grade, term1_final_grade in term1_grades %}
+<tr>
+    <td>
+        {{ forloop.counter }}
+    </td>
+    <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+    <td>
+        {% for grade in grades %}
+            <a href="{% url 'edit_grade' grade.id %}?next={{ request.path|urlencode }}" style="margin: 5px">{{ grade.mark.sign }}</a>
+        {% endfor %}
+        {% if is_form_teacher %}
+        <a href="{% url 'add_grade' student.id group.subject.id term1.id %}?next={{ request.path|urlencode }}">+</a>
+        {% endif %}
+    </td>
+    <td>{{ term1_mean }}</td>
+    <td>
+        {% if term1_predicted_grade %}
+            {% if is_form_teacher %}
+            <a href="{% url 'edit_final_grade' term1_predicted_grade.id %}?next={{ request.path|urlencode }}">{{ term1_predicted_grade.mark }}</a>
+            {% else %}
+            {{ term1_predicted_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if is_form_teacher %}
+            <a href="{% url 'add_final_grade' student.id term1.id group.subject.id 1 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if term1_final_grade %}
+            {% if is_form_teacher %}
+            <a href="{% url 'edit_final_grade' term1_final_grade.id %}?next={{ request.path|urlencode }}">{{ term1_final_grade.mark }}</a>
+            {% else %}
+            {{ term1_final_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if is_form_teacher %}
+            <a href="{% url 'add_final_grade' student.id term1.id group.subject.id 0 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Semestr 2</h3>
+<a href="{% url 'add_grades_to_all_students' group.id term1.id group.subject.id %}?next={{ request.path|urlencode }}">Wstaw oceny wszystkim za jednym zamachem</a>
+<table border="1">
+<tr>
+    <td>Nr</td>
+    <td>Imię i nazwisko</td>
+    <td>Oceny</td>
+    <td>Średnia ocen</td>
+    <td>Proponowana śródroczna</td>
+    <td>Śródroczna</td>
+    <td>Roczna</td>
+</tr>
+{% for student, grades, term2_mean, term2_predicted_grade, term2_final_grade, final_grade in term2_grades %}
+<tr>
+    <td>
+        {{ forloop.counter }}
+    </td>
+    <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+    <td>
+        {% for grade in grades %}
+            <a href="{% url 'edit_grade' grade.id %}?next={{ request.path|urlencode }}" style="margin: 5px">{{ grade.mark.sign }}</a>
+        {% endfor %}
+        {% if is_form_teacher %}
+        <a href="{% url 'add_grade' student.id group.subject.id term2.id %}?next={{ request.path|urlencode }}">+</a>
+        {% endif %}
+    </td>
+    <td>{{ term2_mean }}</td>
+    <td>
+        {% if term2_predicted_grade %}
+            {% if is_form_teacher %}
+            <a href="{% url 'edit_final_grade' term2_predicted_grade.id %}?next={{ request.path|urlencode }}">{{ term2_predicted_grade.mark }}</a>
+            {% else %}
+            {{ term2_predicted_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if is_form_teacher %}
+            <a href="{% url 'add_final_grade' student.id term2.id group.subject.id 1 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if term2_final_grade %}
+            {% if is_form_teacher %}
+            <a href="{% url 'edit_final_grade' term2_final_grade.id %}?next={{ request.path|urlencode }}">{{ term2_final_grade.mark }}</a>
+            {% else %}
+            {{ term2_final_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if is_form_teacher %}
+            <a href="{% url 'add_final_grade' student.id term2.id group.subject.id 0 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if final_grade %}
+            {% if is_form_teacher %}
+            <a href="{% url 'edit_final_grade' final_grade.id %}?next={{ request.path|urlencode }}">{{ final_grade.mark }}</a>
+            {% else %}
+            {{ final_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if is_form_teacher %}
+            <a href="{% url 'add_final_grade' student.id 0 group.subject.id 0 1 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+
+</tr>
+{% endfor %}
+</table>
 {% endblock %}

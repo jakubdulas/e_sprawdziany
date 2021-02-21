@@ -2,18 +2,18 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponseRedirect, JsonResponse
+from django.forms import inlineformset_factory
+from django.utils.dateparse import parse_date
 from django.db.models import Q
 from .models import *
 from .decorators import *
-from django.http import JsonResponse
 from .forms import *
+from tests.forms import GiveGradeForm, FinalGradeForm
 from general.decorators import *
-from tests.models import Grade
 from general.forms import *
 import random
-from django.forms import inlineformset_factory
 import datetime
-from django.utils.dateparse import parse_date
 
 
 @paid_subscription
@@ -400,21 +400,98 @@ def delete_schedule_element(request, schedule_element_id):
 
 def group_detail_view(request, group_id):
     group = get_object_or_404(Group, id=group_id)
-    list = []
-    for student in group.students.all():
-        list.append(
+    students_qs = group.students.all().order_by('user__last_name')
+    subject = group.subject
+
+    term1_grades = []
+    term2_grades = []
+
+    term1 = SchoolTerm.objects.filter(
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+        number=1,
+    ).first()
+    term2 = SchoolTerm.objects.filter(
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+        number=2,
+    ).first()
+
+    term_1_sum = 0
+    term_2_sum = 0
+    term_1_weight = 0
+    term_2_weight = 0
+    term_1_mean = 0
+    term_2_mean = 0
+
+    for student in students_qs:
+        for grade in Grade.objects.filter(student=student, subject=subject, school_term=term1, include_in_mean=True).all():
+            term_1_sum += grade.mark.value*grade.weight
+            term_1_weight += grade.weight
+
+        if term_1_weight != 0:
+            term_1_mean = term_1_sum/term_1_weight
+
+        term1_grades.append(
             tuple(
                 (
-                    student.user.first_name,
-                    student.user.last_name,
-                    student.grade_set.filter(subject=group.subject).all()
+                    student,
+                    Grade.objects.filter(
+                        student=student,
+                        subject=subject,
+                        school_term=SchoolTerm.objects.filter(
+                            school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+                            number=1,
+                        ).first()
+                    ).all(),
+                    round(term_1_mean, 2),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term1, is_predicted=True,
+                                              is_annual=False).first(),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term1, is_predicted=False,
+                                              is_annual=False).first(),
                 )
             )
         )
 
+        for grade in Grade.objects.filter(student=student, subject=subject, school_term=term2, include_in_mean=True).all():
+            term_2_sum += grade.mark.value*grade.weight
+            term_2_weight += grade.weight
+
+        if term_2_weight != 0:
+            term_2_mean = term_2_sum/term_2_weight
+
+        term2_grades.append(
+            tuple(
+                (
+                    student,
+                    Grade.objects.filter(
+                        student=student,
+                        subject=subject,
+                        school_term=SchoolTerm.objects.filter(
+                            school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+                            number=2
+                        ).first()
+                    ).all(),
+                    round(term_2_mean, 2),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term2, is_predicted=True,
+                                              is_annual=False).first(),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term2, is_predicted=False,
+                                              is_annual=False).first(),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=None, is_annual=True).first(),
+                )
+            )
+        )
+
+    if request.user.teacher == group.teacher:
+        is_form_teacher = True
+    else:
+        is_form_teacher = False
+
     context = {
         'group': group,
-        'list': list
+        'term1_grades': term1_grades,
+        'term2_grades': term2_grades,
+        'term1': term1,
+        'term2': term2,
+        'is_form_teacher': is_form_teacher
     }
     return render(request, 'teacher/group_details.html', context)
 
@@ -446,25 +523,39 @@ def start_next_lesson(request, schedule_element_id):
 
 def lesson_details(request, lesson_slug):
     lesson = get_object_or_404(Lesson, slug=lesson_slug)
-
-    if lesson.replacement:
-        prev_lesson = Lesson.objects.filter(
-            Q(replacement__subject=lesson.replacement.subject) | Q(
-                schedule_element__group__subject=lesson.replacement.subject),
-            schedule_element__group=lesson.schedule_element.group,
-        ).exclude(id=lesson.id).order_by('-id').first()
-    else:
-        prev_lesson = Lesson.objects.filter(
-            Q(replacement__subject=lesson.schedule_element.group.subject) | Q(
-                schedule_element__group__subject=lesson.schedule_element.group.subject),
-            schedule_element__group=lesson.schedule_element.group,
-        ).exclude(id=lesson.id).order_by('-id').first()
-
     students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
-    term1 = []
-    term2 = []
+    if lesson.replacement:
+        subject = lesson.replacement.subject
+    else:
+        subject = lesson.schedule_element.group.subject
+    term1_grades = []
+    term2_grades = []
+
+    term1 = SchoolTerm.objects.filter(
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+        number=1,
+    ).first()
+    term2 = SchoolTerm.objects.filter(
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+        number=2,
+    ).first()
+
+    term_1_sum = 0
+    term_2_sum = 0
+    term_1_weight = 0
+    term_2_weight = 0
+    term_1_mean = 0
+    term_2_mean = 0
+
     for student in students_qs:
-        term1.append(
+        for grade in Grade.objects.filter(student=student, subject=subject, school_term=term1, include_in_mean=True).all():
+            term_1_sum += grade.mark.value*grade.weight
+            term_1_weight += grade.weight
+
+        if term_1_weight != 0:
+            term_1_mean = term_1_sum/term_1_weight
+
+        term1_grades.append(
             tuple(
                 (
                     student,
@@ -473,15 +564,27 @@ def lesson_details(request, lesson_slug):
                         student=student,
                         subject=lesson.replacement.subject if lesson.replacement else lesson.schedule_element.group.subject,
                         school_term=SchoolTerm.objects.filter(
-                            school_year=SchoolYear.get_current_school_year(),
+                            school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
                             number=1,
                         ).first()
-                    ).all()
+                    ).all(),
+                    round(term_1_mean, 2),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term1, is_predicted=True,
+                                              is_annual=False).first(),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term1, is_predicted=False,
+                                              is_annual=False).first(),
                 )
             )
         )
 
-        term2.append(
+        for grade in Grade.objects.filter(student=student, subject=subject, school_term=term2, include_in_mean=True).all():
+            term_2_sum += grade.mark.value*grade.weight
+            term_2_weight += grade.weight
+
+        if term_2_weight != 0:
+            term_2_mean = term_2_sum/term_2_weight
+
+        term2_grades.append(
             tuple(
                 (
                     student,
@@ -490,19 +593,38 @@ def lesson_details(request, lesson_slug):
                         student=student,
                         subject=lesson.replacement.subject if lesson.replacement else lesson.schedule_element.group.subject,
                         school_term=SchoolTerm.objects.filter(
-                            school_year=SchoolYear.get_current_school_year(),
+                            school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
                             number=2
                         ).first()
-                    ).all()
+                    ).all(),
+                    round(term_2_mean, 2),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term2, is_predicted=True,
+                                              is_annual=False).first(),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=term2, is_predicted=False,
+                                              is_annual=False).first(),
+                    FinalGrade.objects.filter(subject=subject, student=student, term=None, is_annual=True).first(),
                 )
             )
         )
+
+    if request.method == 'POST':
+        try:
+            lesson.topic = request.POST['topic']
+            lesson.notes = request.POST['notes']
+            lesson.homework = request.POST['homework']
+            lesson.save()
+            return redirect('lesson_details', lesson_slug)
+        except:
+            messages.error(request, 'error')
+            return redirect('lesson_details', lesson_slug)
 
     context = {
         'lesson': lesson,
-        'prev_lesson': prev_lesson,
+        'term1_grades': term1_grades,
+        'term2_grades': term2_grades,
         'term1': term1,
         'term2': term2,
+        'subject': subject
     }
 
     return render(request, 'teacher/lesson.html', context)
@@ -516,7 +638,7 @@ def teachers_diary(request):
 def schedule_replacement(request):
     classes = SchoolClass.objects.filter(
         class_template__school=request.user.teacher.school,
-        school_year=SchoolYear.get_current_school_year()
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school)
     ).all()
     bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
     teachers = Teacher.objects.filter(school=request.user.teacher.school).all()
@@ -564,7 +686,7 @@ def schedule_replacement(request):
 def cancel_lesson(request):
     classes = SchoolClass.objects.filter(
         class_template__school=request.user.teacher.school,
-        school_year=SchoolYear.get_current_school_year()
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school)
     ).all()
     bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
 
@@ -662,22 +784,155 @@ def take_the_register(request, lesson_slug):
                         Frequency.objects.create(
                             lesson=lesson,
                             student=student,
-                            term=SchoolTerm.get_current_school_term(),
+                            term=SchoolTerm.get_current_school_term(request.user.teacher.school),
                             is_absent=True
                         )
                     elif request.POST[f"frequency_{student.id}"] == 'late':
                         Frequency.objects.create(
                             lesson=lesson,
                             student=student,
-                            term=SchoolTerm.get_current_school_term(),
+                            term=SchoolTerm.get_current_school_term(request.user.teacher.school),
                             is_late=True
                         )
                     elif request.POST[f"frequency_{student.id}"] == 'exempt':
                         Frequency.objects.create(
                             lesson=lesson,
                             student=student,
-                            term=SchoolTerm.get_current_school_term(),
+                            term=SchoolTerm.get_current_school_term(request.user.teacher.school),
                             is_exempt=True
                         )
         return redirect('lesson_details', lesson_slug)
     return render(request, 'teacher/take_the_register.html', context)
+
+
+def add_grade(request, student_id, subject_id, school_term_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    student = get_object_or_404(Student, id=student_id)
+    school_term = get_object_or_404(SchoolTerm, id=school_term_id)
+    form = GiveGradeForm()
+    context = {
+        'form': form
+    }
+    if request.method == 'POST':
+        form = GiveGradeForm(request.POST)
+        form.instance.teacher = request.user.teacher
+        form.instance.subject = subject
+        form.instance.student = student
+        form.instance.school_term = school_term
+        if form.is_valid():
+            form.save()
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+            # return redirect('lesson_details', lesson_slug)
+        else:
+            messages.error(request, 'Wystapil blad')
+    return render(request, 'teacher/give_grade.html', context)
+
+
+def add_final_grade(request, student_id, school_term_id, subject_id, is_predicted, is_annual):
+    form = FinalGradeForm
+    context = {
+        'form': form
+    }
+    if request.method == 'POST':
+        form = FinalGradeForm(request.POST)
+        form.instance.term = SchoolTerm.objects.filter(id=school_term_id).first()
+        form.instance.is_predicted = True if is_predicted == 1 else False
+        form.instance.is_annual = True if is_annual == 1 else False
+        form.instance.subject = Subject.objects.filter(id=subject_id).first()
+        form.instance.student = Student.objects.filter(id=student_id).first()
+        form.instance.teacher = request.user.teacher
+        if form.is_valid():
+            form.save()
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+    return render(request, 'teacher/add_final_grade.html', context)
+
+
+def edit_grade(request, grade_id):
+    grade = get_object_or_404(Grade, id=grade_id)
+    form = GiveGradeForm(instance=grade)
+    context = {
+        'form': form,
+        'grade': grade
+    }
+    if request.method == 'POST':
+        form = GiveGradeForm(request.POST, instance=grade)
+        if form.is_valid():
+            form.save()
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+    return render(request, 'teacher/give_grade.html', context)
+
+
+def delete_grade(request, grade_id):
+    grade = get_object_or_404(Grade, id=grade_id)
+    if request.method == 'POST':
+        grade.delete()
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+    return redirect('home')
+
+
+def edit_final_grade(request, final_grade_id):
+    grade = get_object_or_404(FinalGrade, id=final_grade_id)
+    form = FinalGradeForm(instance=grade)
+    context = {
+        'form': form,
+        'grade': grade
+    }
+    if request.method == 'POST':
+        form = FinalGradeForm(request.POST, instance=grade)
+        if form.is_valid():
+            form.save()
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+    return render(request, 'teacher/add_final_grade.html', context)
+
+
+def delete_final_grade(request, final_grade_id):
+    grade = get_object_or_404(FinalGrade, id=final_grade_id)
+    if request.method == 'POST':
+        grade.delete()
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+    return redirect('home')
+
+
+def add_grades_to_all_students(request, group_id, term_id, subject_id):
+    group = get_object_or_404(Group, id=group_id)
+    term = get_object_or_404(SchoolTerm, id=term_id)
+    subject = get_object_or_404(Subject, id=subject_id)
+    grades = request.user.teacher.school.grades.all()
+
+    if request.method == 'POST':
+        try:
+            for student in group.students.all():
+                print(request.POST['category'])
+                print()
+                print()
+                print()
+                if f"{student.id}_grade" in request.POST.keys():
+                    if request.POST[f"{student.id}_grade"] != '-1':
+                        Grade.objects.create(
+                            mark=GradeTemplate.objects.filter(id=request.POST.get(f"{student.id}_grade")).first(),
+                            teacher=request.user.teacher,
+                            subject=subject,
+                            student=student,
+                            category=request.POST['category'],
+                            description=request.POST['description'],
+                            weight=int(request.POST['weight']),
+                            school_term=term,
+                            include_in_mean=True if request.POST['include_in_mean'] else False
+                        )
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+        except:
+            messages.error(request, 'cos poszlo nie tak')
+            return redirect('add_grades_to_all_students', group_id, term_id, subject_id)
+    context = {
+        'grades': grades,
+        'students': group.students.order_by('user__last_name').all(),
+    }
+
+    return render(request, 'teacher/add_grades_to_all_students.html', context)

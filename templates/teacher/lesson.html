@@ -17,6 +17,19 @@ Lekcja
     {% endif %}
 </h1>
 <p>Godzina lekcyjna: {{ lesson.schedule_element.bell.number_of_lesson }}</p>
+
+<form method="post">
+{% csrf_token %}
+<label>Temat</label><br>
+<input value="{{ lesson.topic }}" type="text" name="topic"><br>
+<label>Notatki</label><br>
+<textarea name="notes">{{ lesson.notes }}</textarea><br>
+<label>Praca domowa</label><br>
+<textarea name="homework">{{ lesson.homework }}</textarea><br>
+<button type="submit">Zapisz</button>
+</form>
+
+
 <a href="{% url 'take_the_register' lesson.slug %}">Sprawdz obecność</a>
 
 {% if prev_lesson %}
@@ -27,15 +40,17 @@ Lekcja
 {% endif %}
 
 <h3>Semestr 1</h3>
-<table>
+<a href="{% url 'add_grades_to_all_students' lesson.schedule_element.group.id term1.id subject.id %}?next={{ request.path|urlencode }}">Wstaw oceny wszystkim za jednym zamachem</a>
+<table border="1">
 <tr>
     <td>Nr</td>
     <td>Imię i nazwisko</td>
     <td>Oceny</td>
+    <td>Średnia ocen</td>
     <td>Proponowana śródroczna</td>
     <td>Śródroczna</td>
 </tr>
-{% for student, frequency, grades in term1 %}
+{% for student, frequency, grades, term1_mean, term1_predicted_grade, term1_final_grade in term1_grades %}
 <tr>
     <td>
         {{ forloop.counter }}
@@ -43,25 +58,58 @@ Lekcja
     <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
     <td>
         {% for grade in grades %}
-            <span style="margin: 5px">{{ grade.mark }}</span>
+            <a href="{% url 'edit_grade' grade.id %}?next={{ request.path|urlencode }}" style="margin: 5px">{{ grade.mark.sign }}</a>
         {% endfor %}
+        {% if lesson.replacement %}
+        <a href="{% url 'add_grade' student.id lesson.replacement.subject.id term1.id %}?next={{ request.path|urlencode }}">+</a>
+        {% else %}
+        <a href="{% url 'add_grade' student.id lesson.schedule_element.group.subject.id term1.id %}?next={{ request.path|urlencode }}">+</a>
+        {% endif %}
     </td>
-    <td></td>
-    <td></td>
+    <td>{{ term1_mean }}</td>
+    <td>
+        {% if term1_predicted_grade %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'edit_final_grade' term1_predicted_grade.id %}?next={{ request.path|urlencode }}">{{ term1_predicted_grade.mark }}</a>
+            {% else %}
+            {{ term1_predicted_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'add_final_grade' student.id term1.id lesson.schedule_element.group.subject.id 1 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if term1_final_grade %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'edit_final_grade' term1_final_grade.id %}?next={{ request.path|urlencode }}">{{ term1_final_grade.mark }}</a>
+            {% else %}
+            {{ term1_final_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'add_final_grade' student.id term1.id lesson.schedule_element.group.subject.id 0 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
 </tr>
 {% endfor %}
 </table>
 
 <h3>Semestr 2</h3>
-<table>
+<a href="{% url 'add_grades_to_all_students' lesson.schedule_element.group.id term2.id subject.id %}?next={{ request.path|urlencode }}">Wstaw oceny wszystkim za jednym zamachem</a>
+<table border="1">
 <tr>
     <td>Nr</td>
     <td>Imię i nazwisko</td>
     <td>Oceny</td>
+    <td>Średnia ocen</td>
     <td>Proponowana śródroczna</td>
     <td>Śródroczna</td>
+    <td>Roczna</td>
 </tr>
-{% for student, frequency, grades in term2 %}
+{% for student, frequency, grades, term2_mean, term2_predicted_grade, term2_final_grade, final_grade in term2_grades %}
 <tr>
     <td>
         {{ forloop.counter }}
@@ -69,11 +117,55 @@ Lekcja
     <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
     <td>
         {% for grade in grades %}
-            <span style="margin: 5px">{{ grade.mark }}</span>
+            <a href="{% url 'edit_grade' grade.id %}?next={{ request.path|urlencode }}" style="margin: 5px">{{ grade.mark.sign }}</a>
         {% endfor %}
+        {% if lesson.replacement %}
+        <a href="{% url 'add_grade' student.id lesson.replacement.subject.id term2.id %}?next={{ request.path|urlencode }}">+</a>
+        {% else %}
+        <a href="{% url 'add_grade' student.id lesson.schedule_element.group.subject.id term2.id %}?next={{ request.path|urlencode }}">+</a>
+        {% endif %}
     </td>
-    <td></td>
-    <td></td>
+    <td>{{ term2_mean }}</td>
+    <td>
+        {% if term2_predicted_grade %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'edit_final_grade' term2_predicted_grade.id %}?next={{ request.path|urlencode }}">{{ term2_predicted_grade.mark }}</a>
+            {% else %}
+            {{ term2_predicted_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'add_final_grade' student.id term2.id lesson.schedule_element.group.subject.id 1 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if term2_final_grade %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'edit_final_grade' term2_final_grade.id %}?next={{ request.path|urlencode }}">{{ term2_final_grade.mark }}</a>
+            {% else %}
+            {{ term2_final_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'add_final_grade' student.id term2.id lesson.schedule_element.group.subject.id 0 0 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if final_grade %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'edit_final_grade' final_grade.id %}?next={{ request.path|urlencode }}">{{ final_grade.mark }}</a>
+            {% else %}
+            {{ final_grade.mark }}
+            {% endif %}
+        {% else %}
+            {% if not lesson.replacement %}
+            <a href="{% url 'add_final_grade' student.id 0 lesson.schedule_element.group.subject.id 0 1 %}?next={{ request.path|urlencode }}">+</a>
+            {% endif %}
+        {% endif %}
+    </td>
+
 </tr>
 {% endfor %}
 </table>

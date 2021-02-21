@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from general.decorators import members_only
 from .models import *
 from teacher.decorators import teacher_only, paid_subscription
+from teacher.models import *
 from django.contrib import messages
 from .decorators import *
 from .forms import *
@@ -127,19 +128,19 @@ def save_answers(request, test_id):
             if test.blank_test.autocheck:
                 for mark in test.blank_test.threshold:
                     if mark.to_percent >= percent >= mark.from_percent:
-                        test.mark = mark.mark
+                        # test.mark
                         Grade.objects.create(
                             teacher=test.blank_test.teacher,
                             test=test,
                             student=student,
-                            mark=mark.mark,
+                            mark=GradeTemplate.objects.filter(sign=mark.mark).first(),
                             category=test.label,
                             description=f"{earned_total}/{total}"
                         )
                         test.save()
 
-        if test.blank_test.autocheck and test.mark:
-            return render(request, 'tests/show_mark.html', {'mark': test.mark})
+        if test.blank_test.autocheck and test.grade:
+            return render(request, 'tests/show_mark.html', {'mark': test.grade.mark.sign})
         return redirect('home')
     return redirect('home')
 
@@ -422,14 +423,10 @@ def show_students_answers(request, test_id):
                         test=test,
                         student=test.student
                     )
-                    obj.mark = mark.mark
+                    obj.mark = GradeTemplate.objects.filter(sign=mark.mark).first()
                     obj.category = test.label,
                     obj.description = f"{earned_total}/{total}"
-
                     obj.save()
-                    test.mark = mark.mark
-                    test.save()
-
         return redirect('show_students_answers', test_id=test.id)
 
     context = {

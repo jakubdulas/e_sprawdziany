@@ -45,6 +45,7 @@ class CreateSchool(forms.ModelForm):
         exclude = ['is_paid', 'free_trial_up', 'key']
 
     subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), widget=forms.CheckboxSelectMultiple)
+    grades = forms.ModelMultipleChoiceField(queryset=GradeTemplate.objects.all(), widget=forms.CheckboxSelectMultiple)
 
 
 class SchoolTermForm(forms.ModelForm):
@@ -76,3 +77,5 @@ class ScheduleElementForm(forms.ModelForm):
         if teacher:
             self.fields['group'].queryset = Group.objects.filter(teacher=teacher)
             self.fields['group'].req = Group.objects.filter(teacher=teacher)
+
+

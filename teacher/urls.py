@@ -32,4 +32,13 @@ urlpatterns = [
     path('diary/cancel-lesson/get_groups/<int:schoolclass_id>/', get_groups_ajax),
     path('lessons/', lesson_list, name='lesson_list'),
     path('lesson/<slug:lesson_slug>/take-the-register/', take_the_register, name='take_the_register'),
+    path('add-grade/<int:student_id>/<int:subject_id>/<int:school_term_id>/',
+         add_grade, name='add_grade'),
+    path('add-grade/<int:student_id>/<int:school_term_id>/<int:subject_id>/<int:is_predicted>/<int:is_annual>/',
+         add_final_grade, name='add_final_grade'),
+    path('edit-grade/<int:grade_id>/', edit_grade, name='edit_grade'),
+    path('edit-final-grade/<int:final_grade_id>/', edit_final_grade, name='edit_final_grade'),
+    path('delete-grade/<int:grade_id>/', delete_grade, name='delete_grade'),
+    path('delete-final-grade/<int:final_grade_id>/', delete_final_grade, name='delete_final_grade'),
+    path('add-grades/<int:group_id>/<int:term_id>/<subject_id>/', add_grades_to_all_students, name='add_grades_to_all_students'),
 ]

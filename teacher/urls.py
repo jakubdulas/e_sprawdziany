@@ -41,4 +41,8 @@ urlpatterns = [
     path('delete-grade/<int:grade_id>/', delete_grade, name='delete_grade'),
     path('delete-final-grade/<int:final_grade_id>/', delete_final_grade, name='delete_final_grade'),
     path('add-grades/<int:group_id>/<int:term_id>/<subject_id>/', add_grades_to_all_students, name='add_grades_to_all_students'),
+    path('ogloszenia/', announcement_list, name='announcement_list'),
+    path('dodaj-ogloszenie/', add_announcement, name='add_announcement'),
+    path('edytuj-ogloszenie/<int:announcement_id>/', edit_announcement, name='edit_announcement'),
+    path('usun-ogloszenie/<int:announcement_id>/', delete_announcement, name='delete_announcement'),
 ]

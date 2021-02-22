@@ -79,3 +79,7 @@ class ScheduleElementForm(forms.ModelForm):
             self.fields['group'].req = Group.objects.filter(teacher=teacher)
 
 
+class AnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = Announcement
+        fields = ['topic', 'content']

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}
+Dodaj ogłoszenie
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">Zatwierdz</button>
+{% if announcement %}
+<button formaction="{% url 'delete_announcement' announcement.id %}">Usuń</button>
+{% endif %}
+</form>
+{% endblock %}

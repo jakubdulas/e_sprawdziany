@@ -524,10 +524,19 @@ def start_next_lesson(request, schedule_element_id):
 def lesson_details(request, lesson_slug):
     lesson = get_object_or_404(Lesson, slug=lesson_slug)
     students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
+
     if lesson.replacement:
         subject = lesson.replacement.subject
     else:
         subject = lesson.schedule_element.group.subject
+
+    last_lesson = Lesson.objects.filter(
+        Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
+        date__lte=lesson.date,
+        schedule_element__group__related_classes__in=lesson.schedule_element.group.related_classes.all(),
+        is_canceled=False,
+    ).exclude(id=lesson.id).order_by('-date', '-schedule_element__bell__number_of_lesson').first()
+
     term1_grades = []
     term2_grades = []
 
@@ -624,7 +633,8 @@ def lesson_details(request, lesson_slug):
         'term2_grades': term2_grades,
         'term1': term1,
         'term2': term2,
-        'subject': subject
+        'subject': subject,
+        'last_lesson': last_lesson,
     }
 
     return render(request, 'teacher/lesson.html', context)
@@ -936,3 +946,65 @@ def add_grades_to_all_students(request, group_id, term_id, subject_id):
     }
 
     return render(request, 'teacher/add_grades_to_all_students.html', context)
+
+
+def announcement_list(request):
+    announcement_qs = Announcement.objects.filter(
+        school=request.user.teacher.school,
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school)
+    ).order_by('-date').all()
+
+    context = {
+        'announcement_qs': announcement_qs
+    }
+
+    return render(request, 'teacher/announcement_list.html', context)
+
+
+def add_announcement(request):
+    form = AnnouncementForm
+
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST)
+        form.instance.teacher = request.user.teacher
+        form.instance.school = request.user.teacher.school
+        form.instance.school_year=SchoolYear.get_current_school_year(request.user.teacher.school)
+        if form.is_valid():
+            form.save()
+            return redirect('announcement_list')
+        else:
+            messages.error(request, 'cos poszlo nie tak')
+            return redirect('add_announcement')
+
+    context = {
+        'form': form
+    }
+    return render(request, 'teacher/add_announcement.html', context)
+
+
+def edit_announcement(request, announcement_id):
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    form = AnnouncementForm(instance=announcement)
+
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, instance=announcement)
+        if form.is_valid():
+            form.save()
+            return redirect('announcement_list')
+        else:
+            messages.error(request, 'cos poszlo nie tak')
+            return redirect('add_announcement')
+
+    context = {
+        'form': form,
+        'announcement': announcement
+    }
+    return render(request, 'teacher/add_announcement.html', context)
+
+
+def delete_announcement(request, announcement_id):
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    if request.method == 'POST':
+        announcement.delete()
+        return redirect('announcement_list')
+    return redirect('announcement_list')

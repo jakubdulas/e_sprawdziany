@@ -18,6 +18,7 @@ Lekcja
 </h1>
 <p>Godzina lekcyjna: {{ lesson.schedule_element.bell.number_of_lesson }}</p>
 
+<h2>Bierząca lekcja</h2>
 <form method="post">
 {% csrf_token %}
 <label>Temat</label><br>
@@ -29,6 +30,15 @@ Lekcja
 <button type="submit">Zapisz</button>
 </form>
 
+{% if last_lesson %}
+<h2>Poprzednia lekcja</h2>
+<b>Temat:</b>
+<p>{{ last_lesson.topic }}</p>
+<b>Notatki:</b>
+<p>{{ last_lesson.notes }}</p>
+<b>Praca domowa:</b>
+<p>{{ last_lesson.homework }}</p>
+{% endif %}
 
 <a href="{% url 'take_the_register' lesson.slug %}">Sprawdz obecność</a>
 

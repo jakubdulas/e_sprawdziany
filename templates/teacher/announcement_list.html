@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}
+Ogłoszenia
+{% endblock %}
+{% block content %}
+<a href="{% url 'add_announcement' %}">Dodaj ogłoszenie</a>
+<ul>
+{% for announcement in announcement_qs %}
+    <li>
+        <p>{{ announcement.teacher.user.first_name }} {{ announcement.teacher.user.last_name }}</p>
+        {% if announcement.teacher == request.user.teacher %}
+        <a href="{% url 'edit_announcement' announcement.id %}">edytuj</a>
+        {% endif %}
+        <h3>{{ announcement.topic }}</h3>
+        <p>{{ announcement.content|linebreaks }}</p>
+        <small>{{ announcement.date }}</small>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

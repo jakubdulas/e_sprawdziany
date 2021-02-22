@@ -237,6 +237,15 @@ class FinalGrade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
 
 
+class Announcement(models.Model):
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    topic = models.CharField(max_length=100)
+    content = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+
+
 @receiver(pre_save, sender=Lesson)
 def set_slug_to_lesson(sender, instance, *args, **kwargs):
     if not instance.slug:

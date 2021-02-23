@@ -6,6 +6,7 @@
 <h1>Hello: <a href="{% url 'profile' %}">{{ teacher.user.first_name }} {{ teacher.user.last_name }}</a></h1>
     <a href="{% url 'teachers_class_list' %}">Klasy</a>
     <a href="{% url 'teachers_diary' %}">Terminarz</a>
+    <a href="{% url 'messages_list' %}">Wiadomości</a>
     <a href="{% url 'announcement_list' %}">Ogłoszenia</a>
     <a href="{% url 'lesson_list' %}">Zajęcia</a>
     <a href="{% url 'create_test' %}">Stwórz test</a>

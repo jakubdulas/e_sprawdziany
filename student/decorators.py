@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from .models import *
+from teacher.models import Student
 
 
 def student_only(view_func):

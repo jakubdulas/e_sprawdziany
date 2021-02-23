@@ -96,7 +96,7 @@ def dismiss_teacher(request, id):
 
 @headmaster_only
 def students_view(request):
-    students_qs = Student.objects.filter(school=request.user.teacher.headmaster.school).all()
+    students_qs = Student.objects.filter(school=request.user.teacher.headmaster.school, is_graduate=False).all()
     return render(request, 'teacher/headmaster_panel-students.html', {'students': students_qs})
 
 

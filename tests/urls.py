@@ -38,7 +38,7 @@ urlpatterns = [
     path('<int:test_id>/answers/', show_students_answers, name='show_students_answers'),
     path('<int:test_id>/logs/', test_logs, name='test_logs'),
     path('list/', test_list, name='test_list'),
-    path('<int:blank_test_id>/class/<int:class_id>/', class_tests, name='class_tests'),
+    path('<int:blank_test_id>/class/<int:group_id>/', class_tests, name='class_tests'),
 
     path('<int:blank_test_id>/task/<int:task_id>/statistics/', show_statistics, name='task_statistics'),
 

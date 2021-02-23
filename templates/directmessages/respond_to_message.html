@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}
+    Odpowiedz
+{% endblock %}
+{% block content %}
+<form method="post" action="{% url 'send_message' %}">
+{% csrf_token %}
+<p>Do: {{ user.first_name }} {{ user.last_name }}</p>
+<input type="hidden" name="to" value="{{ user.id }}">
+<label>Tytuł</label><br>
+<input name="title" value="Re: {{ dm.title }}" type="text"><br>
+<label>Treść</label><br>
+<textarea name="body"></textarea><br>
+<button type="submit">Odpowiedz</button>
+</form>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.db import models
-from teacher.models import Teacher, SchoolClass, Student, Subject, SchoolYear, SchoolTerm
+from teacher.models import Teacher, SchoolClass, Student, Subject, SchoolYear, SchoolTerm, Group
 
 
 # Create your models here.
@@ -7,7 +7,7 @@ from teacher.models import Teacher, SchoolClass, Student, Subject, SchoolYear, S
 class BlankTest(models.Model):
     label = models.CharField(max_length=128, blank=False, null=False)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    students = models.ForeignKey(SchoolClass, on_delete=models.CASCADE, null=True)
+    students = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     instruction = models.TextField(null=True)
     is_active = models.BooleanField(default=False)
     countdown = models.DurationField(null=True)

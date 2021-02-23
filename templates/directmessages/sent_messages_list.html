@@ -4,7 +4,7 @@ Wiadomości
 {% endblock %}
 {% block content %}
 <a href="{% url 'send_message' %}">Nowa wiadomość</a>
-<a href="{% url 'sent_messages' %}">Wysłane</a>
+<a href="{% url 'messages_list' %}">Wszystkie</a>
 <ul>
 {% for dm in dms %}
     <li><a href="{% url 'message_details' dm.slug %}">{{ dm.title }}</a></li>

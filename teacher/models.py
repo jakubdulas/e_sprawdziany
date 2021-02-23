@@ -98,6 +98,7 @@ class Subject(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
+    is_graduate = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.username} | student"
@@ -244,6 +245,11 @@ class Announcement(models.Model):
     topic = models.CharField(max_length=100)
     content = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
+
+
+class Parent(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    student = models.OneToOneField(Student, on_delete=models.CASCADE)
 
 
 @receiver(pre_save, sender=Lesson)

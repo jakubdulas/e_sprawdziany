@@ -3,5 +3,26 @@
 Wiadomość
 {% endblock %}
 {% block content %}
-
+<p>Od:
+    {% if dm.sender == request.user %}
+    Ciebie
+    {% else %}
+    {{ dm.sender.first_name }} {{ dm.sender.last_name }}
+    {% endif %}
+</p>
+<small>Wysłano: {{ dm.date }}</small>
+<h2>{{ dm.title }}</h2>
+<p>{{ dm.body }}</p>
+<p>
+{% if dm.sender == request.user %}
+    {% if dm.is_read %}
+        Odczytano: {{ dm.read_date }}
+    {% else %}
+        Nie odczytano
+    {% endif %}
+{% endif %}
+</p>
+{% if dm.sender != request.user %}
+<a href="{% url 'respond_to_message' dm.sender.id dm.slug %}">Odpowiedz</a>
+{% endif %}
 {% endblock %}

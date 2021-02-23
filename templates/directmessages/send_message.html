@@ -5,18 +5,31 @@ Nowa wiadomość
 {% endblock %}
 {% block content %}
 <form method="post">
-<label>Adresat</label><br>
-<input name="recipient" value="teachers" type="radio"><span>Nauczyciele</span><br>
-<input name="recipient" value="students" type="radio"><span>Uczniowie</span><br>
-<div id="recipientsBox"></div>
+{% csrf_token %}
+<label>Adresaci</label><br>
+<h3>Pracownicy szkoły</h3>
+{% for teacher in teacher_qs %}
+    <input name="to" type="checkbox" value="{{ teacher.user.id }}">
+    <label>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</label><br>
+{% endfor %}
+{% if student_qs %}
+<h3>Uczniowie</h3>
+{% for student in student_qs %}
+    <input name="to" type="checkbox" value="{{ student.user.id }}">
+    <label>{{ student.user.first_name }} {{ student.user.last_name }}</label><br>
+{% endfor %}
+{% endif %}
+{% if parent_qs %}
+<h3>Rodzice</h3>
+{% for parent in parent_qs %}
+    <input name="to" type="checkbox" value="{{ parent.user.id }}">
+    <label>{{ parent.user.first_name }} {{ parent.user.last_name }} ({{ parent.student.user.first_name }} {{ parent.student.user.last_name }})</label><br>
+{% endfor %}
+{% endif %}
 <label>Tytuł</label><br>
 <input name="title" type="text"><br>
 <label>Treść</label><br>
 <textarea name="body"></textarea><br>
 <button type="submit">Wyślij</button>
-<a href="{% url 'home' %}">Anuluj</a>
 </form>
-{% endblock %}
-{% block scripts %}
-    <script src="{% static 'js/new_message.js' %}"></script>
 {% endblock %}

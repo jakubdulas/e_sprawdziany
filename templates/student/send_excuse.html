@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}
+Napisz usprawiedliwienie
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+<button type="submit">Wyślij</button>
+{% for absence in absences %}
+<br>
+<input type="checkbox" name="absence" value="{{ absence.id }}">
+<label>
+{% if absence.lesson.replacement %}
+    {{ absence.lesson.schedule_element.bell.number_of_lesson }} {{ absence.lesson.replacement.subject.name }} {{ absence.lesson.replacement.date }}
+{% else %}
+    {{ absence.lesson.schedule_element.bell.number_of_lesson }} {{ absence.lesson.schedule_element.group.subject.name }} {{ absence.lesson.date }}
+{% endif %}
+</label>
+{% endfor %}
+</form>
+{% endblock %}

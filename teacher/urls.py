@@ -45,4 +45,7 @@ urlpatterns = [
     path('dodaj-ogloszenie/', add_announcement, name='add_announcement'),
     path('edytuj-ogloszenie/<int:announcement_id>/', edit_announcement, name='edit_announcement'),
     path('usun-ogloszenie/<int:announcement_id>/', delete_announcement, name='delete_announcement'),
+    path('usprawiedliwienia/', requests_for_excuse, name='requests_for_excuse'),
+    path('accept_request_for_excuse/<int:request_for_excuse_id>/', accept_request_for_excuse, name='accept_request_for_excuse'),
+    path('reject_request_for_excuse/<int:request_for_excuse_id>/', reject_request_for_excuse, name='reject_request_for_excuse'),
 ]

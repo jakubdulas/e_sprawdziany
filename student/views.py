@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .decorators import *
 from tests.models import Test
 from tests.decorators import *
-from teacher.models import SchoolClass
+from teacher.models import SchoolClass, Frequency, SchoolYear, RequestForExcuse
 
 
 @unauthenticated_user
@@ -68,3 +68,31 @@ def my_test(request, id):
         'student': test.student
     }
     return render(request, 'student/my_test.html', context=context)
+
+
+#parents only
+def send_excuse(request):
+    absences = Frequency.objects.filter(
+        student=request.user.parent.student,
+        is_absent=True,
+        term__school_year=SchoolYear.get_current_school_year(request.user.parent.student.school),
+        requestforexcuse=None
+    ).all()
+
+    if request.method == 'POST':
+        obj = RequestForExcuse.objects.create(
+            parent=request.user.parent,
+            teacher=request.user.parent.student.get_form_teacher(),
+            school_year=SchoolYear.get_current_school_year(request.user.parent.student.school)
+        )
+        for absence_id in request.POST.getlist('absence'):
+            obj.frequency.add(
+                Frequency.objects.filter(id=absence_id).first()
+            )
+            obj.save()
+        return redirect('send_excuse')
+    context = {
+        'absences': absences
+    }
+
+    return render(request, 'student/send_excuse.html', context)

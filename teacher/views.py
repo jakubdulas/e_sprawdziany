@@ -1008,3 +1008,42 @@ def delete_announcement(request, announcement_id):
         announcement.delete()
         return redirect('announcement_list')
     return redirect('announcement_list')
+
+
+def requests_for_excuse(request):
+    qs = RequestForExcuse.objects.filter(
+        teacher=request.user.teacher,
+        school_year=SchoolYear.get_current_school_year(request.user.teacher.school),
+        is_rejected=False
+    ).order_by('-date').all()
+
+    context = {
+        'qs': qs
+    }
+
+    return render(request, 'teacher/requests_for_excuses.html', context)
+
+
+def reject_request_for_excuse(request, request_for_excuse_id):
+    if request.method == 'POST':
+        obj = get_object_or_404(RequestForExcuse, id=request_for_excuse_id)
+        obj.is_rejected = True
+        obj.save()
+        return redirect('requests_for_excuse')
+    return redirect('home')
+
+
+def accept_request_for_excuse(request, request_for_excuse_id):
+    if request.method == 'POST':
+        obj = get_object_or_404(RequestForExcuse, id=request_for_excuse_id)
+        for frequency in obj.frequency.all():
+            frequency.is_absent = False
+            frequency.excuse = True
+            frequency.save()
+        obj.delete()
+        return redirect('requests_for_excuse')
+    return redirect('home')
+
+
+
+

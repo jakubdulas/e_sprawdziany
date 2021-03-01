@@ -63,6 +63,9 @@ def home(request):
         elif Student.objects.filter(user=request.user):
             context['student'] = request.user.student
             return render(request, 'general/index_student.html', context=context)
+        elif Parent.objects.filter(user=request.user):
+            context['student'] = request.user.parent.student
+            return render(request, 'general/index_parent.html', context=context)
     return render(request, 'general/index.html', context=context)
 
 

@@ -103,6 +103,16 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.user.username} | student"
 
+    def get_form_teacher(self):
+        obj = SchoolClass.objects.filter(
+            students=self,
+            school_year=SchoolYear.get_current_school_year(self.school),
+        ).first()
+
+        if obj:
+            return obj.teacher
+        return None
+
 
 class ClassTemplate(models.Model):
     school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
@@ -194,7 +204,7 @@ class Lesson(models.Model):
 
 class Frequency(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.OneToOneField(Student, on_delete=models.CASCADE)
     is_absent = models.BooleanField(default=False)
     is_late = models.BooleanField(default=False)
     is_exempt = models.BooleanField(default=False)
@@ -250,6 +260,15 @@ class Announcement(models.Model):
 class Parent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     student = models.OneToOneField(Student, on_delete=models.CASCADE)
+
+
+class RequestForExcuse(models.Model):
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    frequency = models.ManyToManyField(Frequency)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE, null=True)
+    is_rejected = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
 
 
 @receiver(pre_save, sender=Lesson)

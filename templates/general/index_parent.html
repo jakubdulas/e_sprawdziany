@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}
+Home
+{% endblock %}
+{% block content %}
+<h1>Hello: <a href="{% url 'profile' %}">{{ student.user.first_name }} {{ student.user.last_name }} parent</a></h1>
+<a href="{% url 'send_excuse' %}">Napisz usprawiedliwienie</a>
+<a href="{% url 'my_tests' %}">Sprawdziny ucznia</a>
+{% endblock %}

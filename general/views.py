@@ -62,6 +62,7 @@ def home(request):
             return render(request, 'general/index_teacher.html', context=context)
         elif Student.objects.filter(user=request.user):
             context['student'] = request.user.student
+            context['students_number'] = request.user.student.get_number(SchoolYear.get_current_school_year(request.user.student.school))
             return render(request, 'general/index_student.html', context=context)
         elif Parent.objects.filter(user=request.user):
             context['student'] = request.user.parent.student

@@ -48,4 +48,6 @@ urlpatterns = [
     path('usprawiedliwienia/', requests_for_excuse, name='requests_for_excuse'),
     path('accept_request_for_excuse/<int:request_for_excuse_id>/', accept_request_for_excuse, name='accept_request_for_excuse'),
     path('reject_request_for_excuse/<int:request_for_excuse_id>/', reject_request_for_excuse, name='reject_request_for_excuse'),
+    path('zaplanuj-wydarzenie/<int:group_id>/', schedule_event, name='schedule_event'),
+    path('zaplanuj-wydarzenie/<int:group_id>/<int:day_of_week>/', get_schedule_elements_ajax),
 ]

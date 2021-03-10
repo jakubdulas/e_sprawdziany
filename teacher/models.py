@@ -113,6 +113,17 @@ class Student(models.Model):
             return obj.teacher
         return None
 
+    def get_number(self, school_year):
+        students_class = SchoolClass.objects.filter(
+            students=self,
+            school_year=school_year
+        ).first()
+
+        if students_class:
+            students = list(students_class.students.all().order_by('user__last_name'))
+            return students.index(self) + 1
+        return None
+
 
 class ClassTemplate(models.Model):
     school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
@@ -204,7 +215,7 @@ class Lesson(models.Model):
 
 class Frequency(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True)
-    student = models.OneToOneField(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     is_absent = models.BooleanField(default=False)
     is_late = models.BooleanField(default=False)
     is_exempt = models.BooleanField(default=False)
@@ -269,6 +280,16 @@ class RequestForExcuse(models.Model):
     school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE, null=True)
     is_rejected = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True)
+
+
+class Event(models.Model):
+    date = models.DateField()
+    schedule_element = models.ForeignKey(ScheduleElement, on_delete=models.SET_NULL, null=True)
+    type = models.CharField(max_length=50)
+    description = models.TextField()
+    color = models.CharField(max_length=7)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    add_date = models.DateTimeField(auto_now_add=True)
 
 
 @receiver(pre_save, sender=Lesson)

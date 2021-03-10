@@ -525,6 +525,12 @@ def lesson_details(request, lesson_slug):
     lesson = get_object_or_404(Lesson, slug=lesson_slug)
     students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
 
+    events = Event.objects.filter(
+        date=lesson.date,
+        schedule_element=lesson.schedule_element,
+        teacher=request.user.teacher
+    ).all()
+
     if lesson.replacement:
         subject = lesson.replacement.subject
     else:
@@ -635,6 +641,7 @@ def lesson_details(request, lesson_slug):
         'term2': term2,
         'subject': subject,
         'last_lesson': last_lesson,
+        'events': events,
     }
 
     return render(request, 'teacher/lesson.html', context)
@@ -755,6 +762,12 @@ def take_the_register(request, lesson_slug):
     lesson = get_object_or_404(Lesson, slug=lesson_slug)
     students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
     students = []
+
+    if lesson.replacement:
+        subject = lesson.replacement.subject
+    else:
+        subject = lesson.schedule_element.group.subject
+
     for student in students_qs:
         students.append(
             tuple(
@@ -779,6 +792,16 @@ def take_the_register(request, lesson_slug):
                 if f"frequency_{student.id}" in request.POST.keys():
                     if request.POST[f"frequency_{student.id}"] == 'present':
                         frequency.delete()
+                    elif request.POST[f"frequency_{student.id}"] == 'unprepared':
+                        frequency.delete()
+                        Grade.objects.create(
+                            teacher=request.user.teacher,
+                            mark=GradeTemplate.objects.filter(sign='np').first(),
+                            subject=subject,
+                            student=student,
+                            school_term=SchoolTerm.get_current_school_term(request.user.teacher.school),
+                            include_in_mean=False,
+                        )
                     elif request.POST[f"frequency_{student.id}"] == 'absent':
                         frequency.is_absent = True
                         frequency.save()
@@ -796,6 +819,15 @@ def take_the_register(request, lesson_slug):
                             student=student,
                             term=SchoolTerm.get_current_school_term(request.user.teacher.school),
                             is_absent=True
+                        )
+                    elif request.POST[f"frequency_{student.id}"] == 'unprepared':
+                        Grade.objects.create(
+                            teacher=request.user.teacher,
+                            mark=GradeTemplate.objects.filter(sign='np').first(),
+                            subject=subject,
+                            student=student,
+                            school_term=SchoolTerm.get_current_school_term(request.user.teacher.school),
+                            include_in_mean=False,
                         )
                     elif request.POST[f"frequency_{student.id}"] == 'late':
                         Frequency.objects.create(
@@ -1045,5 +1077,36 @@ def accept_request_for_excuse(request, request_for_excuse_id):
     return redirect('home')
 
 
+def schedule_event(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    schedule_elements = ScheduleElement.objects.filter(
+        teacher=request.user.teacher,
+        group=group,
+    ).all()
+
+    if request.method == 'POST':
+        Event.objects.create(
+            teacher=request.user.teacher,
+            date=request.POST['date'],
+            schedule_element=ScheduleElement.objects.filter(id=request.POST['schedule_element']).first(),
+            type=request.POST['type'],
+            description=request.POST['description'],
+            color=request.POST['color'],
+        )
+        return redirect('home')
+
+    context = {
+        'schedule_elements': schedule_elements
+    }
+    return render(request, 'teacher/schedule_event.html', context)
 
 
+def get_schedule_elements_ajax(request, group_id, day_of_week):
+    if request.is_ajax():
+        schedule_elements = list(ScheduleElement.objects.filter(
+            teacher=request.user.teacher,
+            group=Group.objects.filter(id=group_id).first(),
+            day_of_week=day_of_week,
+        ).values('id', 'bell__number_of_lesson'))
+        return JsonResponse({'schedule_elements': schedule_elements})
+    return redirect('home')

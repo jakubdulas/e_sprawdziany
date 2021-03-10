@@ -6,11 +6,13 @@ Prośby o usprawiedliwienie nieobecności
 <ul>
 {% for item in qs %}
 <li><p>{{ item.parent.student.user.first_name }} {{ item.parent.student.user.last_name }}</p>
-    {% if item.frequency.lesson.replacement %}
-    <p>{{ item.frequency.lesson.schedule_element.bell.number_of_lesson }} {{ item.frequency.lesson.replacement.subject.name }} {{ item.frequency.lesson.replacement.date }}</p>
+    {% for absence in item.frequency.all %}
+    {% if absence.lesson.replacement %}
+    <p>{{ absence.lesson.schedule_element.bell.number_of_lesson }} {{ absence.lesson.replacement.subject.name }} {{ absence.lesson.replacement.date }}</p>
     {% else %}
-    <p>{{ item.frequency.lesson.schedule_element.bell.number_of_lesson }} {{ item.frequency.lesson.schedule_element.group.subject.name }} {{ item.frequency.lesson.date }}</p>
+    <p>{{ absence.lesson.schedule_element.bell.number_of_lesson }} {{ absence.lesson.schedule_element.group.subject.name }} {{ absence.lesson.date }}</p>
     {% endif %}
+    {% endfor %}
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="{% url 'accept_request_for_excuse' item.id %}">Akceptuj</button>

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Zaplanuj wydarzenie
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+    <label>Data:</label>
+    <input id="date" name="date" type="date"><br>
+    <label>Dzwonek</label>
+    <select name="schedule_element" id="schedule_elements">
+        <option>------</option>
+    </select><br>
+    <label>Rodzaj:</label>
+    <input name="type" type="text"><br>
+    <label>Opis:</label>
+    <textarea name="description"></textarea><br>
+    <label>Kolor w kalendarzu:</label>
+    <input name="color" type="color"><br>
+    <button type="submit">Zatwierdź</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/schedule_element.js' %}"></script>
+{% endblock %}

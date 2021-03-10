@@ -16,6 +16,11 @@ Lekcja
     {{ lesson.schedule_element.group.name }}
     {% endif %}
 </h1>
+
+{% if not lesson.replacement %}
+    <a href="{% url 'schedule_event' lesson.schedule_element.group.id %}">Zaplanuj wydarzenie</a>
+{% endif %}
+
 <p>Godzina lekcyjna: {{ lesson.schedule_element.bell.number_of_lesson }}</p>
 
 <h2>Bierząca lekcja</h2>
@@ -29,6 +34,20 @@ Lekcja
 <textarea name="homework">{{ lesson.homework }}</textarea><br>
 <button type="submit">Zapisz</button>
 </form>
+
+{% if events %}
+<h2>Zaplanowane na dzisiaj: </h2>
+<ul>
+    {% for event in events %}
+        <li>
+            <p style="color: {{ event.color }}">{{ event.type }}</p>
+            {% if event.description %}
+            <p style="color: {{ event.color }}">{{ event.description }}</p>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+{% endif %}
 
 {% if last_lesson %}
 <h2>Poprzednia lekcja</h2>

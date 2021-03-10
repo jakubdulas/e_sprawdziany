@@ -11,6 +11,7 @@
         <td>Nr</td>
         <td>Imię i nazwisko</td>
         <td>Obecny</td>
+        <td>Nieprzygotowany</td>
         <td>Nieobecny</td>
         <td>Spoźniony</td>
         <td>Zwolniony</td>
@@ -26,6 +27,12 @@
                     {% if not frequency %}
                     checked
                     {% endif %}
+            >
+        </td>
+        <td>
+            <input name="frequency_{{ student.id }}"
+                   value="unprepared"
+                   type="radio"
             >
         </td>
         <td>

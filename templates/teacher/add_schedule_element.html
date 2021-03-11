@@ -4,12 +4,17 @@ Dodaj lekcję do planu lekcji
 {% endblock %}
 {% block content %}
 <a href="{% url 'teachers_schedule' %}"><------ Plan lekcji</a>
+{% if obj %}
+    <p>{{ obj.group }}</p>
+    <form method="post">
+    {% csrf_token %}
+    <button formaction="{% url 'delete_schedule_element' obj.id %}">Usuń</button>
+    </form>
+{% else %}
 <form method="post">
 {% csrf_token %}
 {{ form.as_p }}
 <button type="submit">Dodaj</button>
-{% if obj %}
-<button formaction="{% url 'delete_schedule_element' obj.id %}">Usuń</button>
 {% endif %}
 </form>
 {% endblock %}

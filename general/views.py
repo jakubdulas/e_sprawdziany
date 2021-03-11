@@ -29,6 +29,7 @@ def home(request):
                 bell__end_time__gte=datetime.datetime.today().time(),
                 bell__start_time__lte=datetime.datetime.today().time(),
                 day_of_week=datetime.datetime.today().weekday(),
+                end_date=None
             ).order_by('bell__number_of_lesson').exclude(
                 replacement__date=datetime.datetime.today().date()).exclude(
                 lesson__is_canceled=True).first()
@@ -45,7 +46,8 @@ def home(request):
             next_lesson = ScheduleElement.objects.filter(
                 teacher=request.user.teacher,
                 bell__start_time__gt=datetime.datetime.today().time(),
-                day_of_week=datetime.datetime.today().weekday()
+                day_of_week=datetime.datetime.today().weekday(),
+                end_date=None
             ).order_by('bell__number_of_lesson').exclude(
                 replacement__date=datetime.datetime.today().date()
             ).exclude(lesson__is_canceled=True).first()

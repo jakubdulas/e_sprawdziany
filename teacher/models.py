@@ -193,6 +193,11 @@ class ScheduleElement(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     bell = models.ForeignKey(Bell, on_delete=models.SET_NULL, null=True)
     day_of_week = models.IntegerField()
+    start_date = models.DateTimeField(auto_now_add=True, null=True)
+    end_date = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f"{self.teacher.user.username} day: {self.day_of_week}, hour: {self.bell.number_of_lesson}"
 
 
 class Replacement(models.Model):

@@ -357,11 +357,11 @@ def teachers_schedule(request):
             tuple(
                 (
                     bell.number_of_lesson,
-                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=0, bell=bell).first(),
-                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=1, bell=bell).first(),
-                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=2, bell=bell).first(),
-                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=3, bell=bell).first(),
-                    ScheduleElement.objects.filter(teacher=request.user.teacher, day_of_week=4, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, end_date=None, day_of_week=0, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, end_date=None, day_of_week=1, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, end_date=None, day_of_week=2, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, end_date=None, day_of_week=3, bell=bell).first(),
+                    ScheduleElement.objects.filter(teacher=request.user.teacher, end_date=None, day_of_week=4, bell=bell).first(),
                 )
             )
         )
@@ -374,10 +374,10 @@ def teachers_schedule(request):
 
 def add_schedule_element(request, day_of_week, bell):
     bell = Bell.objects.filter(school=request.user.teacher.school, number_of_lesson=bell).first()
-    obj = ScheduleElement.objects.filter(teacher=request.user.teacher, bell=bell, day_of_week=day_of_week).first()
-    form = ScheduleElementForm(teacher=request.user.teacher, instance=obj)
+    obj = ScheduleElement.objects.filter(teacher=request.user.teacher, end_date=None, bell=bell, day_of_week=day_of_week).first()
+    form = ScheduleElementForm(teacher=request.user.teacher)
     if request.method == 'POST':
-        form = ScheduleElementForm(request.user.teacher, request.POST, instance=obj)
+        form = ScheduleElementForm(request.user.teacher, request.POST)
         form.instance.day_of_week = int(day_of_week)
         form.instance.bell = bell
         form.instance.teacher = request.user.teacher
@@ -394,7 +394,11 @@ def add_schedule_element(request, day_of_week, bell):
 def delete_schedule_element(request, schedule_element_id):
     if request.method == "POST":
         obj = get_object_or_404(ScheduleElement, id=schedule_element_id)
-        obj.delete()
+        if Replacement.objects.filter(schedule_element=obj) or Lesson.objects.filter(schedule_element=obj) or Event.objects.filter(schedule_element=obj):
+            obj.end_date = datetime.datetime.now()
+            obj.save()
+        else:
+            obj.delete()
     return redirect('teachers_schedule')
 
 
@@ -667,7 +671,8 @@ def schedule_replacement(request):
                 day_of_week=datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d').weekday(),
                 group__related_classes=SchoolClass.objects.get(id=int(request.POST['class'])),
                 teacher=Teacher.objects.get(id=int(request.POST['teacher'])),
-                bell=Bell.objects.get(id=int(request.POST['bell']))
+                bell=Bell.objects.get(id=int(request.POST['bell'])),
+                end_date=None
             ).first()
 
             if not schedule_element:
@@ -712,7 +717,8 @@ def cancel_lesson(request):
             schedule_element = ScheduleElement.objects.filter(
                 day_of_week=datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d').weekday(),
                 group=Group.objects.get(id=int(request.POST['group'])),
-                bell=Bell.objects.get(id=int(request.POST['bell']))
+                bell=Bell.objects.get(id=int(request.POST['bell'])),
+                end_date=None
             ).first()
 
             if not schedule_element:
@@ -1082,6 +1088,7 @@ def schedule_event(request, group_id):
     schedule_elements = ScheduleElement.objects.filter(
         teacher=request.user.teacher,
         group=group,
+        end_date=None
     ).all()
 
     if request.method == 'POST':
@@ -1107,6 +1114,7 @@ def get_schedule_elements_ajax(request, group_id, day_of_week):
             teacher=request.user.teacher,
             group=Group.objects.filter(id=group_id).first(),
             day_of_week=day_of_week,
+            end_date=None
         ).values('id', 'bell__number_of_lesson'))
         return JsonResponse({'schedule_elements': schedule_elements})
     return redirect('home')

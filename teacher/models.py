@@ -297,6 +297,13 @@ class Event(models.Model):
     add_date = models.DateTimeField(auto_now_add=True)
 
 
+class TeachersAbsence(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    date = models.DateField()
+    from_bell = models.ForeignKey(Bell, on_delete=models.CASCADE, null=True, blank=True, related_name="from_bell")
+    to_bell = models.ForeignKey(Bell, on_delete=models.CASCADE, null=True, blank=True, related_name="to_bell")
+
+
 @receiver(pre_save, sender=Lesson)
 def set_slug_to_lesson(sender, instance, *args, **kwargs):
     if not instance.slug:

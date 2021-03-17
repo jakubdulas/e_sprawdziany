@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}
+Dodaj nieobecnosc nauczyciela
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+<label>Nauczyciel</label><br>
+<select name="teacher">
+    {% for teacher in teachers %}
+    <option value="{{ teacher.id }}">{{ teacher.user.first_name }} {{ teacher.user.last_name }}</option>
+    {% endfor %}
+</select><br>
+<h5>Dni:</h5>
+<label>Od</label><br>
+<input name="date_from" type="date"><br>
+<label>Do: (pozostaw puste jezeli jest to jednodniowa nieobecnosc)</label><br>
+<input name="date_to" type="date"><br>
+<h5>Godziny lekcyjne: (pozostaw puste jezeli to calodniowa nieobecnosc)</h5>
+<label>Od</label><br>
+<select name="bell_from">
+    <option></option>
+    {% for bell in bells %}
+    <option value="{{ bell.id }}">{{ bell.number_of_lesson }}</option>
+    {% endfor %}
+</select><br>
+<label>Do</label><br>
+<select name="bell_to">
+    <option></option>
+    {% for bell in bells %}
+    <option value="{{ bell.id }}">{{ bell.number_of_lesson }}</option>
+    {% endfor %}
+</select><br>
+<button type="submit">Dodaj</button>
+</form>
+{% endblock %}

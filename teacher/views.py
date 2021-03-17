@@ -86,7 +86,7 @@ def headmaster_panel(request):
 def dismiss_teacher(request, id):
     headmaster = Headmaster.objects.filter(teacher=request.user.teacher).first()
     teacher = get_object_or_404(Teacher, id=id)
-    if headmaster.school in teacher.school.all():
+    if headmaster.school == teacher.school:
         teacher.school = ''
         teacher.is_paid = False
         teacher.save()
@@ -543,9 +543,13 @@ def lesson_details(request, lesson_slug):
     last_lesson = Lesson.objects.filter(
         Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
         date__lte=lesson.date,
-        schedule_element__group__related_classes__in=lesson.schedule_element.group.related_classes.all(),
+        # schedule_element__group__related_classes__in=lesson.schedule_element.group.related_classes.all(),
+        schedule_element__group=lesson.schedule_element.group,
         is_canceled=False,
-    ).exclude(id=lesson.id).order_by('-date', '-schedule_element__bell__number_of_lesson').first()
+    ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson', '-date').first()
+
+    if last_lesson.schedule_element.bell.number_of_lesson > lesson.schedule_element.bell.number_of_lesson:
+        last_lesson = None
 
     term1_grades = []
     term2_grades = []
@@ -1118,3 +1122,64 @@ def get_schedule_elements_ajax(request, group_id, day_of_week):
         ).values('id', 'bell__number_of_lesson'))
         return JsonResponse({'schedule_elements': schedule_elements})
     return redirect('home')
+
+
+def schedule_teachers_absence(request):
+    teachers = Teacher.objects.filter(school=request.user.teacher.school).all()
+    bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
+
+    if request.method == "POST":
+        date_start = None
+        date_end = None
+        bell_from = None
+        bell_to = None
+
+        if request.POST['date_from']:
+            date_start = datetime.datetime.strptime(request.POST['date_from'], '%Y-%m-%d')
+        if request.POST['date_to']:
+            date_end = datetime.datetime.strptime(request.POST['date_to'], '%Y-%m-%d')
+
+        if request.POST['bell_from']:
+            bell_from = Bell.objects.filter(id=request.POST['bell_from']).first()
+        if request.POST['bell_to']:
+            bell_to = Bell.objects.filter(id=request.POST['bell_to']).first()
+
+        if (date_start and date_end) and (date_start != date_end):
+            delta = datetime.timedelta(days=1)
+
+            while date_start <= date_end:
+                if datetime.datetime.strptime(request.POST['date_from'], '%Y-%m-%d') == date_start:
+                    TeachersAbsence.objects.create(
+                        date=date_start,
+                        teacher=Teacher.objects.filter(id=request.POST['teacher']).first(),
+                        from_bell=bell_from
+                    )
+                elif date_start == date_end:
+                    TeachersAbsence.objects.create(
+                        date=date_start,
+                        teacher=Teacher.objects.filter(id=request.POST['teacher']).first(),
+                        to_bell=bell_to
+                    )
+                else:
+                    TeachersAbsence.objects.create(
+                        date=date_start,
+                        teacher=Teacher.objects.filter(id=request.POST['teacher']).first(),
+                    )
+                date_start += delta
+        elif (date_start and not date_end) or (date_start == date_end):
+            TeachersAbsence.objects.create(
+                date=date_start,
+                teacher=Teacher.objects.filter(id=request.POST['teacher']).first(),
+                from_bell=bell_from,
+                to_bell=bell_to
+            )
+
+        return redirect('schedule_teachers_absence')
+
+    context = {
+        'teachers': teachers,
+        'bells': bells,
+    }
+    return render(request, 'teacher/schedule_teachers_absence.html', context)
+
+

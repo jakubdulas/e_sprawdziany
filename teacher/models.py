@@ -210,7 +210,7 @@ class Replacement(models.Model):
 class Lesson(models.Model):
     schedule_element = models.ForeignKey(ScheduleElement, on_delete=models.SET_NULL, null=True, blank=True)
     topic = models.CharField(max_length=100)
-    date = models.DateField(auto_now_add=True, null=True)
+    date = models.DateField(null=True)
     notes = models.TextField(blank=True)
     homework = models.TextField(blank=True)
     replacement = models.ForeignKey(Replacement, on_delete=models.SET_NULL, null=True, blank=True)

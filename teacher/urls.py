@@ -51,4 +51,5 @@ urlpatterns = [
     path('zaplanuj-wydarzenie/<int:group_id>/', schedule_event, name='schedule_event'),
     path('zaplanuj-wydarzenie/<int:group_id>/<int:day_of_week>/', get_schedule_elements_ajax),
     path('zaplanuj-nieobecnosc-nauczyciela/', schedule_teachers_absence, name='schedule_teachers_absence'),
+    path('nieobecnosc-nauczyciela/<int:teachers_absence_id>/', teachers_absence_details, name='teachers_absence_details'),
 ]

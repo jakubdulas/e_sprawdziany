@@ -11,6 +11,8 @@ from .decorators import *
 from .forms import *
 from tests.forms import GiveGradeForm, FinalGradeForm
 from general.decorators import *
+from django.utils.safestring import mark_safe
+from .utils import TeachersCalendar
 from general.forms import *
 import random
 import datetime
@@ -518,7 +520,8 @@ def start_next_lesson(request, schedule_element_id):
         if not lesson:
             lesson = Lesson.objects.create(
                 schedule_element=next_lesson,
-                replacement=replacement
+                replacement=replacement,
+                date=datetime.datetime.today().date()
             )
 
         return redirect('lesson_details', lesson_slug=lesson.slug)
@@ -656,8 +659,13 @@ def lesson_details(request, lesson_slug):
 
 
 def teachers_diary(request):
-
-    return render(request, 'teacher/teachers_diary.html')
+    d = datetime.datetime.today().date()
+    cal = TeachersCalendar(d.year, d.month, request.user.teacher)
+    html_cal = cal.formatmonth(withyear=True)
+    context = {
+        'calendar': mark_safe(html_cal)
+    }
+    return render(request, 'teacher/teachers_diary.html', context)
 
 
 def schedule_replacement(request):
@@ -1174,7 +1182,7 @@ def schedule_teachers_absence(request):
                 to_bell=bell_to
             )
 
-        return redirect('schedule_teachers_absence')
+        return redirect('teachers_diary')
 
     context = {
         'teachers': teachers,
@@ -1183,3 +1191,9 @@ def schedule_teachers_absence(request):
     return render(request, 'teacher/schedule_teachers_absence.html', context)
 
 
+def teachers_absence_details(request, teachers_absence_id):
+    teachers_absence = get_object_or_404(TeachersAbsence, id=teachers_absence_id)
+    context = {
+        'teachers_absence': teachers_absence
+    }
+    return render(request, 'teacher/teachers_absence_details.html', context)

@@ -175,24 +175,36 @@ def teacher_details(request, teacher_id):
 
 
 @headmaster_only
-def edit_term(request, number):
-    number = int(number)
-    form = SchoolTermForm(instance=SchoolTerm.objects.filter(school=request.user.teacher.school, number=number).first())
+def add_term(request, school_year_id, number):
+    if SchoolTerm.objects.filter(school=request.user.teacher.school,
+                                 number=number,
+                                 school_year=SchoolYear.objects.filter(id=school_year_id).first()).first() or  number > 2 or number < 1:
+        return redirect('home')
+
     if request.method == 'POST':
-        form = SchoolTermForm(request.POST, instance=SchoolTerm.objects.filter(school=request.user.teacher.school, number=number).first())
-        form.instance.number = number
-        form.instance.school = request.user.teacher.school
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Zaktualizowano semestr {number}.')
-            return redirect('headmaster_panel')
-        else:
-            messages.success(request, f'Wystąpił błąd')
-            return redirect('add_term', number)
+        obj = SchoolTerm.objects.create(
+            school=request.user.teacher.school,
+            number=number,
+            school_year=SchoolYear.objects.filter(id=school_year_id).first(),
+            start=datetime.datetime.strptime(request.POST['start'], '%Y-%m-%d'),
+            end=datetime.datetime.strptime(request.POST['end'], '%Y-%m-%d'),
+        )
+        return redirect('school_year_details', obj.school_year.id)
+    return render(request, 'teacher/add_term.html')
+
+
+@headmaster_only
+def edit_term(request, term_id):
+    school_term = get_object_or_404(SchoolTerm, id=term_id)
+    if request.method == 'POST':
+        school_term.start = datetime.datetime.strptime(request.POST['start'], '%Y-%m-%d')
+        school_term.end = datetime.datetime.strptime(request.POST['end'], '%Y-%m-%d')
+        school_term.save()
+        return redirect('school_year_details', school_term.school_year.id)
     context = {
-        'form': form
+        'school_term': school_term
     }
-    return render(request, 'teacher/add_term.html', context)
+    return render(request, 'teacher/edit_term.html', context)
 
 
 @headmaster_only
@@ -1097,11 +1109,13 @@ def accept_request_for_excuse(request, request_for_excuse_id):
 
 def schedule_event(request, group_id):
     group = get_object_or_404(Group, id=group_id)
+    date = datetime.datetime.today().date()
     schedule_elements = ScheduleElement.objects.filter(
         teacher=request.user.teacher,
         group=group,
-        end_date=None
-    ).all()
+        end_date=None,
+        day_of_week=date.weekday()
+    ).order_by('bell__number_of_lesson').all()
 
     if request.method == 'POST':
         Event.objects.create(
@@ -1115,7 +1129,9 @@ def schedule_event(request, group_id):
         return redirect('home')
 
     context = {
-        'schedule_elements': schedule_elements
+        'schedule_elements': schedule_elements,
+        'date': date,
+        'group_id': group_id,
     }
     return render(request, 'teacher/schedule_event.html', context)
 
@@ -1127,7 +1143,7 @@ def get_schedule_elements_ajax(request, group_id, day_of_week):
             group=Group.objects.filter(id=group_id).first(),
             day_of_week=day_of_week,
             end_date=None
-        ).values('id', 'bell__number_of_lesson'))
+        ).order_by('bell__number_of_lesson').values('id', 'bell__number_of_lesson'))
         return JsonResponse({'schedule_elements': schedule_elements})
     return redirect('home')
 
@@ -1197,3 +1213,99 @@ def teachers_absence_details(request, teachers_absence_id):
         'teachers_absence': teachers_absence
     }
     return render(request, 'teacher/teachers_absence_details.html', context)
+
+
+def canceled_lesson_details(request, lesson_slug):
+    canceled_lesson = get_object_or_404(Lesson, slug=lesson_slug)
+    context = {
+        'canceled_lesson': canceled_lesson
+    }
+    return render(request, 'teacher/canceled_lesson_details.html', context)
+
+
+def replacement_details(request, replacement_id):
+    replacement = get_object_or_404(Replacement, id=replacement_id)
+    context = {
+        'replacement': replacement
+    }
+    return render(request, 'teacher/replacement_details.html', context)
+
+
+def event_details(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    context = {
+        'event': event
+    }
+    return render(request, 'teacher/event_details.html', context)
+
+
+def teachers_absence_edit(request, teachers_absence_id):
+    teachers_absence = get_object_or_404(TeachersAbsence, id=teachers_absence_id)
+    bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
+    if request.method == 'POST':
+        teachers_absence.date = datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d')
+        teachers_absence.from_bell = Bell.objects.filter(id=request.POST['from_bell']).first()
+        teachers_absence.to_bell = Bell.objects.filter(id=request.POST['to_bell']).first()
+        teachers_absence.save()
+        return redirect('teachers_diary')
+    context = {
+        'teachers_absence': teachers_absence,
+        'bells': bells
+    }
+    return render(request, 'teacher/teachers_absence_edit.html', context)
+
+
+def teachers_absence_delete(request, teachers_absence_id):
+    teachers_absence = get_object_or_404(TeachersAbsence, id=teachers_absence_id)
+    if request.method == 'POST':
+        teachers_absence.delete()
+    return redirect('teachers_diary')
+
+
+def canceled_lesson_delete(request, lesson_slug):
+    canceled_lesson = get_object_or_404(Lesson, slug=lesson_slug)
+    if request.method == 'POST':
+        canceled_lesson.is_canceled = False
+        canceled_lesson.save()
+    return redirect('teachers_diary')
+
+
+def replacement_edit(request, replacement_id):
+    replacement = get_object_or_404(Replacement, id=replacement_id)
+    context = {
+        'replacement': replacement
+    }
+    return render(request, 'teacher/replacement_details.html', context)
+
+
+def replacement_delete(request, replacement_id):
+    replacement = get_object_or_404(Replacement, id=replacement_id)
+    if request.method == 'POST':
+        replacement.delete()
+    return redirect('teachers_diary')
+
+
+def event_edit(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    schedule_elements = ScheduleElement.objects.filter(
+            teacher=request.user.teacher,
+            group=event.schedule_element.group,
+            end_date=None,
+            day_of_week=event.date.weekday()
+        ).order_by('bell__number_of_lesson').all()
+
+    if request.method == 'POST':
+        event.date = request.POST['date']
+        event.schedule_element = ScheduleElement.objects.filter(id=request.POST['schedule_element']).first()
+        event.type = request.POST['type']
+        event.description = request.POST['description']
+        event.color = request.POST['color']
+        event.save()
+        return redirect('home')
+
+    context = {
+        'event': event,
+        'group_id': event.schedule_element.group.id,
+        'schedule_elements': schedule_elements,
+    }
+    return render(request, 'teacher/schedule_event.html', context)

@@ -7,20 +7,24 @@ Zaplanuj wydarzenie
 <form method="post">
 {% csrf_token %}
     <label>Data:</label>
-    <input id="date" name="date" type="date"><br>
-    <label>Dzwonek</label>
+    <input {% if event %}value="{{ event.date|date:"Y-m-d" }}"{% else %}value="{{ date|date:"Y-m-d" }}"{% endif %} id="date" name="date" type="date"><br>
+    <input type="hidden" name="group" value="{{ group_id }}">
+    <label>Numer lekcji: </label>
     <select name="schedule_element" id="schedule_elements">
-        <option>------</option>
+        {% for schedule_element in schedule_elements %}
+        <option {% if event %}{% if event.schedule_element.id == schedule_element.id %}selected{% endif %}{% endif %} value="{{ schedule_element.id }}">{{ schedule_element.bell.number_of_lesson }}</option>
+        {% endfor %}
     </select><br>
     <label>Rodzaj:</label>
-    <input name="type" type="text"><br>
+    <input {% if event %}value="{{ event.type }}"{% endif %} name="type" type="text"><br>
     <label>Opis:</label>
-    <textarea name="description"></textarea><br>
+    <textarea name="description">{% if event %}{{ event.description }}{% endif %}</textarea><br>
     <label>Kolor w kalendarzu:</label>
-    <input name="color" type="color"><br>
+    <input {% if event %}value="{{ event.color }}"{% endif %} name="color" type="color"><br>
     <button type="submit">Zatwierdź</button>
 </form>
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'js/schedule_element.js' %}"></script>
+<script src="{% static 'js/schedule_element.js' %}">
+</script>
 {% endblock %}

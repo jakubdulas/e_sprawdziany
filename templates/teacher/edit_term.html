@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-Dodaj semestr
+{{ school_year.name }}
 {% endblock %}
 {% block content %}
 <form method="post">
@@ -8,11 +8,11 @@ Dodaj semestr
 <table border="1">
 <tr>
     <td>Początek: </td>
-    <td><input type="date" name="start"></td>
+    <td><input type="date" name="start" value="{{ school_term.start|date:"Y-m-d" }}"></td>
 </tr>
 <tr></tr>
     <td>Koniec: </td>
-    <td><input type="date" name="end"></td>
+    <td><input type="date" name="end" value="{{ school_term.end|date:"Y-m-d" }}"></td>
 </tr>
 </table>
 <button type="submit">Zatwierdź</button>

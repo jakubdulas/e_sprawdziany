@@ -29,14 +29,12 @@ class TeachersCalendar(HTMLCalendar):
         for teachers_absence in teachers_absences_per_day:
             d += f"<a href='{reverse('teachers_absence_details', kwargs={'teachers_absence_id': teachers_absence.id})}'><div>Nieobecność nauczyciela: " \
                  f"{teachers_absence.teacher.user.first_name} {teachers_absence.teacher.user.last_name}</div><br>"
-
         for canceled_lesson in canceled_lessons_per_day:
-            d += f"<div>Odwołana lekcja: {canceled_lesson.schedule_element.group.subject.name}</div><br>"
-
+            d += f"<a href='{reverse('canceled_lesson_details', kwargs={'lesson_slug': canceled_lesson.slug})}'><div>Odwołana lekcja: {canceled_lesson.schedule_element.group.subject.name}</div></a><br>"
         for event in events_per_day:
-            d += f"<div>{event.type} na lekcji: {event.schedule_element.group.subject.name}</div><br>"
+            d += f"<a href='{reverse('event_details', kwargs={'event_id': event.id})}'><div>{event.type} na lekcji: {event.schedule_element.group.subject.name}</div><a><br>"
         for replacement in replacements_per_day:
-            d += f"<div>Zastępstwo na lekcji: {replacement.schedule_element.group.subject.name} z klasa</div><br>"
+            d += f"<a href='{reverse('replacement_details', kwargs={'replacement_id': replacement.id})}'><div>Zastępstwo na lekcji: {replacement.schedule_element.group.subject.name} z klasa</div></a><br>"
         if day != 0:
             return f"<td><span>{day}</span>{d}</td>"
         return "<td></td>"

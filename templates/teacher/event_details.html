@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}
+    Wydarzenie
+{% endblock %}
+{% block content %}
+<h3>{{ event.type }}</h3>
+<ul>
+<li>Data: {{ event.date }}</li>
+<li>Klasa: {% for related_class in event.schedule_element.group.related_classes.all %}{{ related_class }}{% endfor %}</li>
+<li>Lekcja: {{ event.schedule_element.group.subject.name }}</li>
+<li>Godzina lekcyjna: {{ event.schedule_element.bell.number_of_lesson }}</li>
+<li>Opis: {{ event.description }}</li>
+<li>Nauczyciel: {{ event.teacher.user.first_name }} {{ event.teacher.user.last_name }}</li>
+<li>Data dodania: {{ event.add_date }}</li>
+</ul>
+<a href="{% url 'event_edit' event.id %}">Edytuj</a>
+{% endblock %}

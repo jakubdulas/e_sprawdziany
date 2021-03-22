@@ -6,14 +6,24 @@
 <h3>Rok szkolny: {{ school_year.name }}</h3>
 <table border="1">
 <tr>
-    <th><a href="{% url 'add_term' 1 %}">Semestr 1</a></th>
+    {% if not term1 %}
+    <th>Semestr 1</th>
+    <td><a {% url 'add_term' school_year.id 1 %}>Dodaj</a></td>
+    {% else %}
+    <th><a href="{% url 'edit_term' term1.id %}">Semestr 1</a></th>
     <td>{{ term1.start|date:"d-m-Y" }}</td>
     <td>{{ term1.end|date:"d-m-Y" }}</td>
+    {% endif %}
 </tr>
 <tr>
-    <th><a href="{% url 'add_term' 2 %}">Semestr 2</a></th>
+    {% if not term2 %}
+    <th>Semestr 2</th>
+    <td><a {% url 'add_term' school_year.id 2 %}>Dodaj</a></td>
+    {% else %}
+    <th><a href="{% url 'edit_term' term2.id %}">Semestr 2</a></th>
     <td>{{ term2.start|date:"d-m-Y" }}</td>
     <td>{{ term2.end|date:"d-m-Y" }}</td>
+    {% endif %}
 </tr>
 </table>
 {% endblock %}

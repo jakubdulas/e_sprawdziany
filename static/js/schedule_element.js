@@ -1,6 +1,6 @@
 const schedule_elements = document.getElementById('schedule_elements')
 const input = document.getElementById('date')
-
+const group = document.getElementsByName('group')[0].value
 
 input.addEventListener('change', ()=>{
     const date = new Date(input.value)
@@ -13,15 +13,14 @@ input.addEventListener('change', ()=>{
     }
 
     $.ajax({
-        url: `${day}/`,
+        url: `${window.location.origin}/school/get_schedule_elements/${group}/${day}/`,
         type: 'GET',
         success: function (response){
             schedule_elements.innerHTML = ''
             response.schedule_elements.forEach(element =>{
-                console.log(element)
                 const option = document.createElement('option')
                 option.value = element.id
-                option.textContent = `lekcja ${element.bell__number_of_lesson}.`
+                option.textContent = `${element.bell__number_of_lesson}`
                 schedule_elements.appendChild(option)
             })
         },

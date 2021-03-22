@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}
+    Odwołana lekcja
+{% endblock %}
+{% block content %}
+<h3>Odwołana lekcja: {{ canceled_lesson.schedule_element.group.subject }}</h3>
+<ul>
+<li>Data: {{ canceled_lesson.date }}</li>
+<li>Klasa:
+    {% for related_class in canceled_lesson.schedule_element.group.related_classes.all %}
+        {{ related_class }}
+    {% endfor %}
+</li>
+</ul>
+<form method="post">
+{% csrf_token %}
+<button formaction="{% url 'canceled_lesson_delete' canceled_lesson.slug %}">Usuń</button>
+</form>
+{% endblock %}

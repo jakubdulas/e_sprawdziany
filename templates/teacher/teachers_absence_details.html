@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}
-    Terminarz
+    Nieobecność nauczyciela
 {% endblock %}
 {% block content %}
 <h3>Nieobecność nauczyciela: {{ teachers_absence.teacher.user.first_name }} {{ teachers_absence.teacher.user.last_name }}</h3>
-<ol>
+<ul>
 <li>Data: {{ teachers_absence.date }}</li>
 {% if teachers_absence.from_bell %}
 <li>Od lekcji numer: {{ teachers_absence.from_bell.number_of_lesson }}</li>
@@ -12,5 +12,6 @@
 {% if teachers_absence.to_bell %}
 <li>Do lekcji numer: {{ teachers_absence.to_bell.number_of_lesson }}</li>
 {% endif %}
-</ol>
+</ul>
+<a href="{% url 'teachers_absence_edit' teachers_absence.id %}">edytuj</a>
 {% endblock %}

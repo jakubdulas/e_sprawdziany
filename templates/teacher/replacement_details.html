@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}
+    Zastępstwo
+{% endblock %}
+{% block content %}
+<h3>Zastępstwo:</h3>
+<ul>
+<li>Data: {{ replacement.date }}</li>
+{% if replacement.subject %}
+<li>Lekcja: {{ replacement.subject }}</li>
+{% endif %}
+<li>Zamiast lekcji: {{ replacement.schedule_element.group.subject.name }}</li>
+<li>Godzina lekcyjna: {{ replacement.schedule_element.bell.number_of_lesson }}</li>
+<li>Zastępowany nauczyciel: {{ replacement.schedule_element.group.teacher.user.first_name }} {{ replacement.schedule_element.group.teacher.user.last_name }}</li>
+<li>Zastępca: {{ replacement.teacher.user.first_name }} {{ replacement.teacher.user.last_name }}</li>
+</ul>
+<form method="post" action="{% url 'replacement_delete' replacement.id %}">
+{% csrf_token %}
+<button type="submit">Usuń</button>
+</form>
+{% endblock %}

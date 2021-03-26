@@ -25,61 +25,164 @@
     <br>
     <br>
 
-    {% if present_lesson %}
+    <form id="present_lesson_form" method="post" hidden>
+    {% csrf_token %}
         <h4>Obecna lekcja:</h4>
-        <h1>{{ present_lesson.group.name }}</h1>
-        <h2>Lekcja: {{ present_lesson.bell.number_of_lesson }}</h2>
-        <h2>Od {{ present_lesson.bell.start_time|date:"H:i" }} do {{ present_lesson.bell.end_time|date:"H:i" }}</h2>
-    <form method="post" action="{% url 'start_next_lesson' present_lesson.id %}">
-    {% csrf_token %}
-    <button type="submit">Rozpocznij lekcję</button>
+        <h1 id="present_lesson_group"></h1>
+        <h2 id="present_lesson_number"></h2>
+        <h2 id="present_lesson_duration"></h2>
+        <button type="submit">Rozpocznij lekcję</button>
     </form>
-    {% elif present_replacement %}
-        <h4>Obecna lekcja:</h4>
-        <h5>Zastępstwo za: {{ present_replacement.schedule_element.teacher.user.first_name }}
-         {{ present_replacement.schedule_element.teacher.user.last_name }}
-        </h5>
-        <h1>
-            {% for class in present_replacement.schedule_element.group.related_classes.all %}
-                {{ class.number }} {{ class.class_template.name }}
-            {% endfor %}
-            {{ present_replacement.subject }}
-        </h1>
-        <h2>Lekcja: {{ present_replacement.schedule_element.bell.number_of_lesson }}</h2>
-        <h2>Od {{ present_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ present_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>
-    <form method="post" action="{% url 'start_next_lesson' present_replacement.schedule_element.id %}">
-    {% csrf_token %}
-    <button type="submit">Rozpocznij lekcję</button>
-    </form>
-    {% endif %}
 
-    {% if next_lesson %}
+    <form id="next_lesson_form" method="post" hidden>
+    {% csrf_token %}
         <h4>Następna lekcja:</h4>
-        <h1>{{ next_lesson.group.name }}</h1>
-        <h2>Lekcja: {{ next_lesson.bell.number_of_lesson }}</h2>
-        <h2>Od {{ next_lesson.bell.start_time|date:"H:i" }} do {{ next_lesson.bell.end_time|date:"H:i" }}</h2>
-    <form method="post" action="{% url 'start_next_lesson' next_lesson.id %}">
-    {% csrf_token %}
-    <button type="submit">Rozpocznij lekcję</button>
+        <h1 id="next_lesson_group"></h1>
+        <h2 id="next_lesson_number"></h2>
+        <h2 id="next_lesson_duration"></h2>
+        <button type="submit">Rozpocznij lekcję</button>
     </form>
-    {% elif next_replacement %}
-        <h4>Następna lekcja:</h4>
-        <h5>Zastępstwo za: {{ next_replacement.schedule_element.teacher.user.first_name }}
-        {{ next_replacement.schedule_element.teacher.user.last_name }}
-        </h5>
-        <h1>
-            {% for class in next_replacement.schedule_element.group.related_classes.all %}
-                {{ class.number }} {{ class.class_template.name }}
-            {% endfor %}
-            {{ next_replacement.subject }}
-        </h1>
-        <h2>Lekcja: {{ next_replacement.schedule_element.bell.number_of_lesson }}</h2>
-        <h2>Od {{ next_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ next_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>
-    <form method="post" action="{% url 'start_next_lesson' next_replacement.schedule_element.id %}">
-    {% csrf_token %}
-    <button type="submit">Rozpocznij lekcję</button>
-    </form>
-    {% endif %}
 
+{#    {% if present_lesson %}#}
+{#        <h4>Obecna lekcja:</h4>#}
+{#        <h1>{{ present_lesson.group.name }}</h1>#}
+{#        <h2>Lekcja: {{ present_lesson.bell.number_of_lesson }}</h2>#}
+{#        <h2>Od {{ present_lesson.bell.start_time|date:"H:i" }} do {{ present_lesson.bell.end_time|date:"H:i" }}</h2>#}
+{#    <form method="post" action="{% url 'start_next_lesson' present_lesson.id %}">#}
+{#    {% csrf_token %}#}
+{#    <button type="submit">Rozpocznij lekcję</button>#}
+{#    </form>#}
+{#    {% elif present_replacement %}#}
+{#        <h4>Obecna lekcja:</h4>#}
+{#        <h5>Zastępstwo za: {{ present_replacement.schedule_element.teacher.user.first_name }}#}
+{#         {{ present_replacement.schedule_element.teacher.user.last_name }}#}
+{#        </h5>#}
+{#        <h1>#}
+{#            {% for class in present_replacement.schedule_element.group.related_classes.all %}#}
+{#                {{ class.number }} {{ class.class_template.name }}#}
+{#            {% endfor %}#}
+{#            {{ present_replacement.subject }}#}
+{#        </h1>#}
+{#        <h2>Lekcja: {{ present_replacement.schedule_element.bell.number_of_lesson }}</h2>#}
+{#        <h2>Od {{ present_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ present_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>#}
+{#    <form method="post" action="{% url 'start_next_lesson' present_replacement.schedule_element.id %}">#}
+{#    {% csrf_token %}#}
+{#    <button type="submit">Rozpocznij lekcję</button>#}
+{#    </form>#}
+{#    {% endif %}#}
+{##}
+{#    {% if next_lesson %}#}
+{#        <h4>Następna lekcja:</h4>#}
+{#        <h1>{{ next_lesson.group.name }}</h1>#}
+{#        <h2>Lekcja: {{ next_lesson.bell.number_of_lesson }}</h2>#}
+{#        <h2>Od {{ next_lesson.bell.start_time|date:"H:i" }} do {{ next_lesson.bell.end_time|date:"H:i" }}</h2>#}
+{#    <form method="post" action="{% url 'start_next_lesson' next_lesson.id %}">#}
+{#    {% csrf_token %}#}
+{#    <button type="submit">Rozpocznij lekcję</button>#}
+{#    </form>#}
+{#    {% elif next_replacement %}#}
+{#        <h4>Następna lekcja:</h4>#}
+{#        <h5>Zastępstwo za: {{ next_replacement.schedule_element.teacher.user.first_name }}#}
+{#        {{ next_replacement.schedule_element.teacher.user.last_name }}#}
+{#        </h5>#}
+{#        <h1>#}
+{#            {% for class in next_replacement.schedule_element.group.related_classes.all %}#}
+{#                {{ class.number }} {{ class.class_template.name }}#}
+{#            {% endfor %}#}
+{#            {{ next_replacement.subject }}#}
+{#        </h1>#}
+{#        <h2>Lekcja: {{ next_replacement.schedule_element.bell.number_of_lesson }}</h2>#}
+{#        <h2>Od {{ next_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ next_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>#}
+{#    <form method="post" action="{% url 'start_next_lesson' next_replacement.schedule_element.id %}">#}
+{#    {% csrf_token %}#}
+{#    <button type="submit">Rozpocznij lekcję</button>#}
+{#    </form>#}
+{#    {% endif %}#}
+{% endblock %}
+{% block scripts %}
+<script>
+const lessons = JSON.parse("{{ lessons|escapejs }}")
+const bells = JSON.parse("{{ bells|escapejs }}")
+const present_lesson_form = document.getElementById('present_lesson_form')
+const present_lesson_group = document.getElementById('present_lesson_group')
+const present_lesson_number = document.getElementById('present_lesson_number')
+const present_lesson_duration = document.getElementById('present_lesson_duration')
+const next_lesson_form = document.getElementById('next_lesson_form')
+const next_lesson_group = document.getElementById('next_lesson_group')
+const next_lesson_number = document.getElementById('next_lesson_number')
+const next_lesson_duration = document.getElementById('next_lesson_duration')
 
+console.log(lessons)
+
+const get_current_number_of_lesson = ()=>{
+    const date = new Date()
+    let bell = bells.find(bell => new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(bell.from_time[0]), parseInt(bell.from_time[1]), parseInt(bell.from_time[2])) <= date.getTime() && new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(bell.to_time[0]), parseInt(bell.to_time[1]), parseInt(bell.to_time[2])) >= date.getTime())
+    let next_bell = bells[bells.indexOf(bell)+1]
+
+    if (bell) {
+        return [bell, next_bell]
+    }
+
+    next_bell = bells.find(bell => new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(bell.from_time[0]), parseInt(bell.from_time[1]), parseInt(bell.from_time[2])) >= date.getTime())
+    return [false, next_bell]
+}
+
+function display_present_lesson(lesson, bell){
+    const date = new Date()
+    present_lesson_form.hidden = false
+    present_lesson_form.setAttribute('action', `/school/start-lesson/${lesson.schedule_element}/${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}/`)
+    present_lesson_group.textContent = lesson.group_name
+    present_lesson_number.textContent = `Lekcja: ${lesson.lesson}`
+    present_lesson_duration.textContent = `Od ${bell.from_time[0]}:${bell.from_time[1]} do ${bell.to_time[0]}:${bell.to_time[1]}`
+}
+
+function display_next_lesson(lesson, bell){
+    const date = new Date()
+    next_lesson_form.hidden = false
+    next_lesson_form.setAttribute('action', `/school/start-lesson/${lesson.schedule_element}/${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}/`)
+    next_lesson_group.textContent = lesson.group_name
+    next_lesson_number.textContent = `Lekcja: ${lesson.lesson}`
+    next_lesson_duration.textContent = `Od ${bell.from_time[0]}:${bell.from_time[1]} do ${bell.to_time[0]}:${bell.to_time[1]}`
+}
+
+function show_lessons(){
+    let bell = get_current_number_of_lesson()[0]
+    let next_bell = get_current_number_of_lesson()[1]
+
+    if (bell){
+        current_lesson = lessons.find(lesson => lesson.lesson === bell.number_of_lesson)
+        if (current_lesson){
+            if (prev_bell !== bell){
+                display_present_lesson(current_lesson, bell)
+            }
+        }else{
+            present_lesson_form.hidden = true
+        }
+
+    }
+    if (next_bell){
+        next_lesson = lessons.find(lesson => lesson.lesson === next_bell.number_of_lesson)
+        if (next_lesson){
+            if (prev_next_bell !== next_bell) {
+                display_next_lesson(next_lesson, next_bell)
+            }
+        }else{
+            next_lesson_form.hidden = true
+        }
+
+    }
+    prev_bell = bell
+    prev_next_bell = next_bell
+}
+
+let prev_bell = ''
+let prev_next_bell = ''
+
+setInterval(()=>{
+    show_lessons()
+}, 60*1000)
+
+show_lessons()
+
+</script>
 {% endblock %}

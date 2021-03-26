@@ -514,29 +514,31 @@ def group_detail_view(request, group_id):
     return render(request, 'teacher/group_details.html', context)
 
 
-def start_next_lesson(request, schedule_element_id):
+def start_lesson(request, schedule_element_id, year, month, day):
     if request.method == "POST":
-        next_lesson = get_object_or_404(ScheduleElement, id=schedule_element_id)
+        schedule_element = get_object_or_404(ScheduleElement, id=schedule_element_id)
+        date = datetime.date(year, month, day)
 
         replacement = Replacement.objects.filter(
-            date=datetime.datetime.today().date(),
-            schedule_element=next_lesson,
+            schedule_element=schedule_element,
+            date=date,
+            teacher=request.user.teacher
         ).first()
 
-        lesson = Lesson.objects.filter(
-            schedule_element=next_lesson,
-            date=datetime.datetime.today().date(),
-            replacement=replacement
-        ).first()
-
-        if not lesson:
-            lesson = Lesson.objects.create(
-                schedule_element=next_lesson,
+        if not Lesson.objects.filter(
+            schedule_element=schedule_element,
+            date=date):
+            obj = Lesson.objects.create(
+                schedule_element=schedule_element,
+                date=date,
                 replacement=replacement,
-                date=datetime.datetime.today().date()
             )
+        else:
+            obj = Lesson.objects.filter(
+                    schedule_element=schedule_element,
+                    date=date).first()
 
-        return redirect('lesson_details', lesson_slug=lesson.slug)
+        return redirect('lesson_details', lesson_slug=obj.slug)
     return redirect('home')
 
 
@@ -555,16 +557,22 @@ def lesson_details(request, lesson_slug):
     else:
         subject = lesson.schedule_element.group.subject
 
-    last_lesson = Lesson.objects.filter(
+    last_lessons = list(Lesson.objects.filter(
         Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
         date__lte=lesson.date,
         # schedule_element__group__related_classes__in=lesson.schedule_element.group.related_classes.all(),
         schedule_element__group=lesson.schedule_element.group,
         is_canceled=False,
-    ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson', '-date').first()
+    ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').all())
 
-    if last_lesson.schedule_element.bell.number_of_lesson > lesson.schedule_element.bell.number_of_lesson:
-        last_lesson = None
+    last_lesson = last_lessons[0]
+
+    if last_lesson:
+        if last_lesson.date == lesson.date and last_lesson.schedule_element.bell.number_of_lesson > lesson.schedule_element.bell.number_of_lesson:
+            if len(last_lessons) > 1:
+                last_lesson = last_lessons[1]
+            else:
+                last_lesson = None
 
     term1_grades = []
     term2_grades = []

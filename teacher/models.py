@@ -67,15 +67,12 @@ class SchoolTerm(models.Model):
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     school = models.ForeignKey(School, on_delete=models.CASCADE, null=True)
+    is_teacher = models.BooleanField(null=True)
+    is_headmaster = models.BooleanField(null=True)
+    is_admin = models.BooleanField(null=True)
 
     def __str__(self):
         return f"{self.user} | teacher"
-
-    @property
-    def is_headmaster(self):
-        if Headmaster.objects.filter(teacher=self):
-            return True
-        return False
 
     def is_in_class(self, key):
         try:

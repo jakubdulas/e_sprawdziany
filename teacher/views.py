@@ -557,22 +557,30 @@ def lesson_details(request, lesson_slug):
     else:
         subject = lesson.schedule_element.group.subject
 
-    last_lessons = list(Lesson.objects.filter(
+    last_lesson = Lesson.objects.filter(
         Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
         date__lte=lesson.date,
         # schedule_element__group__related_classes__in=lesson.schedule_element.group.related_classes.all(),
         schedule_element__group=lesson.schedule_element.group,
         is_canceled=False,
-    ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').all())
-
-    last_lesson = last_lessons[0]
+    ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').first()
 
     if last_lesson:
-        if last_lesson.date == lesson.date and last_lesson.schedule_element.bell.number_of_lesson > lesson.schedule_element.bell.number_of_lesson:
-            if len(last_lessons) > 1:
-                last_lesson = last_lessons[1]
-            else:
-                last_lesson = None
+        if last_lesson.date == lesson.date:
+            last_lesson = Lesson.objects.filter(
+                Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
+                schedule_element__group=lesson.schedule_element.group,
+                is_canceled=False,
+                date=lesson.date,
+                schedule_element__bell__number_of_lesson__lt=lesson.schedule_element.bell.number_of_lesson
+            ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').first()
+            if not last_lesson:
+                last_lesson = Lesson.objects.filter(
+                    Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
+                    schedule_element__group=lesson.schedule_element.group,
+                    is_canceled=False,
+                    date__lt=lesson.date,
+                ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').first()
 
     term1_grades = []
     term2_grades = []

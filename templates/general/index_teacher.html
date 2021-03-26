@@ -159,6 +159,8 @@ function show_lessons(){
             present_lesson_form.hidden = true
         }
 
+    }else{
+        present_lesson_form.hidden = true
     }
     if (next_bell){
         next_lesson = lessons.find(lesson => lesson.lesson === next_bell.number_of_lesson)
@@ -170,6 +172,8 @@ function show_lessons(){
             next_lesson_form.hidden = true
         }
 
+    }else{
+        next_lesson_form.hidden = true
     }
     prev_bell = bell
     prev_next_bell = next_bell
@@ -180,7 +184,7 @@ let prev_next_bell = ''
 
 setInterval(()=>{
     show_lessons()
-}, 60*1000)
+}, 1*1000)
 
 show_lessons()
 

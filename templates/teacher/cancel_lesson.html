@@ -8,9 +8,9 @@
 
 <form method="post">
 {% csrf_token %}
-<label>Data: </label><input type="date" name="date"><br>
+<label>Data: </label><input id="date" type="date" name="date"><br>
 <label>Godzina lekcyjna: </label>
-<select name="bell">
+<select id="number_of_lesson" name="bell">
     <option>------</option>
     {% for bell in bells %}
     <option value="{{ bell.id }}">{{ bell.number_of_lesson }}</option>
@@ -24,7 +24,7 @@
     {% endfor %}
 </select><br>
 <label>Grupa: </label>
-<select name="group" id="group" >
+<select name="group" id="group" disabled>
     <option value="-1">------</option>
 </select><br>
 <button type="submit">Zatwierdz</button>

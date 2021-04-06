@@ -783,10 +783,20 @@ def cancel_lesson(request):
     return render(request, 'teacher/cancel_lesson.html', context)
 
 
-def get_groups_ajax(request, schoolclass_id):
+def get_groups_ajax(request, schoolclass_id, bell_id, day_of_week):
     if request.is_ajax():
-        schoolclass = SchoolClass.objects.get(id=schoolclass_id)
-        groups = list(schoolclass.group_set.values('name', 'id'))
+        groups = []
+        schedule_elements = ScheduleElement.objects.filter(
+            group__related_classes=SchoolClass.objects.filter(id=schoolclass_id).first(),
+            bell=Bell.objects.filter(id=bell_id).first(),
+            day_of_week=day_of_week,
+            end_date=None
+        ).all()
+        for schedule_element in schedule_elements:
+            groups.append({
+                'id': schedule_element.group.id,
+                'name': schedule_element.group.name
+            })
         return JsonResponse({'groups': groups})
     return redirect('home')
 
@@ -1325,3 +1335,59 @@ def event_edit(request, event_id):
         'schedule_elements': schedule_elements,
     }
     return render(request, 'teacher/schedule_event.html', context)
+
+
+def end_school_year(request):
+    school_year = SchoolYear.get_current_school_year(school=request.user.teacher.school)
+    school_class = SchoolClass.objects.filter(teacher=request.user.teacher, school_year=school_year).first()
+    students = []
+    subjects = None
+    i = 0
+
+    if school_class.number == 1:
+        subjects = school_class.class_template.subjects_1.order_by('name').all()
+    elif school_class.number == 2:
+        subjects = school_class.class_template.subjects_2.order_by('name').all()
+    elif school_class.number == 3:
+        subjects = school_class.class_template.subjects_3.order_by('name').all()
+    elif school_class.number == 4:
+        subjects = school_class.class_template.subjects_4.order_by('name').all()
+    elif school_class.number == 5:
+        subjects = school_class.class_template.subjects_5.order_by('name').all()
+    elif school_class.number == 6:
+        subjects = school_class.class_template.subjects_6.order_by('name').all()
+    elif school_class.number == 7:
+        subjects = school_class.class_template.subjects_7.order_by('name').all()
+    elif school_class.number == 8:
+        subjects = school_class.class_template.subjects_8.order_by('name').all()
+
+    for student in school_class.students.order_by('user__last_name').all():
+        students.append([])
+        students[i].append(f"{student.user.first_name} {student.user.last_name}")
+        for subject in subjects:
+            students[i].append(
+                FinalGrade.objects.filter(
+                    is_predicted=False,
+                    is_annual=True,
+                    subject=subject,
+                    student=student,
+                    date__lte=school_year.end,
+                    date__gte=school_year.start,
+                ).first().mark if FinalGrade.objects.filter(
+                    is_predicted=False,
+                    is_annual=True,
+                    subject=subject,
+                    student=student,
+                    date__lte=school_year.end,
+                    date__gte=school_year.start,
+                ).first() else None
+            )
+        students[i].append(student.id)
+        i += 1
+
+    context = {
+        'subjects': subjects,
+        'students': students,
+    }
+
+    return render(request, 'teacher/end_school_year.html', context)

@@ -40,7 +40,7 @@ Lekcja
 <ul>
     {% for event in events %}
         <li>
-            <p style="color: {{ event.color }}">{{ event.type }}</p>
+            <a href="{% url 'event_details' event.id %}" style="color: {{ event.color }}">{{ event.type }}</a>
             {% if event.description %}
             <p style="color: {{ event.color }}">{{ event.description }}</p>
             {% endif %}

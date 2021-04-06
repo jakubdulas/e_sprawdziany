@@ -30,7 +30,7 @@ urlpatterns = [
     path('diary/', teachers_diary, name='teachers_diary'),
     path('diary/replacement/', schedule_replacement, name='schedule_replacement'),
     path('diary/cancel-lesson/', cancel_lesson, name='cancel_lesson'),
-    path('diary/cancel-lesson/get_groups/<int:schoolclass_id>/', get_groups_ajax),
+    path('diary/cancel-lesson/get_groups/<int:schoolclass_id>/<int:bell_id>/<int:day_of_week>/', get_groups_ajax),
     path('lessons/', lesson_list, name='lesson_list'),
     path('lesson/<slug:lesson_slug>/take-the-register/', take_the_register, name='take_the_register'),
     path('add-grade/<int:student_id>/<int:subject_id>/<int:school_term_id>/',
@@ -61,4 +61,5 @@ urlpatterns = [
     path('odwolana-lekcja/<slug:lesson_slug>/usun/', canceled_lesson_delete, name='canceled_lesson_delete'),
     path('zastepstwo/<int:replacement_id>/usun/', replacement_delete, name='replacement_delete'),
     path('wydarzenie/<int:event_id>/edytuj/', event_edit, name='event_edit'),
+    path('zakonczenie-roku/', end_school_year, name='end_school_year'),
 ]

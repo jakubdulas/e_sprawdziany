@@ -52,9 +52,10 @@ def messages_list(request):
 
 def message_details(request, dm_slug):
     dm = get_object_or_404(DirectMessage, slug=dm_slug)
-    dm.is_read = True
-    dm.read_date = datetime.datetime.today()
-    dm.save()
+    if dm.is_read == False and dm.sender != request.user:
+        dm.is_read = True
+        dm.read_date = datetime.datetime.today()
+        dm.save()
     context = {
         'dm': dm
     }

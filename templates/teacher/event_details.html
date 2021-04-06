@@ -13,5 +13,7 @@
 <li>Nauczyciel: {{ event.teacher.user.first_name }} {{ event.teacher.user.last_name }}</li>
 <li>Data dodania: {{ event.add_date }}</li>
 </ul>
+{% if request.user.teacher == event.teacher %}
 <a href="{% url 'event_edit' event.id %}">Edytuj</a>
+{% endif %}
 {% endblock %}

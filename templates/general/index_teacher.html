@@ -11,6 +11,7 @@
     <a href="{% url 'announcement_list' %}">Ogłoszenia</a>
     <a href="{% url 'lesson_list' %}">Zajęcia</a>
     <a href="{% url 'create_test' %}">Stwórz test</a>
+    <a href="{% url 'end_school_year' %}">Zakończenie roku</a>
     <a href="{% url 'test_list' %}">Testy</a>
     {% if teacher.is_headmaster and teacher.headmaster.school %}
         <a href="{% url 'headmaster_panel' %}">Szkoła</a>
@@ -43,61 +44,6 @@
         <button type="submit">Rozpocznij lekcję</button>
     </form>
 
-{#    {% if present_lesson %}#}
-{#        <h4>Obecna lekcja:</h4>#}
-{#        <h1>{{ present_lesson.group.name }}</h1>#}
-{#        <h2>Lekcja: {{ present_lesson.bell.number_of_lesson }}</h2>#}
-{#        <h2>Od {{ present_lesson.bell.start_time|date:"H:i" }} do {{ present_lesson.bell.end_time|date:"H:i" }}</h2>#}
-{#    <form method="post" action="{% url 'start_next_lesson' present_lesson.id %}">#}
-{#    {% csrf_token %}#}
-{#    <button type="submit">Rozpocznij lekcję</button>#}
-{#    </form>#}
-{#    {% elif present_replacement %}#}
-{#        <h4>Obecna lekcja:</h4>#}
-{#        <h5>Zastępstwo za: {{ present_replacement.schedule_element.teacher.user.first_name }}#}
-{#         {{ present_replacement.schedule_element.teacher.user.last_name }}#}
-{#        </h5>#}
-{#        <h1>#}
-{#            {% for class in present_replacement.schedule_element.group.related_classes.all %}#}
-{#                {{ class.number }} {{ class.class_template.name }}#}
-{#            {% endfor %}#}
-{#            {{ present_replacement.subject }}#}
-{#        </h1>#}
-{#        <h2>Lekcja: {{ present_replacement.schedule_element.bell.number_of_lesson }}</h2>#}
-{#        <h2>Od {{ present_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ present_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>#}
-{#    <form method="post" action="{% url 'start_next_lesson' present_replacement.schedule_element.id %}">#}
-{#    {% csrf_token %}#}
-{#    <button type="submit">Rozpocznij lekcję</button>#}
-{#    </form>#}
-{#    {% endif %}#}
-{##}
-{#    {% if next_lesson %}#}
-{#        <h4>Następna lekcja:</h4>#}
-{#        <h1>{{ next_lesson.group.name }}</h1>#}
-{#        <h2>Lekcja: {{ next_lesson.bell.number_of_lesson }}</h2>#}
-{#        <h2>Od {{ next_lesson.bell.start_time|date:"H:i" }} do {{ next_lesson.bell.end_time|date:"H:i" }}</h2>#}
-{#    <form method="post" action="{% url 'start_next_lesson' next_lesson.id %}">#}
-{#    {% csrf_token %}#}
-{#    <button type="submit">Rozpocznij lekcję</button>#}
-{#    </form>#}
-{#    {% elif next_replacement %}#}
-{#        <h4>Następna lekcja:</h4>#}
-{#        <h5>Zastępstwo za: {{ next_replacement.schedule_element.teacher.user.first_name }}#}
-{#        {{ next_replacement.schedule_element.teacher.user.last_name }}#}
-{#        </h5>#}
-{#        <h1>#}
-{#            {% for class in next_replacement.schedule_element.group.related_classes.all %}#}
-{#                {{ class.number }} {{ class.class_template.name }}#}
-{#            {% endfor %}#}
-{#            {{ next_replacement.subject }}#}
-{#        </h1>#}
-{#        <h2>Lekcja: {{ next_replacement.schedule_element.bell.number_of_lesson }}</h2>#}
-{#        <h2>Od {{ next_replacement.schedule_element.bell.start_time|date:"H:i" }} do {{ next_replacement.schedule_element.bell.end_time|date:"H:i" }}</h2>#}
-{#    <form method="post" action="{% url 'start_next_lesson' next_replacement.schedule_element.id %}">#}
-{#    {% csrf_token %}#}
-{#    <button type="submit">Rozpocznij lekcję</button>#}
-{#    </form>#}
-{#    {% endif %}#}
 {% endblock %}
 {% block scripts %}
 <script>
@@ -111,8 +57,6 @@ const next_lesson_form = document.getElementById('next_lesson_form')
 const next_lesson_group = document.getElementById('next_lesson_group')
 const next_lesson_number = document.getElementById('next_lesson_number')
 const next_lesson_duration = document.getElementById('next_lesson_duration')
-
-console.log(lessons)
 
 const get_current_number_of_lesson = ()=>{
     const date = new Date()

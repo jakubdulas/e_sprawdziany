@@ -65,52 +65,7 @@ def home(request):
 
             context['lessons'] = dumps(lessons)
             context['bells'] = dumps(bells)
-
             context['teacher'] = request.user.teacher
-
-            # present_replacement = Replacement.objects.filter(
-            #     schedule_element__bell__end_time__gte=datetime.datetime.today().time(),
-            #     schedule_element__bell__start_time__lte=datetime.datetime.today().time(),
-            #     teacher=request.user.teacher,
-            #     date=datetime.datetime.today().date(),
-            # ).order_by('schedule_element__bell__number_of_lesson').first()
-            #
-            # present_lesson = ScheduleElement.objects.filter(
-            #     teacher=request.user.teacher,
-            #     bell__end_time__gte=datetime.datetime.today().time(),
-            #     bell__start_time__lte=datetime.datetime.today().time(),
-            #     day_of_week=datetime.datetime.today().weekday(),
-            #     end_date=None
-            # ).order_by('bell__number_of_lesson').exclude(
-            #     replacement__date=datetime.datetime.today().date()).exclude(
-            #     lesson__is_canceled=True).first()
-            #
-            # context['present_lesson'] = present_lesson
-            # context['present_replacement'] = present_replacement
-            #
-            # next_replacement = Replacement.objects.filter(
-            #     schedule_element__bell__start_time__gt=datetime.datetime.today().time(),
-            #     teacher=request.user.teacher,
-            #     date=datetime.datetime.today().date(),
-            # ).order_by('schedule_element__bell__number_of_lesson').first()
-            #
-            # next_lesson = ScheduleElement.objects.filter(
-            #     teacher=request.user.teacher,
-            #     bell__start_time__gt=datetime.datetime.today().time(),
-            #     day_of_week=datetime.datetime.today().weekday(),
-            #     end_date=None
-            # ).order_by('bell__number_of_lesson').exclude(
-            #     replacement__date=datetime.datetime.today().date()
-            # ).exclude(lesson__is_canceled=True).first()
-            #
-            # context['next_lesson'] = next_lesson
-            # context['next_replacement'] = next_replacement
-            #
-            # if next_lesson and next_replacement:
-            #     if (next_replacement.schedule_element.bell.number_of_lesson <=
-            #             next_lesson.bell.number_of_lesson):
-            #         context['next_replacement'] = next_replacement
-            #         context['next_lesson'] = None
 
             return render(request, 'general/index_teacher.html', context=context)
         elif Student.objects.filter(user=request.user):

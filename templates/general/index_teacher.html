@@ -94,7 +94,8 @@ function show_lessons(){
     let next_bell = get_current_number_of_lesson()[1]
 
     if (bell){
-        current_lesson = lessons.find(lesson => lesson.lesson === bell.number_of_lesson)
+        let current_lesson = lessons.find(lesson => lesson.lesson === bell.number_of_lesson)
+
         if (current_lesson){
             if (prev_bell !== bell){
                 display_present_lesson(current_lesson, bell)
@@ -113,7 +114,12 @@ function show_lessons(){
                 display_next_lesson(next_lesson, next_bell)
             }
         }else{
-            next_lesson_form.hidden = true
+            next_lesson = lessons.find(lesson => lesson.lesson > bell.number_of_lesson ? bell : next_bell)
+            if (next_lesson){
+                display_next_lesson(next_lesson, bells.find(bell => bell.number_of_lesson === next_lesson.lesson))
+            }else{
+                next_lesson_form.hidden = true
+            }
         }
 
     }else{

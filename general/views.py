@@ -47,13 +47,15 @@ def home(request):
                     day_of_week=datetime.datetime.today().weekday(),
                     teacher=request.user.teacher,
                     bell=bell,
-                    end_date=None,
+                    end_date__gte=datetime.datetime.now(),
+                    start_date__lte=datetime.datetime.now(),
                 ).exclude(replacement__date=datetime.datetime.today().date()).exclude(lesson__is_canceled=True):
                     schedule_element = ScheduleElement.objects.filter(
                         day_of_week=datetime.datetime.today().weekday(),
                         teacher=request.user.teacher,
                         bell=bell,
-                        end_date=None,
+                        end_date__gte=datetime.datetime.now(),
+                        start_date__lte=datetime.datetime.now(),
                     ).first()
 
                     lessons.append({

@@ -108,18 +108,18 @@ function show_lessons(){
         present_lesson_form.hidden = true
     }
     if (next_bell){
-        next_lesson = lessons.find(lesson => lesson.lesson === next_bell.number_of_lesson)
+        next_lesson = lessons.find(lesson => lesson.lesson >= next_bell.number_of_lesson)
         if (next_lesson){
             if (prev_next_bell !== next_bell) {
                 display_next_lesson(next_lesson, next_bell)
             }
         }else{
-            next_lesson = lessons.find(lesson => lesson.lesson > bell.number_of_lesson ? bell : next_bell)
-            if (next_lesson){
-                display_next_lesson(next_lesson, bells.find(bell => bell.number_of_lesson === next_lesson.lesson))
-            }else{
+            {#next_lesson = lessons.find(lesson => lesson.lesson > bell.number_of_lesson ? bell : next_bell)#}
+            {#if (next_lesson){#}
+            {#    display_next_lesson(next_lesson, bells.find(bell => bell.number_of_lesson === next_lesson.lesson))#}
+            {# }else{#}
                 next_lesson_form.hidden = true
-            }
+            {# }#}
         }
 
     }else{

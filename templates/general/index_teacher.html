@@ -26,37 +26,37 @@
     <br>
     <br>
 
-    <form id="present_lesson_form" method="post" hidden>
-    {% csrf_token %}
+    <div id="present_lesson_div" hidden>
         <h4>Obecna lekcja:</h4>
         <h1 id="present_lesson_group"></h1>
         <h2 id="present_lesson_number"></h2>
         <h2 id="present_lesson_duration"></h2>
-        <button type="submit">Rozpocznij lekcję</button>
-    </form>
+        <a id="present_lesson_a">Rozpocznij lekcję</a>
+    </div>
 
-    <form id="next_lesson_form" method="post" hidden>
-    {% csrf_token %}
+    <div id="next_lesson_div" hidden>
         <h4>Następna lekcja:</h4>
         <h1 id="next_lesson_group"></h1>
         <h2 id="next_lesson_number"></h2>
         <h2 id="next_lesson_duration"></h2>
-        <button type="submit">Rozpocznij lekcję</button>
-    </form>
+        <a id="next_lesson_a">Rozpocznij lekcję</a>
+    </div>
 
 {% endblock %}
 {% block scripts %}
 <script>
 const lessons = JSON.parse("{{ lessons|escapejs }}")
 const bells = JSON.parse("{{ bells|escapejs }}")
-const present_lesson_form = document.getElementById('present_lesson_form')
+const present_lesson_div = document.getElementById('present_lesson_div')
 const present_lesson_group = document.getElementById('present_lesson_group')
 const present_lesson_number = document.getElementById('present_lesson_number')
 const present_lesson_duration = document.getElementById('present_lesson_duration')
-const next_lesson_form = document.getElementById('next_lesson_form')
+const present_lesson_a = document.getElementById('present_lesson_a')
+const next_lesson_div = document.getElementById('next_lesson_div')
 const next_lesson_group = document.getElementById('next_lesson_group')
 const next_lesson_number = document.getElementById('next_lesson_number')
 const next_lesson_duration = document.getElementById('next_lesson_duration')
+const next_lesson_a = document.getElementById('next_lesson_a')
 
 const get_current_number_of_lesson = ()=>{
     const date = new Date()
@@ -73,8 +73,8 @@ const get_current_number_of_lesson = ()=>{
 
 function display_present_lesson(lesson, bell){
     const date = new Date()
-    present_lesson_form.hidden = false
-    present_lesson_form.setAttribute('action', `/school/start-lesson/${lesson.schedule_element}/${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}/`)
+    present_lesson_div.hidden = false
+    present_lesson_a.setAttribute('href', `/school/start-lesson/${lesson.schedule_element}/${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}/`)
     present_lesson_group.textContent = lesson.group_name
     present_lesson_number.textContent = `Lekcja: ${lesson.lesson}`
     present_lesson_duration.textContent = `Od ${bell.from_time[0]}:${bell.from_time[1]} do ${bell.to_time[0]}:${bell.to_time[1]}`
@@ -82,8 +82,8 @@ function display_present_lesson(lesson, bell){
 
 function display_next_lesson(lesson, bell){
     const date = new Date()
-    next_lesson_form.hidden = false
-    next_lesson_form.setAttribute('action', `/school/start-lesson/${lesson.schedule_element}/${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}/`)
+    next_lesson_div.hidden = false
+    next_lesson_a.setAttribute('href', `/school/start-lesson/${lesson.schedule_element}/${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}/`)
     next_lesson_group.textContent = lesson.group_name
     next_lesson_number.textContent = `Lekcja: ${lesson.lesson}`
     next_lesson_duration.textContent = `Od ${bell.from_time[0]}:${bell.from_time[1]} do ${bell.to_time[0]}:${bell.to_time[1]}`
@@ -101,11 +101,11 @@ function show_lessons(){
                 display_present_lesson(current_lesson, bell)
             }
         }else{
-            present_lesson_form.hidden = true
+            present_lesson_div.hidden = true
         }
 
     }else{
-        present_lesson_form.hidden = true
+        present_lesson_div.hidden = true
     }
     if (next_bell){
         next_lesson = lessons.find(lesson => lesson.lesson >= next_bell.number_of_lesson)
@@ -118,12 +118,12 @@ function show_lessons(){
             {#if (next_lesson){#}
             {#    display_next_lesson(next_lesson, bells.find(bell => bell.number_of_lesson === next_lesson.lesson))#}
             {# }else{#}
-                next_lesson_form.hidden = true
+                next_lesson_div.hidden = true
             {# }#}
         }
 
     }else{
-        next_lesson_form.hidden = true
+        next_lesson_div.hidden = true
     }
     prev_bell = bell
     prev_next_bell = next_bell

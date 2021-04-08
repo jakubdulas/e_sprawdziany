@@ -1,12 +1,32 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}
 Zajęcia
 {% endblock %}
 {% block content %}
-<ol>
-{% for lesson in lessons %}
-<li>{{ lesson.date|date:"d-m-Y" }} - <a href="{% url 'lesson_details' lesson.slug %}">{{ lesson.schedule_element.bell.number_of_lesson }}
-{{ lesson.schedule_element.group.name }}</a></li>
+{% csrf_token %}
+<button id="prev-week"><-</button>
+<h3 id="week"></h3>
+<button id="next-week">-></button>
+<table>
+<tr>
+    <td>nr lekcji</td>
+    <td>Poniedziałek</td>
+    <td>Wtorek</td>
+    <td>Środa</td>
+    <td>Czwartek</td>
+    <td>Piątek</td>
+</tr>
+{% for bell in bells %}
+<tr>
+    <td>{{ bell.number_of_lesson }}</td>
+    {% for day in '01234'|make_list %}
+    <td id="{{ day }}-{{ bell.number_of_lesson }}"></td>
+    {% endfor %}
+</tr>
 {% endfor %}
-</ol>
+</table>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/lesson_list.js' %}"></script>
 {% endblock %}

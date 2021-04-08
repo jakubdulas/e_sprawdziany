@@ -365,7 +365,7 @@ def add_group(request, class_id):
 
 def teachers_schedule(request):
     bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
-    date = datetime.datetime.now()
+    date = datetime.date.today()
     list = []
     for bell in bells:
         list.append(
@@ -398,11 +398,11 @@ def add_schedule_element(request, day_of_week, bell):
         form.instance.day_of_week = int(day_of_week)
         form.instance.bell = bell
         form.instance.teacher = request.user.teacher
-        form.instance.end_date = datetime.datetime(
+        form.instance.start_date = datetime.date.today()
+        form.instance.end_date = datetime.date(
             school_year.year,
             school_year.month,
-            school_year.day,
-            0, 0, 0)
+            school_year.day)
         if form.is_valid():
             form.save()
             return redirect('teachers_schedule')
@@ -523,31 +523,30 @@ def group_detail_view(request, group_id):
 
 
 def start_lesson(request, schedule_element_id, year, month, day):
-    if request.method == "POST":
-        schedule_element = get_object_or_404(ScheduleElement, id=schedule_element_id)
-        date = datetime.date(year, month, day)
+    schedule_element = get_object_or_404(ScheduleElement, id=schedule_element_id)
+    date = datetime.date(year, month, day)
 
-        replacement = Replacement.objects.filter(
+    replacement = Replacement.objects.filter(
+        schedule_element=schedule_element,
+        date=date,
+        teacher=request.user.teacher
+    ).first()
+
+    if not Lesson.objects.filter(
+        schedule_element=schedule_element,
+        date=date):
+        obj = Lesson.objects.create(
             schedule_element=schedule_element,
             date=date,
-            teacher=request.user.teacher
-        ).first()
-
-        if not Lesson.objects.filter(
-            schedule_element=schedule_element,
-            date=date):
-            obj = Lesson.objects.create(
+            replacement=replacement,
+        )
+    else:
+        obj = Lesson.objects.filter(
                 schedule_element=schedule_element,
-                date=date,
-                replacement=replacement,
-            )
-        else:
-            obj = Lesson.objects.filter(
-                    schedule_element=schedule_element,
-                    date=date).first()
+                date=date).first()
 
-        return redirect('lesson_details', lesson_slug=obj.slug)
-    return redirect('home')
+    return redirect('lesson_details', lesson_slug=obj.slug)
+
 
 
 def lesson_details(request, lesson_slug):
@@ -816,14 +815,99 @@ def get_groups_ajax(request, schoolclass_id, bell_id, day_of_week):
 
 
 def lesson_list(request):
-    lessons = Lesson.objects.filter(
-        Q(schedule_element__teacher=request.user.teacher) | Q(replacement__teacher=request.user.teacher)
-    ).order_by('-date', '-schedule_element__bell__number_of_lesson').all()
+    bells = Bell.objects.filter(school=request.user.teacher.school).order_by('number_of_lesson').all()
+    if request.is_ajax():
+        start = datetime.datetime.strptime(request.POST['start'], '%Y-%m-%d')
+        end = datetime.datetime.strptime(request.POST['end'], '%Y-%m-%d')
+        delta = (end - start).days + 1
+        week_day_name = ''
 
+        print(start)
+        print(end)
+
+        data = {
+            "mon": [],
+            "tues": [],
+            "wed": [],
+            "thur": [],
+            "fri": [],
+            "number_of_lessons": bells.count()
+        }
+
+        for date in (start + datetime.timedelta(n) for n in range(delta)):
+            week_day = date.weekday()
+            for bell in bells:
+                schedule_element = ScheduleElement.objects.filter(
+                    teacher=request.user.teacher,
+                    day_of_week=week_day,
+                    start_date__lte=date.date(),
+                    end_date__gte=date.date(),
+                    bell=bell
+                ).first()
+
+                replacement = Replacement.objects.filter(
+                    date=date.date(),
+                    schedule_element__bell=bell,
+                    teacher=request.user.teacher
+                ).first()
+
+                lesson = Lesson.objects.filter(
+                    schedule_element=schedule_element,
+                    date=date.date(),
+                ).first()
+
+                replacement_lesson = Lesson.objects.filter(
+                    replacement=replacement
+                ).first()
+
+                if week_day == 0:
+                    week_day_name = "mon"
+                elif week_day == 1:
+                    week_day_name = "tues"
+                elif week_day == 2:
+                    week_day_name = "wed"
+                elif week_day == 3:
+                    week_day_name = "thur"
+                elif week_day == 4:
+                    week_day_name = "fri"
+
+                if replacement:
+                    data[week_day_name].append(
+                        {
+                            "group": replacement.schedule_element.group.name,
+                            "schedule_element": replacement.schedule_element.id,
+                            "number_of_lesson": replacement.schedule_element.bell.number_of_lesson,
+                            "is_replacement": True,
+                            "is_accoplished": True if replacement_lesson else False,
+                            "day_of_week": week_day,
+                            "day": date.day,
+                            "month": date.month,
+                            "year": date.year,
+                        }
+                    )
+                else:
+                    if schedule_element:
+                        data[week_day_name].append(
+                            {
+                                "group": schedule_element.group.name,
+                                "schedule_element": schedule_element.id,
+                                "number_of_lesson": schedule_element.bell.number_of_lesson,
+                                "is_replacement": False,
+                                "is_accoplished": True if lesson else False,
+                                "is_canceled": lesson.is_canceled if lesson else False,
+                                "day_of_week": week_day,
+                                "day": date.day,
+                                "month": date.month,
+                                "year": date.year,
+                            }
+                        )
+                    else:
+                        data[week_day_name].append(None)
+
+        return JsonResponse(data)
     context = {
-        'lessons': lessons
+        'bells': bells
     }
-
     return render(request, 'teacher/lesson_list.html', context)
 
 

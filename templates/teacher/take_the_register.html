@@ -15,6 +15,7 @@
         <td>Nieobecny</td>
         <td>Spoźniony</td>
         <td>Zwolniony</td>
+        <td>Nieobecność usprawiedliwiona</td>
     </tr>
     {% for student, frequency in students %}
     <tr>
@@ -58,6 +59,15 @@
                    value="exempt"
                    type="radio"
                     {% if frequency.is_exempt %}
+                    checked
+                    {% endif %}
+            >
+        </td>
+        <td>
+            <input name="frequency_{{ student.id }}"
+                   value="exempt"
+                   type="radio"
+                    {% if frequency.excuse %}
                     checked
                     {% endif %}
             >

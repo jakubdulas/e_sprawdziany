@@ -548,7 +548,6 @@ def start_lesson(request, schedule_element_id, year, month, day):
     return redirect('lesson_details', lesson_slug=obj.slug)
 
 
-
 def lesson_details(request, lesson_slug):
     lesson = get_object_or_404(Lesson, slug=lesson_slug)
     students_qs = lesson.schedule_element.group.students.all().order_by('user__last_name')
@@ -564,30 +563,28 @@ def lesson_details(request, lesson_slug):
     else:
         subject = lesson.schedule_element.group.subject
 
-    last_lesson = Lesson.objects.filter(
-        Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
-        date__lte=lesson.date,
-        # schedule_element__group__related_classes__in=lesson.schedule_element.group.related_classes.all(),
-        schedule_element__group=lesson.schedule_element.group,
-        is_canceled=False,
-    ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').first()
-
-    if last_lesson:
-        if last_lesson.date == lesson.date:
+    last_lesson = None
+    date = lesson.date
+    for _ in range(Lesson.objects.filter(Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
+            schedule_element__group=lesson.schedule_element.group, is_canceled=False).count()):
+        if date == lesson.date:
             last_lesson = Lesson.objects.filter(
                 Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
                 schedule_element__group=lesson.schedule_element.group,
                 is_canceled=False,
-                date=lesson.date,
+                date=date,
                 schedule_element__bell__number_of_lesson__lt=lesson.schedule_element.bell.number_of_lesson
-            ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').first()
-            if not last_lesson:
-                last_lesson = Lesson.objects.filter(
-                    Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
-                    schedule_element__group=lesson.schedule_element.group,
-                    is_canceled=False,
-                    date__lt=lesson.date,
-                ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').order_by('-date').first()
+            ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').first()
+        else:
+            last_lesson = Lesson.objects.filter(
+                Q(replacement__subject=subject) | Q(schedule_element__group__subject=subject),
+                schedule_element__group=lesson.schedule_element.group,
+                is_canceled=False,
+                date=date,
+            ).exclude(id=lesson.id).order_by('-schedule_element__bell__number_of_lesson').first()
+        if last_lesson:
+            break
+        date -= datetime.timedelta(1)
 
     term1_grades = []
     term2_grades = []
@@ -1005,12 +1002,12 @@ def add_grade(request, student_id, subject_id, school_term_id):
     subject = get_object_or_404(Subject, id=subject_id)
     student = get_object_or_404(Student, id=student_id)
     school_term = get_object_or_404(SchoolTerm, id=school_term_id)
-    form = GiveGradeForm()
+    form = GiveGradeForm(school=request.user.teacher.school)
     context = {
         'form': form
     }
     if request.method == 'POST':
-        form = GiveGradeForm(request.POST)
+        form = GiveGradeForm(request.POST, school=request.user.teacher.school)
         form.instance.teacher = request.user.teacher
         form.instance.subject = subject
         form.instance.student = student

@@ -3,6 +3,7 @@
 Napisz usprawiedliwienie
 {% endblock %}
 {% block content %}
+<a href="{% url 'rejected_excuses' %}">Odrzucone usprawiedliwienia</a>
 <form method="post">
 {% csrf_token %}
 <button type="submit">Wyślij</button>

@@ -9,4 +9,6 @@ urlpatterns = [
     path('my-tests/', my_tests, name='my_tests'),
     path('my_test/<int:id>', my_test, name='my_test'),
     path('napisz-usprawiedliwienie/', send_excuse, name='send_excuse'),
+    path('odrzucone-usprawiedliwienia/', rejected_excuses, name='rejected_excuses'),
+    path('terminarz/', students_diary, name='students_diary'),
 ]

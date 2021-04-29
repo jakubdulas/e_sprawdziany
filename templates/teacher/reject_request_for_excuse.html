@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Odrzuć usprawiedliwienie
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+<p>Powód odrzucenia usprawiedliwienia</p>
+<textarea name="comment"></textarea>
+<button type="submit">Wyślij</button>
+</form>
+{% endblock %}

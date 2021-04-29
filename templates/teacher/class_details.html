@@ -4,6 +4,7 @@
     <a href="{% url 'teachers_class_list' %}"><--- klasy</a><br>
     <a href="{% url 'edit_class' class.id %}">Informacje o klasie</a>
     <a href="{% url 'class_groups' class.id %}">Grupy</a>
+    <a href="{% url 'create_student_accounts' class.id %}">Dodaj uczniów</a>
     <ol>
     {% for member in class.students.all %}
     <li>{{ member.user.first_name }} {{ member.user.last_name }}</li>

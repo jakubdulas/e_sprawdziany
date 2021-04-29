@@ -12,6 +12,7 @@ from .forms import *
 from tests.forms import GiveGradeForm, FinalGradeForm
 from general.decorators import *
 from django.utils.safestring import mark_safe
+from django.core.mail import send_mail
 from .utils import TeachersCalendar
 from general.forms import *
 import random
@@ -1211,9 +1212,10 @@ def reject_request_for_excuse(request, request_for_excuse_id):
     if request.method == 'POST':
         obj = get_object_or_404(RequestForExcuse, id=request_for_excuse_id)
         obj.is_rejected = True
+        obj.comment = request.POST['comment']
         obj.save()
         return redirect('requests_for_excuse')
-    return redirect('home')
+    return render(request, 'teacher/reject_request_for_excuse.html')
 
 
 def accept_request_for_excuse(request, request_for_excuse_id):
@@ -1489,5 +1491,70 @@ def end_school_year(request):
         'subjects': subjects,
         'students': students,
     }
-
     return render(request, 'teacher/end_school_year.html', context)
+
+
+def create_student_accounts(request, school_class_id):
+    school_class = get_object_or_404(SchoolClass, id=school_class_id)
+    if request.method == "POST":
+        signs = "1234567890"
+        username = ""
+        for _ in range(9):
+            username += signs[random.randint(0, len(signs) - 1)]
+
+        while User.objects.filter(username=username):
+            username = ""
+            for _ in range(30):
+                username += signs[random.randint(0, len(signs) - 1)]
+
+        signs = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm"
+        password = ""
+        for _ in range(30):
+            password += signs[random.randint(0, len(signs) - 1)]
+
+        us = User.objects.create(
+            username=username,
+            first_name=request.POST['first_name'],
+            last_name=request.POST['last_name'],
+        )
+        us.set_password(password)
+        us.save()
+
+        up = User.objects.create(
+            username=username+'r',
+            email=request.POST['email']
+        )
+        up.set_password(password)
+        up.save()
+
+        s = Student.objects.create(
+            user=us,
+            school=request.user.teacher.school
+        )
+
+        school_class.students.add(s)
+
+        p = Parent.objects.create(
+            user=up,
+            student=s
+        )
+
+        print(f"""
+            nazwa użytkownika rodzica: {up.username}
+            nazwa użytkownika ucznia: {us.username}
+            hasło do obu kont: {password}
+            """)
+
+        send_mail(
+            'Rejestracja ucznia',
+            f"""
+            nazwa użytkownika rodzica: {up.username}
+            nazwa użytkownika ucznia: {us.username}
+            hasło do obu kont: {password}
+            """,
+            'flask.myapp@gmail.com',
+            [request.POST['email'],]
+        )
+        messages.error(request, 'uzytkownik zostal stworzony')
+
+    return render(request, 'teacher/create_student_accounts.html')

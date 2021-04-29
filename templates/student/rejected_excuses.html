@@ -1,24 +1,25 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}
-Prośby o usprawiedliwienie nieobecności
+Odrzucone usprawiedliwienie
 {% endblock %}
 {% block content %}
 <ul>
-{% for item in qs %}
-<li><p>{{ item.parent.student.user.first_name }} {{ item.parent.student.user.last_name }}</p>
-    {% for absence in item.frequency.all %}
+{% for excuse in rejected_excuses %}
+<li>
+    komentarz: {{ excuse.comment }}
+</li>
+<ul>
+    <li>
+    {% for absence in excuse.frequency.all %}
     {% if absence.lesson.replacement %}
     <p>{{ absence.lesson.schedule_element.bell.number_of_lesson }} {{ absence.lesson.replacement.subject.name }} {{ absence.lesson.replacement.date }}</p>
     {% else %}
     <p>{{ absence.lesson.schedule_element.bell.number_of_lesson }} {{ absence.lesson.schedule_element.group.subject.name }} {{ absence.lesson.date }}</p>
     {% endif %}
     {% endfor %}
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" formaction="{% url 'accept_request_for_excuse' item.id %}">Akceptuj</button>
-        <button type="submit" formmethod="get" formaction="{% url 'reject_request_for_excuse' item.id %}">Odrzuć</button>
-    </form>
-</li>
+    </li>
+</ul>
 {% endfor %}
 </ul>
 {% endblock %}

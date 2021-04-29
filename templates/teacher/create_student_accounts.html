@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}
+    Dodaj uczniów
+{% endblock %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+<div>
+    <label>imię:</label>
+    <input type="text" name="first_name">
+    <label>nazwisko:</label>
+    <input type="text" name="last_name">
+    <label>email rodzica:</label>
+    <input type="email" name="email">
+</div>
+<button type="submit">Zatwierdz</button>
+</form>
+{% endblock %}

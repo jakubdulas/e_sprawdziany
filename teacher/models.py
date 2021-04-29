@@ -281,6 +281,7 @@ class RequestForExcuse(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE, null=True)
     is_rejected = models.BooleanField(default=False)
+    comment = models.TextField(null=True)
     date = models.DateTimeField(auto_now_add=True)
 
 

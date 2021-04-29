@@ -7,7 +7,10 @@ from django.contrib.auth.decorators import login_required
 from .decorators import *
 from tests.models import Test
 from tests.decorators import *
-from teacher.models import SchoolClass, Frequency, SchoolYear, RequestForExcuse
+from teacher.models import SchoolClass, Frequency, SchoolYear, RequestForExcuse, Parent
+from .utils import SchoolClassCalendar
+from django.utils.safestring import mark_safe
+import datetime
 
 
 @unauthenticated_user
@@ -96,3 +99,32 @@ def send_excuse(request):
     }
 
     return render(request, 'student/send_excuse.html', context)
+
+
+def rejected_excuses(request):
+    rejected_excuses_qs = RequestForExcuse.objects.filter(
+        parent=request.user.parent,
+        school_year=SchoolYear.get_current_school_year(request.user.parent.student.school),
+        is_rejected=True
+    ).all()
+    context = {
+        'rejected_excuses': rejected_excuses_qs
+    }
+    return render(request, 'student/rejected_excuses.html', context)
+
+
+def students_diary(request):
+    d = datetime.datetime.today().date()
+    school_class = None
+    if Parent.objects.filter(user=request.user):
+        school_year = SchoolYear.get_current_school_year(request.user.parent.student.school)
+        school_class = SchoolClass.objects.filter(students=request.user.parent.student, school_year=school_year).first()
+    elif Student.objects.filter(user=request.user):
+        school_year = SchoolYear.get_current_school_year(request.user.student.school)
+        school_class = SchoolClass.objects.filter(students=request.user.student, school_year=school_year).first()
+    cal = SchoolClassCalendar(d.year, d.month, school_class)
+    html_cal = cal.formatmonth(withyear=True)
+    context = {
+        'calendar': mark_safe(html_cal)
+    }
+    return render(request, 'student/students_diary.html', context)

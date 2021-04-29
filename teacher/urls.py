@@ -62,4 +62,5 @@ urlpatterns = [
     path('zastepstwo/<int:replacement_id>/usun/', replacement_delete, name='replacement_delete'),
     path('wydarzenie/<int:event_id>/edytuj/', event_edit, name='event_edit'),
     path('zakonczenie-roku/', end_school_year, name='end_school_year'),
+    path('class/<int:school_class_id>/dodaj-uczniow/', create_student_accounts, name='create_student_accounts'),
 ]

@@ -5,7 +5,7 @@ Home
 {% block content %}
 <h1>Hello: <a href="{% url 'profile' %}">{{ student.user.first_name }} {{ student.user.last_name }}</a></h1>
 <h2>Numer z dziennika: {{ students_number }}</h2>
-<a href="{% url 'class_list' %}">Klasy</a>
+<a href="{% url 'students_diary' %}">Terminarz</a>
 <a href="{% url 'active_tests' %}">Aktywne testy</a>
 <a href="{% url 'my_tests' %}">Moje sprawdziny</a>
 {% endblock %}

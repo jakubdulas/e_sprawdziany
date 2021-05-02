@@ -13,10 +13,11 @@ from tests.forms import GiveGradeForm, FinalGradeForm
 from general.decorators import *
 from django.utils.safestring import mark_safe
 from django.core.mail import send_mail
-from .utils import TeachersCalendar
+from .utils import TeachersCalendar, create_student_account
 from general.forms import *
 import random
 import datetime
+import openpyxl
 
 
 @paid_subscription
@@ -1497,64 +1498,24 @@ def end_school_year(request):
 def create_student_accounts(request, school_class_id):
     school_class = get_object_or_404(SchoolClass, id=school_class_id)
     if request.method == "POST":
-        signs = "1234567890"
-        username = ""
-        for _ in range(9):
-            username += signs[random.randint(0, len(signs) - 1)]
+        if request.FILES:
+            file = request.FILES['file']
+            wb = openpyxl.load_workbook(file)
+            sheet = wb.get_sheet_by_name('Sheet1')
 
-        while User.objects.filter(username=username):
-            username = ""
-            for _ in range(30):
-                username += signs[random.randint(0, len(signs) - 1)]
+            for row in range(2, sheet.max_row+1):
+                fname = sheet[f"A{row}"].value
+                lname = sheet[f"B{row}"].value
+                email = sheet[f"C{row}"].value
+                create_student_account(fname, lname, email, school_class)
+            messages.error(request, 'uczniowie zostali dodani')
 
-        signs = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm"
-        password = ""
-        for _ in range(30):
-            password += signs[random.randint(0, len(signs) - 1)]
+        fname = request.POST['first_name']
+        lname = request.POST['last_name']
+        email = request.POST['email']
 
-        us = User.objects.create(
-            username=username,
-            first_name=request.POST['first_name'],
-            last_name=request.POST['last_name'],
-        )
-        us.set_password(password)
-        us.save()
-
-        up = User.objects.create(
-            username=username+'r',
-            email=request.POST['email']
-        )
-        up.set_password(password)
-        up.save()
-
-        s = Student.objects.create(
-            user=us,
-            school=request.user.teacher.school
-        )
-
-        school_class.students.add(s)
-
-        p = Parent.objects.create(
-            user=up,
-            student=s
-        )
-
-        print(f"""
-            nazwa użytkownika rodzica: {up.username}
-            nazwa użytkownika ucznia: {us.username}
-            hasło do obu kont: {password}
-            """)
-
-        send_mail(
-            'Rejestracja ucznia',
-            f"""
-            nazwa użytkownika rodzica: {up.username}
-            nazwa użytkownika ucznia: {us.username}
-            hasło do obu kont: {password}
-            """,
-            'flask.myapp@gmail.com',
-            [request.POST['email'],]
-        )
-        messages.error(request, 'uzytkownik zostal stworzony')
-
+        if fname and lname and email:
+            create_student_account(fname, lname, email, school_class)
+            messages.error(request, 'uzytkownik zostal stworzony')
+        return redirect('create_student_accounts', school_class_id)
     return render(request, 'teacher/create_student_accounts.html')

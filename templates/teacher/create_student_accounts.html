@@ -1,10 +1,17 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}
     Dodaj uczniów
 {% endblock %}
 {% block content %}
-<form method="post">
+<p>
+Pobierz plik do wpisania danych uczniow
+<a href="{% static 'files/uczniowie.xlsx' %}" download>(kliknij tutaj)</a>,
+wypelnij go a nastepnie dodaj w polu ponizej. Na koniec kliknij zatwierdz.
+</p>
+<form method="post" enctype="multipart/form-data">
 {% csrf_token %}
+<input type="file" name="file">
 <div>
     <label>imię:</label>
     <input type="text" name="first_name">

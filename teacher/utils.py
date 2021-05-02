@@ -3,6 +3,7 @@ from django.shortcuts import reverse
 from calendar import HTMLCalendar
 from django.db.models import Q
 from .models import *
+from django.core.mail import send_mail
 
 
 class TeachersCalendar(HTMLCalendar):
@@ -74,3 +75,58 @@ class TeachersCalendar(HTMLCalendar):
             cal += f"{self.formatweek(week, teachers_absences, events, canceled_lessons, replacements)}"
         cal += "</table>"
         return cal
+
+
+def create_student_account(first_name, last_name, email, school_class):
+    signs = "1234567890"
+    username = ""
+    for _ in range(9):
+        username += signs[random.randint(0, len(signs) - 1)]
+
+    while User.objects.filter(username=username):
+        username = ""
+        for _ in range(30):
+            username += signs[random.randint(0, len(signs) - 1)]
+
+    signs = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm"
+    password = ""
+    for _ in range(10):
+        password += signs[random.randint(0, len(signs) - 1)]
+
+    us = User.objects.create(
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+    )
+    us.set_password(password)
+    us.save()
+
+    up = User.objects.create(
+        username=username + 'r',
+        email=email
+    )
+    up.set_password(password)
+    up.save()
+
+    s = Student.objects.create(
+        user=us,
+        school=school_class.school_year.school
+    )
+
+    school_class.students.add(s)
+
+    p = Parent.objects.create(
+        user=up,
+        student=s
+    )
+
+    send_mail(
+        'Rejestracja ucznia',
+        f"""
+                nazwa użytkownika rodzica: {up.username}
+                nazwa użytkownika ucznia: {us.username}
+                hasło do obu kont: {password}
+                """,
+        'Netschool',
+        [email, ]
+    )

@@ -15,7 +15,6 @@ class School(models.Model):
     is_paid = models.BooleanField(default=False)
     free_trial_up = models.BooleanField(default=False)
     join_date = models.DateTimeField(auto_now_add=True, null=True)
-    subjects = models.ManyToManyField("Subject")
     grades = models.ManyToManyField("GradeTemplate")
 
     def __str__(self):
@@ -87,6 +86,7 @@ class Teacher(models.Model):
 
 class Subject(models.Model):
     name = models.CharField(max_length=50)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return str(self.name)

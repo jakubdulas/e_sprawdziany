@@ -336,7 +336,7 @@ def class_groups(request, class_id):
 
 def edit_group(request, group_id):
     group = get_object_or_404(Group, id=group_id)
-    form = GroupForm(instance=group)
+    form = GroupForm(school=request.user.teacher.school, instance=group)
     if request.method == "POST":
         form = GroupForm(request.POST, instance=group)
         if form.is_valid():

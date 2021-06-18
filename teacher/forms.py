@@ -44,7 +44,6 @@ class CreateSchool(forms.ModelForm):
         fields = '__all__'
         exclude = ['is_paid', 'free_trial_up', 'key']
 
-    subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), widget=forms.CheckboxSelectMultiple)
     grades = forms.ModelMultipleChoiceField(queryset=GradeTemplate.objects.all(), widget=forms.CheckboxSelectMultiple)
 
 
@@ -65,6 +64,12 @@ class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = '__all__'
+
+    def __init__(self, school=None, *args, **kwargs):
+        super(GroupForm, self).__init__(*args, **kwargs)
+        if school:
+            self.fields['subject'].queryset = Subject.objects.filter(school=school)
+            self.fields['subject'].req = Subject.objects.filter(school=school)
 
 
 class ScheduleElementForm(forms.ModelForm):
